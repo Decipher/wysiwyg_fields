@@ -1,0 +1,107 @@
+<?php
+// $Id$
+/**
+ * @file
+ * CCK Field support for the WYSIWYG module.
+ */
+
+/**
+ * Implements hook_init().
+ */
+function wysiwyg_fields_init() {
+  foreach (module_list() as $module) {
+    if (file_exists($file = dirname(__FILE__) . "/modules/{$module}.inc")) {
+      require_once $file;
+    }
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function wysiwyg_fields_menu() {
+  $items = array();
+
+  $items[drupal_get_path('module', 'wysiwyg_fields') . '/plugins'] = array(
+    'title' => 'Wysiwyg Fields dynamic JS',
+    'page callback' => 'wysiwyg_fields_js',
+    // @TODO - proper permissions.
+    'access arguments' => array('administer content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function wysiwyg_fields_theme() {
+  $items = array();
+  $path = drupal_get_path('module', 'wysiwyg_fields') . '/templates';
+
+  $items['wysiwyg_fields_js'] = array(
+    'arguments' => array(
+      'field' => NULL,
+    ),
+    'template' => 'wysiwyg_fields_js',
+    'path' => $path,
+  );
+
+  return $items;
+}
+
+/**
+ * Page callback; Render dynamic JS.
+ */
+function wysiwyg_fields_js() {
+  $request = explode('/', request_uri());
+  $field = drupal_substr($request[count($request) - 2], 15);
+
+  header("Content-type: text/javascript");
+  print theme('wysiwyg_fields_js', $field);
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function wysiwyg_fields_form_alter(&$form, &$form_state, $form_id) {
+  if (isset($form['type']['#value']) && $form_id == "{$form['type']['#value']}_node_form") {
+    $form['#after_build'][] = 'wysiwyg_fields_build_after';
+
+    // Add insert button.
+    $form_element['wysiwygfields_insert'] = array(
+      '#type' => 'button',
+      '#value' => t('Insert'),
+    );
+  }
+}
+
+function wysiwyg_fields_build_after($form_element, &$form_state) {
+  // Store Content Type in $_SESSION['wysiwyg_fields'] to provide context.
+  $_SESSION['wysiwyg_fields'] = $form_element['type']['#value'];
+
+  foreach (content_fields(NULL, $form_element['type']['#value']) as $field) {
+    if (isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status']) {
+      $form_element[$field['field_name']]['#prefix'] = "<div id='wysiwyg_fields-{$field['field_name']}-wrapper'>{$form_element[$field['field_name']]['#prefix']}";
+      $form_element[$field['field_name']]['#suffix'] = "{$form_element[$field['field_name']]['#suffix']}</div>";
+
+      // Add javascript.
+      jquery_ui_add(array('ui.core', 'ui.dialog'));
+      drupal_add_js(drupal_get_path('module', 'wysiwyg_fields') . '/wysiwyg_fields.js');
+
+      // Add Style sheets.
+      drupal_add_css(drupal_get_path('module', 'wysiwyg_fields') . '/wysiwyg_fields.css');
+      // @TODO - Change if #388384 ever gets resolved.
+      if (file_exists($css = drupal_get_path('module', 'jquery_ui') . '/jquery.ui/themes/base/ui.all.css')) {
+        drupal_add_css($css);
+      }
+      else {
+        // @TODO - jQuery 1.6 theme?
+      }
+
+    }
+  }
+
+  return $form_element;
+}

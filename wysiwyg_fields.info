@@ -1,0 +1,8 @@
+; $Id$
+core = "6.x"
+dependencies[] = "jquery_ui"
+dependencies[] = "wysiwyg"
+description = "CCK Field support for the WYSIWYG module"
+name = "Wysiwyg Fields"
+package = "CCK"
+project = "wysiwyg_fields"
