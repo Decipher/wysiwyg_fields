@@ -2,6 +2,7 @@
 // $Id$
 /**
  * @file
+ * Template for Wysiwyg Fields dynamic Wysiwyg plugin.
  */
 ?>
 // $Id$
@@ -32,7 +33,7 @@
     },
 
     /**
-     * Replace images with <!--break--> tags in content upon detaching editor.
+     *
      */
     detach: function(content, settings, instanceId) {
       return content;

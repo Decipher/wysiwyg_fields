@@ -18,17 +18,20 @@ function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
       $settings['wysiwyg_fields']['wysiwyg_fields_status'] = array(
         '#title' => t('Attach to Wysiwyg?'),
         '#type' => 'checkbox',
-        '#default_value' => isset($widget['wysiwyg_fields_status']) ? $widget['wysiwyg_fields_status'] : 0
+        '#default_value' => isset($widget['wysiwyg_fields_status']) ? $widget['wysiwyg_fields_status'] : 0,
       );
       // @TODO: Allow for uploaded icons and manual URLs.
       $settings['wysiwyg_fields']['wysiwyg_fields_icon'] = array(
         '#title' => t('Icon'),
         '#type' => 'radios',
-        '#options' => array_merge(
+        '#options' => /*array_merge(*/
           _wysiwyg_fields_icons(),
-          array('upload' => t('Upload'))
+        //  array('upload' => t('Upload'))
+        //),
+        '#default_value' => isset($widget['wysiwyg_fields_icon']) ? $widget['wysiwyg_fields_icon'] : 0,
+        '#attributes' => array(
+          'class' => 'container-inline',
         ),
-        '#default_value' => isset($widget['wysiwyg_fields_icon']) ? $widget['wysiwyg_fields_icon'] : 0
       );
       break;
 

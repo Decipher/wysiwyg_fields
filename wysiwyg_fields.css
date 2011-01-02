@@ -3,6 +3,14 @@
 #edit-wysiwygfields-insert {
   display: none;
 }
+
+/* MCEditor icon size fix. */
+.defaultSkin .mce_wysiwyg_fields_icon img.mceIcon {
+  height: 16px;
+  padding: 2px;
+  width: 16px;
+}
+
 /**/
 /*#wysiwyg_fields-dialog {*/
 /*  -moz-border-radius: 10px;*/

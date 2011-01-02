@@ -22,9 +22,17 @@ function wysiwyg_fields_init() {
 function wysiwyg_fields_menu() {
   $items = array();
 
+  $items['ahah/wysiwyg_fields'] = array(
+    'title' => 'Wysiwyg Fields AHAH callback',
+    'page callback' => 'wysiwyg_fields_ahah',
+    // @TODO - proper permissions.
+    'access arguments' => array('administer content'),
+    'type' => MENU_CALLBACK,
+  );
+
   $items[drupal_get_path('module', 'wysiwyg_fields') . '/plugins'] = array(
-    'title' => 'Wysiwyg Fields dynamic JS',
-    'page callback' => 'wysiwyg_fields_js',
+    'title' => 'Wysiwyg Fields dynamic Wysiwyg plugin js',
+    'page callback' => 'wysiwyg_fields_wysiwyg_plugin_js',
     // @TODO - proper permissions.
     'access arguments' => array('administer content'),
     'type' => MENU_CALLBACK,
@@ -34,32 +42,36 @@ function wysiwyg_fields_menu() {
 }
 
 /**
+ * Implements hook_elements().
+ */
+function wysiwyg_fields_elements() {
+  $elements = array();
+
+  foreach (module_invoke_all('widget_info') as $widget_type => $widget) {
+    $elements[$widget_type] = array(
+      '#after_build' => array('wysiwyg_fields_elements_build_after')
+    );
+  }
+
+  return $elements;
+}
+
+/**
  * Implements hook_theme().
  */
 function wysiwyg_fields_theme() {
   $items = array();
   $path = drupal_get_path('module', 'wysiwyg_fields') . '/templates';
 
-  $items['wysiwyg_fields_js'] = array(
+  $items['wysiwyg_fields_wysiwyg_plugin_js'] = array(
     'arguments' => array(
       'field' => NULL,
     ),
-    'template' => 'wysiwyg_fields_js',
+    'template' => 'wysiwyg_fields_wysiwyg_plugin_js',
     'path' => $path,
   );
 
   return $items;
-}
-
-/**
- * Page callback; Render dynamic JS.
- */
-function wysiwyg_fields_js() {
-  $request = explode('/', request_uri());
-  $field = drupal_substr($request[count($request) - 2], 15);
-
-  header("Content-type: text/javascript");
-  print theme('wysiwyg_fields_js', $field);
 }
 
 /**
@@ -68,21 +80,44 @@ function wysiwyg_fields_js() {
 function wysiwyg_fields_form_alter(&$form, &$form_state, $form_id) {
   if (isset($form['type']['#value']) && $form_id == "{$form['type']['#value']}_node_form") {
     $form['#after_build'][] = 'wysiwyg_fields_build_after';
-
-    // Add insert button.
-    $form_element['wysiwygfields_insert'] = array(
-      '#type' => 'button',
-      '#value' => t('Insert'),
-    );
   }
 }
 
+/**
+ *
+ */
+function wysiwyg_fields_elements_build_after($form_element, &$form_state) {
+  $field = content_fields($form_element['#field_name'], $form_element['#type_name']);
+
+  if (isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status'] == TRUE) {
+    $form_element['wyswyg_fields_insert'] = array(
+      '#type' => 'button',
+      '#value' => t('Insert'),
+      '#name' => "{$form_element['#name']}[wysiwyg_fields_insert]",
+      '#id' => "{$form_element['#id']}-wysiwyg-fields-insert",
+      '#attributes' => array(
+        'class' => 'wysiwyg_fields_insert',
+      ),
+      '#weight' => 100,
+    );
+  }
+
+  return $form_element;
+}
+
+/**
+ *
+ */
 function wysiwyg_fields_build_after($form_element, &$form_state) {
   // Store Content Type in $_SESSION['wysiwyg_fields'] to provide context.
   $_SESSION['wysiwyg_fields'] = $form_element['type']['#value'];
 
   foreach (content_fields(NULL, $form_element['type']['#value']) as $field) {
     if (isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status']) {
+      // Enable wysiwyg plugin.
+      _wysiwyg_fields_wysiwyg_enable_plugin($field);
+
+      // Modify field element.
       $form_element[$field['field_name']]['#prefix'] = "<div id='wysiwyg_fields-{$field['field_name']}-wrapper'>{$form_element[$field['field_name']]['#prefix']}";
       $form_element[$field['field_name']]['#suffix'] = "{$form_element[$field['field_name']]['#suffix']}</div>";
 
@@ -104,4 +139,57 @@ function wysiwyg_fields_build_after($form_element, &$form_state) {
   }
 
   return $form_element;
+}
+
+/**
+ *
+ */
+function _wysiwyg_fields_wysiwyg_enable_plugin($field) {
+  foreach (wysiwyg_profile_load_all() as $profile) {
+    // @TODO - If $profile->settings['buttons'] is empty, the dynamic buttons
+    // aren't added.
+    if (!empty($profile->settings['buttons'])) {
+      $id = "wysiwyg_fields_{$field['field_name']}";
+      if (!isset($profile->settings['buttons']['drupal'][$id]) || empty($profile->settings['buttons']['drupal'][$id])) {
+        $profile->settings['buttons']['drupal'][$id] = 1;
+        db_query("UPDATE {wysiwyg} SET settings = '%s' WHERE format = %d", serialize($profile->settings), $profile->format);
+      }
+    }
+  }
+}
+
+/**
+ * Page callback; Wysiwyg Fields AHAH.
+ */
+function wysiwyg_fields_ahah() {
+  $op = arg(2);
+  if (!empty($op)) {
+    $function = "wysiwyg_fields_ahah_{$op}";
+    print drupal_to_js($function());
+  }
+
+  // Error.
+  else {
+    print drupal_to_js(array());
+  }
+}
+
+/**
+ *
+ */
+function wysiwyg_fields_ahah_insert() {
+  // Render field.
+
+  return array();
+}
+
+/**
+ * Page callback; Render dynamic Wysiwyg plugin js.
+ */
+function wysiwyg_fields_wysiwyg_plugin_js() {
+  $request = explode('/', request_uri());
+  $field = drupal_substr($request[count($request) - 2], 15);
+
+  header("Content-type: text/javascript");
+  print theme('wysiwyg_fields_wysiwyg_plugin_js', $field);
 }
