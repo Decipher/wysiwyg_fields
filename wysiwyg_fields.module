@@ -178,9 +178,19 @@ function wysiwyg_fields_ahah() {
  *
  */
 function wysiwyg_fields_ahah_insert() {
-  // Render field.
-
-  return array();
+  $field = content_fields(arg(3));
+  $element = array(
+    '#formatter' => "default", // @TODO - Fix this
+    '#node' => array(), // @TODO - Fix this
+    '#type_name' => '', // @TODO - Fix this
+    '#field_name' => arg(3),
+    '#weight' => 0, // @TODO - Fix this
+    '#theme' => "{$field['widget']['module']}_formatter_default",
+    '#item' => $_POST[arg(3)][arg(4)],
+    '#title' => '', // @TODO - Fix this
+    '#description' => '', // @TODO - Fix this
+  );
+  return array('output' => theme("{$field['widget']['module']}_formatter_default", $element));
 }
 
 /**
