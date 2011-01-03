@@ -89,14 +89,16 @@ function wysiwyg_fields_form_alter(&$form, &$form_state, $form_id) {
 function wysiwyg_fields_elements_build_after($form_element, &$form_state) {
   $field = content_fields($form_element['#field_name'], $form_element['#type_name']);
 
-  if (isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status'] == TRUE) {
-    if (count($field['widget']['wysiwyg_fields_formatters']) > 1) {
-      $formatters = array();
-      foreach ($field['widget']['wysiwyg_fields_formatters'] as $delta => $formatter) {
-        $formatter = _content_get_formatter($formatter, $field['type']);
-        $formatters["{$formatter[module]}_formatter_{$delta}"] = $formatter['label'];
-      }
+  if ($form_element['#type'] == $field['widget']['type'] && isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status'] == TRUE) {
+    // Formatters.
+    $formatters = array();
+    foreach ($field['widget']['wysiwyg_fields_formatters'] as $delta => $formatter) {
+      $formatter = _content_get_formatter($formatter, $field['type']);
+      $formatters["{$formatter[module]}_formatter_{$delta}"] = $formatter['label'];
+    }
 
+    // Multiple formatters - select field.
+    if (count($field['widget']['wysiwyg_fields_formatters']) > 1) {
       $form_element['wysiwyg_fields_formatters'] = array(
         '#type' => 'select',
         '#options' => $formatters,
@@ -106,13 +108,17 @@ function wysiwyg_fields_elements_build_after($form_element, &$form_state) {
       );
     }
 
+    // Single formatter - hidden field.
     else {
       $form_element['wysiwyg_fields_formatters'] = array(
         '#type' => 'hidden',
-        //'#options' => $field['widget']['wysiwyg_fields_formatters'],
+        '#value' => array_shift(array_keys($formatters)),
+        '#name' => "{$form_element['#name']}[wysiwyg_fields_formatters]",
+        '#id' => "{$form_element['#id']}-wysiwyg-fields-formatters",
       );
     }
 
+    // Insert button.
     $form_element['wyswyg_fields_insert'] = array(
       '#type' => 'button',
       '#value' => t('Insert'),
@@ -204,11 +210,15 @@ function wysiwyg_fields_ahah_insert() {
   $field = content_fields(arg(3));
   $formatter = explode('_formatter_', $_POST[arg(3)][arg(4)]['wysiwyg_fields_formatters']);
 
-  // Pass $item through hook_field('load') to complete $item.
   $item = $_POST[arg(3)][arg(4)];
   if (function_exists($function = "{$field['module']}_field")) {
-    $items = $function('load', $node = array(), $field, $items = array($item), TRUE, FALSE);
+    // Invoke hook_field('load').
+    $items = $function('load', $node = array(), $field, $items = array($item), FALSE, FALSE);
     $item = isset($items[arg(3)][0]) ? $items[arg(3)][0] : $item;
+
+    // Invoke hook_field('sanitize').
+    $items = array(&$item);
+    $function('sanitize', $node = array(), $field, $items, FALSE, FALSE);
   }
 
   $element = array(

@@ -67,19 +67,24 @@
         $('#wysiwyg_fields-' + id + '-dialog').prependTo($('#node-form'));
         $('.ui-widget-overlay').prependTo($('#node-form')).css('position', 'fixed');
       }
-    }
+    },
 
-  }
-
-  Drupal.behaviors.wysiwygFields = function(context) {
-    // TODO - This gets triggered multiple times when an AHAH event is fired,
-    // causing multiple inserts.
-    $('.wysiwyg_fields_insert').bind('click', function() {
+    /**
+     *
+     */
+    insert: function() {
       var name = $(this).attr('name').replace(']', '').split('[');
       $.post(Drupal.settings.basePath + 'ahah/wysiwyg_fields/insert/' + name[0] + '/' + name[1], $(this).parents('form').serialize(), function(data) {
         Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].insert(data.output);
       }, 'json');
       return false;
-    });
+    }
+  }
+
+  /**
+   *
+   */
+  Drupal.behaviors.wysiwygFields = function(context) {
+    $('.wysiwyg_fields_insert').bind('click', Drupal.wysiwygFields.insert);
   }
 })(jQuery);
