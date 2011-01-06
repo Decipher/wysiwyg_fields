@@ -29,14 +29,14 @@
      */
     attach: function(content, settings, instanceId) {
       Drupal.wysiwygFields.init('<?php print $field; ?>');
-      return content;
+      return Drupal.wysiwygFields.wysiwygAttach('<?php print $field; ?>', content, settings, instanceId);
     },
 
     /**
      *
      */
     detach: function(content, settings, instanceId) {
-      return content;
+      return Drupal.wysiwygFields.wysiwygDetach('<?php print $field; ?>', content, settings, instanceId);
     }
 
   }

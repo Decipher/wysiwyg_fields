@@ -21,6 +21,38 @@
       });
       //$('#wysiwyg_fields-' + id + '-wrapper').children().hide();
       $('#wysiwyg_fields-' + id + '-wrapper').parents('.ui-dialog').attr('id', 'wysiwyg_fields-' + id + '-dialog');
+      this.dialogFix(id);
+    },
+
+    /**
+     * Convert tokens to the appropriate rendered preview.
+     */
+    wysiwygAttach: function(id, content, settings, instanceId) {
+      var regex = new RegExp('(\\[wysiwyg_fields-' + id + '-(\\d)-(.*?)\\])', 'g');
+      // @TODO - Don't process same token multple times.
+      // @TODO - Content is being returned before AHAH Callback is finished.
+      if ((matches = content.match(regex))) {
+        $.each($(matches), function(i, elem) {
+          values = elem.split(regex);
+          $.post(Drupal.settings.basePath + 'ahah/wysiwyg_fields/format/' + id + '/' + values[2] + '/' + values[3], $('#' + instanceId).parents('form').serialize(), function(data) {
+            var id = elem.substr(1, elem.length - 2);
+            content = "<span id='" + id + "' class='wysiwyg_fields wysiwyg_fields-" + values[2] + "'>" + data.output + "</span>";
+          }, 'json');
+        });
+      }
+      return content;
+    },
+
+    /**
+     * Convert rendered previews to the appropriate token.
+     */
+    wysiwygDetach: function(id, content, settings, instanceId) {
+      var $content = $('<div>' + content + '</div>');
+      $.each($('span.wysiwyg_fields-' + id, $content), function(i, elem) {
+        var token = '[' + $(elem).attr('id') + ']';
+        $($content).find('#' + $(elem).attr('id')).replaceWith(token);
+      });
+      return $content.html();
     },
 
     /**
@@ -75,7 +107,10 @@
     insert: function() {
       var name = $(this).attr('name').replace(']', '').split('[');
       $.post(Drupal.settings.basePath + 'ahah/wysiwyg_fields/insert/' + name[0] + '/' + name[1], $(this).parents('form').serialize(), function(data) {
-        Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].insert(data.output);
+        var formatter = $('select[name="' + name[0] + '[' + name[1] + '][wysiwyg_fields_formatters]"]').val();
+        var id = "wysiwyg_fields-" + name[0] + "-" + name[1] + "-" + formatter;
+        var output = "<span id='" + id + "' class='wysiwyg_fields wysiwyg_fields-" + name[0] + "'>" + data.output + "</span>";
+        Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].insert(output);
       }, 'json');
       return false;
     }

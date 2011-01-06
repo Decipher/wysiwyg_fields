@@ -208,9 +208,30 @@ function wysiwyg_fields_ahah() {
  */
 function wysiwyg_fields_ahah_insert() {
   $field = content_fields(arg(3));
-  $formatter = explode('_formatter_', $_POST[arg(3)][arg(4)]['wysiwyg_fields_formatters']);
-
   $item = $_POST[arg(3)][arg(4)];
+  $formatter = explode('_formatter_', $item['wysiwyg_fields_formatters']);
+
+  $element = _wysiwyg_fields_ahah_get_element($field, $item, $formatter);
+  return array(
+    'output' => theme($element['#theme'], $element)
+  );
+}
+
+/**
+ *
+ */
+function wysiwyg_fields_ahah_format() {
+  $field = content_fields(arg(3));
+  $item = $_POST[arg(3)][arg(4)];
+  $formatter = explode('_formatter_', arg(5));
+
+  $element = _wysiwyg_fields_ahah_get_element($field, $item, $formatter);
+  return array(
+    'output' => theme($element['#theme'], $element),
+  );
+}
+
+function _wysiwyg_fields_ahah_get_element($field, $item, $formatter) {
   if (function_exists($function = "{$field['module']}_field")) {
     // Invoke hook_field('load').
     $items = $function('load', $node = array(), $field, $items = array($item), FALSE, FALSE);
@@ -233,9 +254,7 @@ function wysiwyg_fields_ahah_insert() {
     '#description' => '', // @TODO - Fix this
   );
 
-  return array(
-    'output' => theme($element['#theme'], $element)
-  );
+  return $element;
 }
 
 /**
