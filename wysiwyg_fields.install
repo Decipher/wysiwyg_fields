@@ -1,0 +1,13 @@
+<?php
+// $Id$
+/**
+ * @file
+ * Install, update and uninstall functions for the FileField Paths module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function wysiwyg_fields_install() {
+  // @TODO - Enable Wysiwyg Fields filter on all Input Formats.
+}

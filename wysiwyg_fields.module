@@ -81,6 +81,9 @@ function wysiwyg_fields_form_alter(&$form, &$form_state, $form_id) {
   if (isset($form['type']['#value']) && $form_id == "{$form['type']['#value']}_node_form") {
     $form['#after_build'][] = 'wysiwyg_fields_form_alter_build_after';
   }
+
+  // Invoke hook_wysiwyg_fields_form_alter().
+  drupal_alter('wysiwyg_fields_form_alter', &$form, &$form_state, $form_id);
 }
 
 /**

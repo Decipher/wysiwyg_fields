@@ -28,6 +28,12 @@
      * Convert tokens to the appropriate rendered preview.
      */
     wysiwygAttach: function(id, content, settings, instanceId) {
+      // @TODO - Don't use AHAH callback, on node edit, $node->body should be
+      // run through filter and tokens should be extracted and stored as
+      // javascript vairbales.
+      // On Detach, variables should be re-generated from token preview values.
+      // Attach should simply use the javascript variables.
+
       //var regex = new RegExp('(\\[wysiwyg_fields-' + id + '-(\\d)-(.*?)\\])', 'g');
       //// @TODO - Don't process same token multple times.
       //// @TODO - Content is being returned before AHAH Callback is finished.
