@@ -79,7 +79,7 @@ function wysiwyg_fields_theme() {
  */
 function wysiwyg_fields_form_alter(&$form, &$form_state, $form_id) {
   if (isset($form['type']['#value']) && $form_id == "{$form['type']['#value']}_node_form") {
-    $form['#after_build'][] = 'wysiwyg_fields_build_after';
+    $form['#after_build'][] = 'wysiwyg_fields_form_alter_build_after';
   }
 }
 
@@ -90,6 +90,12 @@ function wysiwyg_fields_elements_build_after($form_element, &$form_state) {
   $field = content_fields($form_element['#field_name'], $form_element['#type_name']);
 
   if ($form_element['#type'] == $field['widget']['type'] && isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status'] == TRUE) {
+    // AHAH Wrapper.
+    // @TODO - This breaks ImageField/FileField AHAH - fix.
+    $prefix = "<div id='{$form_element['#id']}-wysiwyg-fields-ahah-wrapper'>";
+    $form_element['#prefix'] = isset($form_element['#prefix']) ? "{$prefix}{$form_element['prefix']}" : $prefix;
+    $form_element['#suffix'] = isset($form_element['#suffix']) ? "{$form_element['#suffix']}</div>" : '</div>';
+
     // Formatters.
     $formatters = array();
     foreach ($field['widget']['wysiwyg_fields_formatters'] as $delta => $formatter) {
@@ -120,8 +126,13 @@ function wysiwyg_fields_elements_build_after($form_element, &$form_state) {
 
     // Insert button.
     $form_element['wyswyg_fields_insert'] = array(
-      '#type' => 'button',
+      '#type' => 'submit',
       '#value' => t('Insert'),
+      // @TODO - Find a way to attach an #AHAH event via #build_after.
+      //'#ahah' => array(
+      //  'path' => 'ahah/wysiwyg_fields/insert',
+      //  'wrapper' => "{$form_element['#id']}-wysiwyg-fields-ahah-wrapper",
+      //),
       '#name' => "{$form_element['#name']}[wysiwyg_fields_insert]",
       '#id' => "{$form_element['#id']}-wysiwyg-fields-insert",
       '#attributes' => array(
@@ -137,7 +148,7 @@ function wysiwyg_fields_elements_build_after($form_element, &$form_state) {
 /**
  *
  */
-function wysiwyg_fields_build_after($form_element, &$form_state) {
+function wysiwyg_fields_form_alter_build_after($form_element, &$form_state) {
   // Store Content Type in $_SESSION['wysiwyg_fields'] to provide context.
   $_SESSION['wysiwyg_fields'] = $form_element['type']['#value'];
 
@@ -191,29 +202,80 @@ function _wysiwyg_fields_wysiwyg_enable_plugin($field) {
  * Page callback; Wysiwyg Fields AHAH.
  */
 function wysiwyg_fields_ahah() {
+  // Immediately disable devel shutdown functions so that it doesn't botch our
+  // JSON output.
+  //$GLOBALS['devel_shutdown'] = FALSE;
+
+  if (empty($_POST['form_build_id'])) {
+    // Invalid request.
+    drupal_set_message(t('An unrecoverable error occurred.'));
+    print drupal_to_js(array('data' => theme('status_messages')));
+    exit;
+  }
+
+  // Invoke wysiwyg_fields_ahah_OP().
   $op = arg(2);
   if (!empty($op)) {
     $function = "wysiwyg_fields_ahah_{$op}";
     print drupal_to_js($function());
   }
 
-  // Error.
   else {
-    print drupal_to_js(array());
+    // Invalid request.
+    drupal_set_message(t('An unrecoverable error occurred.'));
+    print drupal_to_js(array('data' => theme('status_messages')));
+    exit;
   }
 }
 
 /**
- *
+ * @TODO - Form is being saved on every Wysiwyg Field insert, stop that.
+ * @TODO - Weight field becomes visible after AHAH - fix.
  */
 function wysiwyg_fields_ahah_insert() {
-  $field = content_fields(arg(3));
-  $item = $_POST[arg(3)][arg(4)];
-  $formatter = explode('_formatter_', $item['wysiwyg_fields_formatters']);
+  // Include node definition.
+  module_load_include('inc', 'node', 'node.pages');
 
-  $element = _wysiwyg_fields_ahah_get_element($field, $item, $formatter);
+  // Load the form.
+  $form_state = array('storage' => NULL, 'submitted' => FALSE);
+  $form_build_id = $_POST['form_build_id'];
+  $form = form_get_cache($form_build_id, $form_state);
+  $args = $form['#parameters'];
+  $form_id = array_shift($args);
+  $form_state['post'] = $form['#post'] = $_POST;
+  $form['#programmed'] = $form['#redirect'] = FALSE;
+
+  // Process the form with drupal_process_form(), which calls the submit
+  // handlers that puts whatever was worthy of keeping in the $form_state.
+  drupal_process_form($form_id, $form, $form_state);
+
+  // Session messages would get displayed at the next regular request, but
+  // we're in AHAH here, so that won't happen. Make them go away.
+  unset($_SESSION['messages']);
+
+  $output = drupal_render($form[arg(3)][arg(4)]);
+  $errors = form_get_errors();
+  if (isset($errors) && isset($errors[arg(3) . "][" . arg(4) . '][value'])) {
+    drupal_set_message($errors[arg(3) . "][" . arg(4) . '][value'], 'error');
+    $output = theme('status_messages') . $output;
+  }
+
+  else {
+    $field = content_fields(arg(3));
+    $item = $form_state['values'][arg(3)][arg(4)];
+    $formatter = explode('_formatter_', $item['wysiwyg_fields_formatters']);
+    $element = _wysiwyg_fields_ahah_get_element($field, $item, $formatter);
+
+    // @TODO - Turn this into a theme function.
+    $id = 'wysiwyg_fields-' . arg(3) . '-' . arg(4) . "-{$item['wysiwyg_fields_formatters']}";
+    $element = "<span id=\"{$id}\" class=\"wysiwyg_fields wysiwyg_fields-" . arg(3) . "\">" . theme($element['#theme'], $element) . '</span>';
+
+    $output .= "<script type='text/javascript'>Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].insert('{$element}')</script>";
+  }
+
   return array(
-    'output' => theme($element['#theme'], $element)
+    'status' => TRUE,
+    'data' => $output,
   );
 }
 
@@ -233,10 +295,10 @@ function wysiwyg_fields_ahah_format() {
 
 function _wysiwyg_fields_ahah_get_element($field, $item, $formatter) {
   if (function_exists($function = "{$field['module']}_field")) {
-    // Invoke hook_field('load').
-    $items = $function('load', $node = array(), $field, $items = array($item), FALSE, FALSE);
-    $item = isset($items[arg(3)][0]) ? $items[arg(3)][0] : $item;
-
+  //  // Invoke hook_field('load').
+  //  $items = $function('load', $node = array(), $field, $items = array($item), FALSE, FALSE);
+  //  $item = isset($items[arg(3)][0]) ? $items[arg(3)][0] : $item;
+  //
     // Invoke hook_field('sanitize').
     $items = array(&$item);
     $function('sanitize', $node = array(), $field, $items, FALSE, FALSE);
