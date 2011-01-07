@@ -28,24 +28,14 @@
      * Convert tokens to the appropriate rendered preview.
      */
     wysiwygAttach: function(id, content, settings, instanceId) {
-      // @TODO - Don't use AHAH callback, on node edit, $node->body should be
-      // run through filter and tokens should be extracted and stored as
-      // javascript vairbales.
-      // On Detach, variables should be re-generated from token preview values.
-      // Attach should simply use the javascript variables.
-
-      //var regex = new RegExp('(\\[wysiwyg_fields-' + id + '-(\\d)-(.*?)\\])', 'g');
-      //// @TODO - Don't process same token multple times.
-      //// @TODO - Content is being returned before AHAH Callback is finished.
-      //if ((matches = content.match(regex))) {
-      //  $.each($(matches), function(i, elem) {
-      //    values = elem.split(regex);
-      //    $.post(Drupal.settings.basePath + 'ahah/wysiwyg_fields/format/' + id + '/' + values[2] + '/' + values[3], $('#' + instanceId).parents('form').serialize(), function(data) {
-      //      var id = elem.substr(1, elem.length - 2);
-      //      content = "<span id='" + id + "' class='wysiwyg_fields wysiwyg_fields-" + values[2] + "'>" + data.output + "</span>";
-      //    }, 'json');
-      //  });
-      //}
+      var regex = new RegExp('(\\[wysiwyg_fields-' + id + '-(\\d)-(.*?)\\])', 'g');
+      if ((matches = content.match(regex))) {
+        $.each($(matches), function(i, elem) {
+          elemId = elem.substr(1, elem.length - 2);
+          replacement = "<span id='" + elemId + "' class='wysiwyg_fields wysiwyg_fields-" + id + "'>" + Drupal.settings.wysiwygFields.replacements[elem] + "</span>";
+          content = content.replace(elem, replacement);
+        });
+      }
       return content;
     },
 
@@ -56,6 +46,12 @@
       var $content = $('<div>' + content + '</div>');
       $.each($('span.wysiwyg_fields-' + id, $content), function(i, elem) {
         var token = '[' + $(elem).attr('id') + ']';
+
+        // Store replacement in Drupal.settings for wysiwygAttach.
+        Drupal.settings.wysiwygFields.replacements[token] = $(elem).html();
+        console.log(token);
+        console.log($(elem).html());
+
         $($content).find('#' + $(elem).attr('id')).replaceWith(token);
       });
       return $content.html();
@@ -105,20 +101,6 @@
         $('#wysiwyg_fields-' + id + '-dialog').prependTo($('#node-form'));
         $('.ui-widget-overlay').prependTo($('#node-form')).css('position', 'fixed');
       }
-    //},
-    //
-    ///**
-    // *
-    // */
-    //insert: function() {
-    //  var name = $(this).attr('name').replace(']', '').split('[');
-    //  $.post(Drupal.settings.basePath + 'ahah/wysiwyg_fields/insert/' + name[0] + '/' + name[1], $(this).parents('form').serialize(), function(data) {
-    //    var formatter = $('select[name="' + name[0] + '[' + name[1] + '][wysiwyg_fields_formatters]"]').val();
-    //    var id = "wysiwyg_fields-" + name[0] + "-" + name[1] + "-" + formatter;
-    //    var output = "<span id='" + id + "' class='wysiwyg_fields wysiwyg_fields-" + name[0] + "'>" + data.output + "</span>";
-    //    Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].insert(output);
-    //  }, 'json');
-    //  return false;
     }
   }
 
@@ -126,7 +108,8 @@
    *
    */
   Drupal.behaviors.wysiwygFields = function(context) {
-    //$('.wysiwyg_fields_insert').bind('click', Drupal.wysiwygFields.insert);
+    // Attach AHAH events here as it doesn't seem to be possible to do via FAPI
+    // in #after_build.
     $('.wysiwyg_fields_insert').each(function() {
       if (!$(this).hasClass('.ahah-processed')) {
         name = $(this).attr('name').replace(']', '').split('[');

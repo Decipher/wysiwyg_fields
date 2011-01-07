@@ -17,13 +17,8 @@ function wysiwyg_fields_filter($op, $delta = 0, $format = -1, $text = '', $cache
 
     case 'process':
       $node = node_load(arg(1));
-      $tokens = $fields = array();
-      preg_match_all('/\[wysiwyg_fields-(.*?)-(\d+)-(.*?)\]/', $text, $matches, PREG_SET_ORDER);
-
-      // Use token as array key to ensure no unnecessary processing.
-      foreach ($matches as $match) {
-        $tokens[$match[0]] = $match;
-      }
+      $fields = array();
+      $tokens = _wysiwyg_fields_text_to_tokens($text);
 
       foreach ($tokens as $token) {
         $fields[$token[1]] = isset($fields[$token[1]]) ? $fields[$token[1]] : content_fields($token[1], $node->type);
@@ -39,6 +34,37 @@ function wysiwyg_fields_filter($op, $delta = 0, $format = -1, $text = '', $cache
 
     default:
       return $text;
+  }
+}
+
+/**
+ *
+ */
+function _wysiwyg_fields_text_to_tokens($text) {
+  preg_match_all('/\[wysiwyg_fields-(.*?)-(\d+)-(.*?)\]/', $text, $matches, PREG_SET_ORDER);
+
+  // Use token as array key to ensure no unnecessary processing.
+  $tokens = array();
+  foreach ($matches as $match) {
+    $tokens[$match[0]] = $match;
+  }
+
+  return $tokens;
+}
+
+/**
+ * Implements hook_wysiwyg_fields_nodeapi_alter() on behalf of filter.module.
+ */
+function filter_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  switch ($op) {
+    case 'update':
+      // @TODO - Check CCK Textarea fields as well.
+      // @TODO - Only flush cache if any of the tokens are affected.
+      $cid = "{$node->format}:" . md5($node->body);
+      if (cache_get($cid, 'cache_filter') != FALSE) {
+        cache_clear_all($cid, 'cache_filter');
+      }
+      break;
   }
 }
 

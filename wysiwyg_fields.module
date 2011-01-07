@@ -75,6 +75,35 @@ function wysiwyg_fields_theme() {
 }
 
 /**
+ * Implements hook_wysiwyg_fields_nodeapi_alter().
+ *
+ * @TODO - Validate doesn't seem to work correctly.
+ */
+function wysiwyg_fields_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  switch ($op) {
+    case 'prepare':
+    case 'validate':
+      // @TODO - Do CCK Textareas as well.
+      $values = array();
+      $tokens = _wysiwyg_fields_text_to_tokens($node->body);
+      foreach ($tokens as $token) {
+        $values[$token[0]] = wysiwyg_fields_filter('process', 0, -1, $token[0]);
+      }
+
+      // Store token values in JavaScript settings for Wysiwyg plugin.
+      drupal_add_js(
+        array(
+          'wysiwygFields' => array(
+            'replacements' => $values
+          )
+        ),
+        'setting'
+      );
+      break;
+  }
+}
+
+/**
  * Implements hook_form_alter().
  */
 function wysiwyg_fields_form_alter(&$form, &$form_state, $form_id) {
@@ -232,7 +261,7 @@ function wysiwyg_fields_ahah() {
 }
 
 /**
- * @TODO - Form is being saved on every Wysiwyg Field insert, stop that.
+ * @TODO - Form is being saved on every Wysiwyg Field insert, stop that!!!
  * @TODO - Weight field becomes visible after AHAH - fix.
  */
 function wysiwyg_fields_ahah_insert() {
