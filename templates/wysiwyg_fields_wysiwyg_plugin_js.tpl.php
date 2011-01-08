@@ -14,7 +14,7 @@
      * Return whether the passed node belongs to this plugin.
      */
     isNode: function(node) {
-      return false;
+      return Drupal.wysiwygFields.wysiwygIsNode('<?php print $field; ?>', node);
     },
 
     /**

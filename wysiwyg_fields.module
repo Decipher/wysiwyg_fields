@@ -236,7 +236,7 @@ function _wysiwyg_fields_wysiwyg_enable_plugin($field) {
 function wysiwyg_fields_ahah() {
   // Immediately disable devel shutdown functions so that it doesn't botch our
   // JSON output.
-  //$GLOBALS['devel_shutdown'] = FALSE;
+  $GLOBALS['devel_shutdown'] = FALSE;
 
   if (empty($_POST['form_build_id'])) {
     // Invalid request.
@@ -261,7 +261,6 @@ function wysiwyg_fields_ahah() {
 }
 
 /**
- * @TODO - Form is being saved on every Wysiwyg Field insert, stop that!!!
  * @TODO - Weight field becomes visible after AHAH - fix.
  */
 function wysiwyg_fields_ahah_insert() {
@@ -269,7 +268,11 @@ function wysiwyg_fields_ahah_insert() {
   module_load_include('inc', 'node', 'node.pages');
 
   // Load the form.
-  $form_state = array('storage' => NULL, 'submitted' => FALSE);
+  $form_state = array(
+    'rebuild' => TRUE,
+    'storage' => NULL,
+    'submitted' => FALSE
+  );
   $form_build_id = $_POST['form_build_id'];
   $form = form_get_cache($form_build_id, $form_state);
   $args = $form['#parameters'];
@@ -287,18 +290,18 @@ function wysiwyg_fields_ahah_insert() {
 
   $output = drupal_render($form[arg(3)][arg(4)]);
   $errors = form_get_errors();
-  if (isset($errors) && isset($errors[arg(3) . "][" . arg(4) . '][value'])) {
-    drupal_set_message($errors[arg(3) . "][" . arg(4) . '][value'], 'error');
+  $item = $form_state['values'][arg(3)][arg(4)];
+  if (isset($errors) && isset($errors[$item['_error_element']])) {
+    drupal_set_message($errors[$item['_error_element']], 'error');
     $output = theme('status_messages') . $output;
   }
 
   else {
     $field = content_fields(arg(3));
-    $item = $form_state['values'][arg(3)][arg(4)];
     $formatter = explode('_formatter_', $item['wysiwyg_fields_formatters']);
     $element = _wysiwyg_fields_ahah_get_element($field, $item, $formatter);
 
-    // @TODO - Turn this into a theme function.
+    // @TODO - Turn this into a theme function?
     $id = 'wysiwyg_fields-' . arg(3) . '-' . arg(4) . "-{$item['wysiwyg_fields_formatters']}";
     $element = "<span id=\"{$id}\" class=\"wysiwyg_fields wysiwyg_fields-" . arg(3) . "\">" . theme($element['#theme'], $element) . '</span>';
 
@@ -314,17 +317,6 @@ function wysiwyg_fields_ahah_insert() {
 /**
  *
  */
-function wysiwyg_fields_ahah_format() {
-  $field = content_fields(arg(3));
-  $item = $_POST[arg(3)][arg(4)];
-  $formatter = explode('_formatter_', arg(5));
-
-  $element = _wysiwyg_fields_ahah_get_element($field, $item, $formatter);
-  return array(
-    'output' => theme($element['#theme'], $element),
-  );
-}
-
 function _wysiwyg_fields_ahah_get_element($field, $item, $formatter) {
   if (function_exists($function = "{$field['module']}_field")) {
   //  // Invoke hook_field('load').

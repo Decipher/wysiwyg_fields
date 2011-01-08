@@ -25,6 +25,16 @@
     },
 
     /**
+     *
+     */
+    wysiwygIsNode: function(id, node) {
+      // @TODO - Check if selection is Wysiwyg field, and if so make content
+      // non-editable based on tinyMCE non-editable plugin.
+      //console.log($(node));
+      return false;
+    },
+
+    /**
      * Convert tokens to the appropriate rendered preview.
      */
     wysiwygAttach: function(id, content, settings, instanceId) {
