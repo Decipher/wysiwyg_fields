@@ -13,7 +13,7 @@ Wysiwyg Fields was written and is maintained by Stuart Clark (deciphered).
 Features
 --------------------------
 
-* Support for Wysiwyg libraries:
+* Support for Wysiwyg module libraries:
   * CKEditor/FCKEditor.
   * TinyMCE.
 

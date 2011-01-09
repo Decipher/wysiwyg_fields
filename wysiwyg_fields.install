@@ -9,5 +9,16 @@
  * Implements hook_install().
  */
 function wysiwyg_fields_install() {
-  // @TODO - Enable Wysiwyg Fields filter on all Input Formats.
+  foreach (filter_formats() as $id => $name) {
+    $flag = FALSE;
+
+    $results = db_query("SELECT * FROM {filters} WHERE format = %d AND module = '%s' AND delta = %d", $id, 'wysiwyg_fields', 0);
+    while ($result = db_fetch_object($results)) {
+      $flag = TRUE;
+    }
+
+    if ($flag == FALSE) {
+      db_query("INSERT INTO {filters} (format, module, delta, weight) VALUES (%d, '%s', %d, %d)", $id, 'wysiwyg_fields', 0, 10);
+    }
+  }
 }

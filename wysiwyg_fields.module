@@ -122,6 +122,8 @@ function wysiwyg_fields_elements_build_after($form_element, &$form_state) {
   $field = content_fields($form_element['#field_name'], $form_element['#type_name']);
 
   if ($form_element['#type'] == $field['widget']['type'] && isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status'] == TRUE) {
+    $form_element['#element_validate'][] = 'wysiwyg_fields_element_validate';
+
     // AHAH Wrapper.
     // @TODO - This breaks ImageField/FileField AHAH - fix.
     $prefix = "<div id='{$form_element['#id']}-wysiwyg-fields-ahah-wrapper'>";
@@ -175,6 +177,17 @@ function wysiwyg_fields_elements_build_after($form_element, &$form_state) {
   }
 
   return $form_element;
+}
+
+/**
+ *
+ */
+function wysiwyg_fields_element_validate(&$element, &$form_state) {
+  foreach ($form_state['values'][$element['#field_name']] as $delta => &$field) {
+    if (is_array($field) && !isset($field['wysiwyg_fields_formatters'])) {
+      $field['wysiwyg_fields_formatters'] = $form_state['post'][$element['#field_name']][$delta]['wysiwyg_fields_formatters'];
+    }
+  }
 }
 
 /**

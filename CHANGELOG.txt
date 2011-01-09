@@ -1,24 +1,6 @@
-// $Id: CHANGELOG.txt,v 1.5 2010/08/18 06:08:35 deciphered Exp $
+// $Id$
 
-Wysiwyg ImageField 6.x-1.x-dev, xxxx-xx-xx (Development release)
---------------------------------------
-
-- #877474: Added documentation regarding Wysiwyg plugin button.
-- #875804: Fixed JavaScript error on unconfigured Content Types.
-- Changed Modal window title to use ImageField widget title.
-- Improved documentation.
-- Improved browser support.
-- Fixed issue with FileField Sources sans Views integration.
-
-
-Wysiwyg ImageField 6.x-1.1, 2010-08-08
---------------------------------------
-
-- #875748: Added missing image.
-- Improved IE6 support.
-
-
-Wysiwyg ImageField 6.x-1.0, 2010-08-06
---------------------------------------
+Wysiwyg Fields 6.x-1.x-dev, xxxx-xx-xx (Development release)
+----------------------------------
 
 - Initial 6.x release.
