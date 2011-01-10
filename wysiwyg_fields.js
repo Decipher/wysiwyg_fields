@@ -59,8 +59,6 @@
 
         // Store replacement in Drupal.settings for wysiwygAttach.
         Drupal.settings.wysiwygFields.replacements[token] = $(elem).html();
-        console.log(token);
-        console.log($(elem).html());
 
         $($content).find('#' + $(elem).attr('id')).replaceWith(token);
       });

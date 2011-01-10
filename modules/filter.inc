@@ -17,24 +17,34 @@ function wysiwyg_fields_filter($op, $delta = 0, $format = -1, $text = '', $cache
 
     case 'process':
       $node = node_load(arg(1));
-      $fields = array();
-      $tokens = _wysiwyg_fields_text_to_tokens($text);
-
-      foreach ($tokens as $token) {
-        $fields[$token[1]] = isset($fields[$token[1]]) ? $fields[$token[1]] : content_fields($token[1], $node->type);
-
-        $field = $fields[$token[1]];
-        $item = $node->{$token[1]}[$token[2]];
-        $formatter = explode('_formatter_', $token[3]);
-
-        $element = _wysiwyg_fields_ahah_get_element($field, $item, $formatter);
-        $text = str_replace($token[0], theme($element['#theme'], $element), $text);
-      }
+      $text = _wysiwyg_fields_filter_process($node, $text);
       return $text;
 
     default:
       return $text;
   }
+}
+
+/**
+ *
+ */
+function _wysiwyg_fields_filter_process($node, $text) {
+  $fields = array();
+  $tokens = _wysiwyg_fields_text_to_tokens($text);
+
+  foreach ($tokens as $token) {
+    $fields[$token[1]] = isset($fields[$token[1]]) ? $fields[$token[1]] : content_fields($token[1], $node->type);
+
+    $field = $fields[$token[1]];
+    $item = $node->{$token[1]}[$token[2]];
+
+    $formatter = explode('_formatter_', $token[3]);
+
+    $element = _wysiwyg_fields_ahah_get_element($field, $item, $formatter);
+    $text = str_replace($token[0], theme($element['#theme'], $element), $text);
+  }
+
+  return $text;
 }
 
 /**

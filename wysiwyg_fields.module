@@ -76,8 +76,6 @@ function wysiwyg_fields_theme() {
 
 /**
  * Implements hook_wysiwyg_fields_nodeapi_alter().
- *
- * @TODO - Validate doesn't seem to work correctly.
  */
 function wysiwyg_fields_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
@@ -87,7 +85,7 @@ function wysiwyg_fields_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a
       $values = array();
       $tokens = _wysiwyg_fields_text_to_tokens($node->body);
       foreach ($tokens as $token) {
-        $values[$token[0]] = wysiwyg_fields_filter('process', 0, -1, $token[0]);
+        $values[$token[0]] = _wysiwyg_fields_filter_process($node, $token[0]);
       }
 
       // Store token values in JavaScript settings for Wysiwyg plugin.
@@ -275,6 +273,7 @@ function wysiwyg_fields_ahah() {
 
 /**
  * @TODO - Weight field becomes visible after AHAH - fix.
+ * @TODO - Formatter changes.
  */
 function wysiwyg_fields_ahah_insert() {
   // Include node definition.
@@ -316,9 +315,8 @@ function wysiwyg_fields_ahah_insert() {
 
     // @TODO - Turn this into a theme function?
     $id = 'wysiwyg_fields-' . arg(3) . '-' . arg(4) . "-{$item['wysiwyg_fields_formatters']}";
-    $element = "<span id=\"{$id}\" class=\"wysiwyg_fields wysiwyg_fields-" . arg(3) . "\">" . theme($element['#theme'], $element) . '</span>';
-
-    $output .= "<script type='text/javascript'>Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].insert('{$element}')</script>";
+    $element = drupal_to_js("<span id=\"{$id}\" class=\"wysiwyg_fields wysiwyg_fields-" . arg(3) . "\">" . theme($element['#theme'], $element) . '</span>');
+    $output .= "<script type='text/javascript'>Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].insert({$element})</script>";
   }
 
   return array(
