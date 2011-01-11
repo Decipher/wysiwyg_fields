@@ -102,15 +102,12 @@ function wysiwyg_fields_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a
 }
 
 /**
- * Implements hook_form_alter().
+ * Implements hook_wysiwyg_fields_form_alter_alter().
  */
-function wysiwyg_fields_form_alter(&$form, &$form_state, $form_id) {
+function wysiwyg_fields_wysiwyg_fields_form_alter_alter(&$form, &$form_state, $form_id) {
   if (isset($form['type']['#value']) && $form_id == "{$form['type']['#value']}_node_form") {
     $form['#after_build'][] = 'wysiwyg_fields_form_alter_build_after';
   }
-
-  // Invoke hook_wysiwyg_fields_form_alter().
-  drupal_alter('wysiwyg_fields_form_alter', &$form, &$form_state, $form_id);
 }
 
 /**
@@ -160,11 +157,10 @@ function wysiwyg_fields_elements_build_after($form_element, &$form_state) {
     $form_element['wyswyg_fields_insert'] = array(
       '#type' => 'submit',
       '#value' => t('Insert'),
-      // @TODO - Find a way to attach an #AHAH event via #build_after.
-      //'#ahah' => array(
-      //  'path' => 'ahah/wysiwyg_fields/insert',
-      //  'wrapper' => "{$form_element['#id']}-wysiwyg-fields-ahah-wrapper",
-      //),
+      '#ahah' => array(
+        'path' => "ahah/wysiwyg_fields/insert/{$form_element['#field_name']}/{$form_element['#delta']}",
+        'wrapper' => "{$form_element['#id']}-wysiwyg-fields-ahah-wrapper",
+      ),
       '#name' => "{$form_element['#name']}[wysiwyg_fields_insert]",
       '#id' => "{$form_element['#id']}-wysiwyg-fields-insert",
       '#attributes' => array(
@@ -172,6 +168,7 @@ function wysiwyg_fields_elements_build_after($form_element, &$form_state) {
       ),
       '#weight' => 101,
     );
+    $form_element['wyswyg_fields_insert'] = form_expand_ahah($form_element['wyswyg_fields_insert']);
   }
 
   return $form_element;

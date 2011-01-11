@@ -66,10 +66,55 @@ function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
   }
 }
 
+/**
+ *
+ */
 function _wysiwyg_fields_widget_settings_alter_formatters_validate($element, &$form_state) {
   if ($form_state['values']['wysiwyg_fields_status'] == TRUE && empty($form_state['values']['wysiwyg_fields_formatters'])) {
     form_error($element, t('At least one Formatter must be selected to be used with Wysiwyg Fields.'));
   }
+}
+
+/**
+ * Implements hook_wysiwyg_fields_form_alter_alter() on behalf of content.module.
+ */
+function content_wysiwyg_fields_form_alter_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'content_field_edit_form') {
+    $form['field']['required']['#element_validate'] = is_array($form['field']['required']['#element_validate'])
+      ? array_merge($form['field']['required']['#element_validate'], array('_content_wysiwyg_fields_form_alter_alter_required_validate'))
+      : array('_content_wysiwyg_fields_form_alter_alter_required_validate');
+
+    $form['#submit'][] = '_content_wysiwyg_fields_form_alter_alter_submit';
+  }
+}
+
+/**
+ *
+ */
+function _content_wysiwyg_fields_form_alter_alter_required_validate($element, &$form_state) {
+  if ($form_state['values']['wysiwyg_fields_status'] == TRUE && $form_state['values']['required'] == TRUE) {
+    form_error($element, t('Field must not be required to be used with Wysiwyg Fields.'));
+  }
+}
+
+/**
+ *
+ */
+function _content_wysiwyg_fields_form_alter_alter_submit($form, &$form_state) {
+  $field = content_fields($form_state['values']['field_name'], $form_state['values']['type_name']);
+
+  foreach ($field['display_settings'] as $name => &$type) {
+    if ($name != 'label') {
+      if (in_array($type['format'], array('default', 'hidden'))) {
+        $type['format'] = 'hidden';
+      }
+      else {
+        drupal_set_message(t('It is recommended for use with Wysiwyg Fields that you set the Display settings for this field to &lt;Hidden&gt;, you can do so on the !display page.', array('!display' => l(t('Display fields'), "admin/content/node-type/{$form_state['values']['type_name']}/display"))), 'status', FALSE);
+      }
+    }
+  }
+
+  content_field_instance_update($field, FALSE);
 }
 
 /**
