@@ -30,8 +30,10 @@
     wysiwygIsNode: function(id, node) {
       // @TODO - Check if selection is Wysiwyg field, and if so make content
       // non-editable based on tinyMCE non-editable plugin.
-      //console.log($(node));
-      return false;
+      if ($(node).parents('span.wysiwyg_fields-' + id).length == 1) {
+        // Code here.
+      }
+      return $(node).parents('span.wysiwyg_fields-' + id).length == 1;
     },
 
     /**
@@ -118,26 +120,25 @@
   Drupal.behaviors.wysiwygFields = function(context) {
     // Attach AHAH events here as it doesn't seem to be possible to do via FAPI
     // in #after_build.
-    $('.wysiwyg_fields_insert').each(function() {
-      if (!$(this).hasClass('.ahah-processed')) {
-        name = $(this).attr('name').replace(']', '').split('[');
-        Drupal.settings.ahah[$(this).attr('id')] = {
-          'button': {
-            'op': $(this).val()
-          },
-          'effect': "none",
-          //'element':
-          'event': "mousedown",
-          'keypress': true,
-          'method': "replace",
-          'progress': {
-            'type': "throbber"
-          },
-          'selector': "#" + $(this).attr('id'),
-          'url': Drupal.settings.basePath + "ahah/wysiwyg_fields/insert/" + name[0] + "/" + name[1],
-          'wrapper': $(this).attr('id').substr(0, $(this).attr('id').length - 6) + 'ahah-wrapper'
-        };
-      }
+    $('.wysiwyg_fields_insert:not(.ahah-processed)').each(function() {
+      name = $(this).attr('name').replace(']', '').split('[');
+      Drupal.settings.ahah = Drupal.settings.ahah || {};
+      Drupal.settings.ahah[$(this).attr('id')] = {
+        'button': {
+          'op': $(this).val()
+        },
+        'effect': "none",
+        //'element':
+        'event': "mousedown",
+        'keypress': true,
+        'method': "replace",
+        'progress': {
+          'type': "throbber"
+        },
+        'selector': "#" + $(this).attr('id'),
+        'url': Drupal.settings.basePath + "ahah/wysiwyg_fields/insert/" + name[0] + "/" + name[1],
+        'wrapper': $(this).attr('id').substr(0, $(this).attr('id').length - 6) + 'ahah-wrapper'
+      };
     });
     Drupal.behaviors.ahah(context);
   }

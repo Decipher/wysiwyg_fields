@@ -6,7 +6,8 @@
  */
 
 /**
- *
+ * @TODO - Add validation for formatters, at least one required if field enabled
+ *   for Wysiwyg Fields.
  */
 function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
   switch ($op) {
@@ -38,7 +39,7 @@ function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
         //),
         '#default_value' => isset($widget['wysiwyg_fields_icon'])
           ? $widget['wysiwyg_fields_icon']
-          : 0
+          : current(array_keys(_wysiwyg_fields_icons()))
         ,
         '#attributes' => array(
           'class' => 'container-inline',
@@ -54,6 +55,7 @@ function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
           : array()
         ,
         '#multiple' => TRUE,
+        '#element_validate' => array('_wysiwyg_fields_widget_settings_alter_formatters_validate'),
       );
       break;
 
@@ -61,6 +63,12 @@ function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
       $settings[] = 'wysiwyg_fields_status';
       $settings[] = 'wysiwyg_fields_icon';
       $settings[] = 'wysiwyg_fields_formatters';
+  }
+}
+
+function _wysiwyg_fields_widget_settings_alter_formatters_validate($element, &$form_state) {
+  if ($form_state['values']['wysiwyg_fields_status'] == TRUE && empty($form_state['values']['wysiwyg_fields_formatters'])) {
+    form_error($element, t('At least one Formatter must be selected to be used with Wysiwyg Fields.'));
   }
 }
 

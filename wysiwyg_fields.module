@@ -180,10 +180,12 @@ function wysiwyg_fields_elements_build_after($form_element, &$form_state) {
 /**
  *
  */
-function wysiwyg_fields_element_validate(&$element, &$form_state) {
-  foreach ($form_state['values'][$element['#field_name']] as $delta => &$field) {
-    if (is_array($field) && !isset($field['wysiwyg_fields_formatters'])) {
-      $field['wysiwyg_fields_formatters'] = $form_state['post'][$element['#field_name']][$delta]['wysiwyg_fields_formatters'];
+function wysiwyg_fields_element_validate($element, &$form_state) {
+  if (!empty($form_state['values'][$element['#field_name']])) {
+    foreach ($form_state['values'][$element['#field_name']] as $delta => &$field) {
+      if (is_array($field) && !isset($field['wysiwyg_fields_formatters'])) {
+        $field['wysiwyg_fields_formatters'] = $form_state['post'][$element['#field_name']][$delta]['wysiwyg_fields_formatters'];
+      }
     }
   }
 }
@@ -210,12 +212,21 @@ function wysiwyg_fields_form_alter_build_after($form_element, &$form_state) {
 
       // Add Style sheets.
       drupal_add_css(drupal_get_path('module', 'wysiwyg_fields') . '/wysiwyg_fields.css');
-      // @TODO - Change if #388384 ever gets resolved.
+
+      // jQuery 1.7 theme.
       if (file_exists($css = drupal_get_path('module', 'jquery_ui') . '/jquery.ui/themes/base/ui.all.css')) {
+        // @TODO - Change if #388384 ever gets resolved.
         drupal_add_css($css);
       }
+
+      // jQuery 1.6 theme.
+      else if (file_exists($css = drupal_get_path('module', 'jquery_ui') . '/jquery.ui/themes/default/ui.all.css')) {
+        drupal_add_css($css);
+      }
+
       else {
-        // @TODO - jQuery 1.6 theme?
+        // @TODO - Move this to hook_requirements?
+        drupal_set_message(t('No jQuery UI theme found, please download the appropriate files from: !url', array('!url' => l('http://blog.jqueryui.com/2010/02/jquery-ui-download-builderthemeroller-status/', 'http://blog.jqueryui.com/2010/02/jquery-ui-download-builderthemeroller-status/'))), 'warning');
       }
 
     }
@@ -229,9 +240,8 @@ function wysiwyg_fields_form_alter_build_after($form_element, &$form_state) {
  */
 function _wysiwyg_fields_wysiwyg_enable_plugin($field) {
   foreach (wysiwyg_profile_load_all() as $profile) {
-    // @TODO - If $profile->settings['buttons'] is empty, the dynamic buttons
-    // aren't added.
-    if (!empty($profile->settings['buttons'])) {
+    if (is_array($profile->settings)) {
+      $profile->settings['buttons'] = is_array($profile->settings['buttons']) ? $profile->settings['buttons'] : array();
       $id = "wysiwyg_fields_{$field['field_name']}";
       if (!isset($profile->settings['buttons']['drupal'][$id]) || empty($profile->settings['buttons']['drupal'][$id])) {
         $profile->settings['buttons']['drupal'][$id] = 1;
