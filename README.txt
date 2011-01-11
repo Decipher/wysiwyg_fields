@@ -21,6 +21,7 @@ Features
 Required modules
 --------------------------
 
+* jQuery UI module.
 * Wysiwyg module.
 
 

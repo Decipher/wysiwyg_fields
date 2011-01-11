@@ -103,17 +103,30 @@ function _content_wysiwyg_fields_form_alter_alter_required_validate($element, &$
 function _content_wysiwyg_fields_form_alter_alter_submit($form, &$form_state) {
   $field = content_fields($form_state['values']['field_name'], $form_state['values']['type_name']);
 
+  // Enable wysiwyg plugin.
+  foreach (wysiwyg_profile_load_all() as $profile) {
+    $profile->settings = is_array($profile->settings) ? $profile->settings : array();
+    $profile->settings['buttons'] = is_array($profile->settings['buttons']) ? $profile->settings['buttons'] : array();
+
+    $id = "wysiwyg_fields_{$field['field_name']}";
+    if (!isset($profile->settings['buttons']['drupal'][$id]) || empty($profile->settings['buttons']['drupal'][$id])) {
+      $profile->settings['buttons']['drupal'][$id] = 1;
+      db_query("UPDATE {wysiwyg} SET settings = '%s' WHERE format = %d", serialize($profile->settings), $profile->format);
+    }
+  }
+
+  // Set display settings to render as <Hidden> if currently set as Default.
   foreach ($field['display_settings'] as $name => &$type) {
     if ($name != 'label') {
       if (in_array($type['format'], array('default', 'hidden'))) {
         $type['format'] = 'hidden';
       }
+
       else {
         drupal_set_message(t('It is recommended for use with Wysiwyg Fields that you set the Display settings for this field to &lt;Hidden&gt;, you can do so on the !display page.', array('!display' => l(t('Display fields'), "admin/content/node-type/{$form_state['values']['type_name']}/display"))), 'status', FALSE);
       }
     }
   }
-
   content_field_instance_update($field, FALSE);
 }
 
