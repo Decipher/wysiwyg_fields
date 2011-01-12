@@ -69,6 +69,37 @@ function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
 /**
  *
  */
+function _wysiwyg_fields_icons() {
+  $icons = array();
+
+  foreach (scandir(dirname(__FILE__) . '/../images/icons') as $file) {
+    if (!is_dir($file)) {
+      $file = "/images/icons/{$file}";
+      $icons["../../..{$file}"] = theme('image', drupal_get_path('module', 'wysiwyg_fields') . $file);
+    }
+  }
+
+  return $icons;
+}
+
+/**
+ *
+ */
+function _wysiwyg_fields_formatters() {
+  $field = content_fields(arg(5), arg(3));
+  $field_types = _content_field_types();
+
+  $formatters = array();
+  foreach ($field_types[$field['type']]['formatters'] as $id => $formatter) {
+    $formatters[$id] = $formatter['label'];
+  }
+
+  return $formatters;
+}
+
+/**
+ *
+ */
 function _wysiwyg_fields_widget_settings_alter_formatters_validate($element, &$form_state) {
   if ($form_state['values']['wysiwyg_fields_status'] == TRUE && empty($form_state['values']['wysiwyg_fields_formatters'])) {
     form_error($element, t('At least one Formatter must be selected to be used with Wysiwyg Fields.'));
@@ -131,32 +162,31 @@ function _content_wysiwyg_fields_form_alter_alter_submit($form, &$form_state) {
 }
 
 /**
- *
+ * Implements hook_wysiwyg_fields_nodeapi_alter() on behalf of content.module.
  */
-function _wysiwyg_fields_icons() {
-  $icons = array();
+function content_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  switch ($op) {
+    case 'insert':
+    case 'update':
+      // Delete any Wysiwyg Fields that weren't inserted.
+      // @TODO - Make this an option?
+      // @TODO - Check CCK Textarea fields as well.
+      $tokens = _wysiwyg_fields_text_to_tokens($node->body);
+      $fields = array();
+      foreach ($tokens as $token) {
+        $fields[$token[1]] = is_array($fields[$token[1]]) ? $fields[$token[1]] : array();
+        $fields[$token[1]][$token[2]] = TRUE;
+      }
 
-  foreach (scandir(dirname(__FILE__) . '/../images/icons') as $file) {
-    if (!is_dir($file)) {
-      $file = "/images/icons/{$file}";
-      $icons["../../..{$file}"] = theme('image', drupal_get_path('module', 'wysiwyg_fields') . $file);
-    }
+      foreach (content_fields(NULL, $node->type) as $field) {
+        if (isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status'] == TRUE && isset($node->{$field['field_name']})) {
+          foreach (array_keys($node->{$field['field_name']}) as $delta) {
+            if (!$fields[$field['field_name']][$delta]) {
+              unset($node->{$field['field_name']}[$delta]);
+            }
+          }
+        }
+      }
+      break;
   }
-
-  return $icons;
-}
-
-/**
- *
- */
-function _wysiwyg_fields_formatters() {
-  $field = content_fields(arg(5), arg(3));
-  $field_types = _content_field_types();
-
-  $formatters = array();
-  foreach ($field_types[$field['type']]['formatters'] as $id => $formatter) {
-    $formatters[$id] = $formatter['label'];
-  }
-
-  return $formatters;
 }

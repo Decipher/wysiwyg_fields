@@ -9,6 +9,10 @@
  * Implements hook_install().
  */
 function wysiwyg_fields_install() {
+  // Set module weight.
+  db_query("UPDATE {system} SET weight = -1 WHERE name = 'wysiwyg_fields'");
+
+  // Enable Wysiwyg Fields filter on all Input formats.
   foreach (filter_formats() as $id => $name) {
     $flag = FALSE;
 

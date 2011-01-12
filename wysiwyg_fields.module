@@ -42,18 +42,14 @@ function wysiwyg_fields_menu() {
 }
 
 /**
- * Implements hook_elements().
+ * Implements hook_wysiwyg_fields_elements_alter().
  */
-function wysiwyg_fields_elements() {
-  $elements = array();
-
+function wysiwyg_fields_wysiwyg_fields_elements_alter(&$elements) {
   foreach (module_invoke_all('widget_info') as $widget_type => $widget) {
     $elements[$widget_type] = array(
       '#process' => array('wysiwyg_fields_elements_process'),
     );
   }
-
-  return $elements;
 }
 
 /**
@@ -153,7 +149,7 @@ function wysiwyg_fields_elements_process($form_element) {
     }
 
     // Insert button.
-    $form_element['wyswyg_fields_insert'] = array(
+    $form_element['wysiwyg_fields_insert'] = array(
       '#type' => 'submit',
       '#value' => t('Insert'),
       '#ahah' => array(
