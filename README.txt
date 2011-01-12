@@ -16,18 +16,19 @@ Features
 * Support for Wysiwyg module libraries:
   * CKEditor/FCKEditor.
   * TinyMCE.
+* Supports for most (if not all) CCK fields:
+  * Text field.
+  * Number field.
+  * Node reference field.
+  * FileField/ImageField.
 
 
 Required modules
 --------------------------
 
+* Content construction kit (CCK) module.
 * jQuery UI module.
 * Wysiwyg module.
-
-
-Recommended modules
---------------------------
-
 
 
 Configuration

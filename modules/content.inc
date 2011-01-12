@@ -57,12 +57,39 @@ function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
         '#multiple' => TRUE,
         '#element_validate' => array('_wysiwyg_fields_widget_settings_alter_formatters_validate'),
       );
+
+      $settings['wysiwyg_fields']['wysiwyg_fields_advanced'] = array(
+        '#title' => t('Advanced settings'),
+        '#type' => 'fieldset',
+        '#collapsible' => 'TRUE',
+        '#collapsed' => 'TRUE',
+      );
+
+      $settings['wysiwyg_fields']['wysiwyg_fields_advanced']['wysiwyg_fields_hide'] = array(
+        '#title' => t('Set field display settings to &lt;Hidden&gt;.'),
+        '#type' => 'checkbox',
+        '#default_value' => isset($widget['wysiwyg_fields_hide'])
+          ? $widget['wysiwyg_fields_hide']
+          : TRUE
+        ,
+      );
+
+      $settings['wysiwyg_fields']['wysiwyg_fields_advanced']['wysiwyg_fields_delete'] = array(
+        '#title' => t('Delete field items not inserted on Node save.'),
+        '#type' => 'checkbox',
+        '#default_value' => isset($widget['wysiwyg_fields_delete'])
+          ? $widget['wysiwyg_fields_delete']
+          : TRUE
+        ,
+      );
       break;
 
     case 'save':
       $settings[] = 'wysiwyg_fields_status';
       $settings[] = 'wysiwyg_fields_icon';
       $settings[] = 'wysiwyg_fields_formatters';
+      $settings[] = 'wysiwyg_fields_hide';
+      $settings[] = 'wysiwyg_fields_delete';
   }
 }
 
@@ -146,15 +173,11 @@ function _content_wysiwyg_fields_form_alter_alter_submit($form, &$form_state) {
     }
   }
 
-  // Set display settings to render as <Hidden> if currently set as Default.
-  foreach ($field['display_settings'] as $name => &$type) {
-    if ($name != 'label') {
-      if (in_array($type['format'], array('default', 'hidden'))) {
+  // Set display settings to <Hidden>
+  if ($form_state['values']['wysiwyg_fields_hide'] == TRUE) {
+    foreach ($field['display_settings'] as $name => &$type) {
+      if ($name != 'label') {
         $type['format'] = 'hidden';
-      }
-
-      else {
-        drupal_set_message(t('It is recommended for use with Wysiwyg Fields that you set the Display settings for this field to &lt;Hidden&gt;, you can do so on the !display page.', array('!display' => l(t('Display fields'), "admin/content/node-type/{$form_state['values']['type_name']}/display"))), 'status', FALSE);
       }
     }
   }
@@ -169,7 +192,6 @@ function content_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NUL
     case 'insert':
     case 'update':
       // Delete any Wysiwyg Fields that weren't inserted.
-      // @TODO - Make this an option?
       // @TODO - Check CCK Textarea fields as well.
       $tokens = _wysiwyg_fields_text_to_tokens($node->body);
       $fields = array();
@@ -179,7 +201,7 @@ function content_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NUL
       }
 
       foreach (content_fields(NULL, $node->type) as $field) {
-        if (isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status'] == TRUE && isset($node->{$field['field_name']})) {
+        if ($field['widget']['wysiwyg_fields_status'] == TRUE && $field['widget']['wysiwyg_fields_delete']) {
           foreach (array_keys($node->{$field['field_name']}) as $delta) {
             if (!$fields[$field['field_name']][$delta]) {
               unset($node->{$field['field_name']}[$delta]);
