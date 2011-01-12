@@ -120,9 +120,8 @@ function wysiwyg_fields_elements_process($form_element) {
     $form_element['#element_validate'][] = 'wysiwyg_fields_element_validate';
 
     // AHAH Wrapper.
-    // @TODO - This breaks ImageField/FileField AHAH - fix.
     $prefix = "<div id='{$form_element['#id']}-wysiwyg-fields-ahah-wrapper'>";
-    $form_element['#prefix'] = isset($form_element['#prefix']) ? "{$prefix}{$form_element['prefix']}" : $prefix;
+    $form_element['#prefix'] = isset($form_element['#prefix']) ? "{$prefix}{$form_element['#prefix']}" : $prefix;
     $form_element['#suffix'] = isset($form_element['#suffix']) ? "{$form_element['#suffix']}</div>" : '</div>';
 
     // Formatters.
