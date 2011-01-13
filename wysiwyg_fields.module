@@ -285,8 +285,9 @@ function wysiwyg_fields_ahah_insert() {
   $output = drupal_render($form[arg(3)][arg(4)]);
   $errors = form_get_errors();
   $item = $form_state['values'][arg(3)][arg(4)];
-  if (isset($errors) && isset($errors[$item['_error_element']])) {
-    drupal_set_message($errors[$item['_error_element']], 'error');
+  if (isset($errors) && (isset($errors[$item['_error_element']]) || isset($errors[arg(3)]))) {
+    $error = isset($errors[$item['_error_element']]) ? $errors[$item['_error_element']] : $errors[arg(3)];
+    drupal_set_message($error, 'error');
     $output = theme('status_messages') . $output;
   }
 

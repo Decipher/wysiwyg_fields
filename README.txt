@@ -16,17 +16,19 @@ Features
 * Support for Wysiwyg module libraries:
   * CKEditor/FCKEditor.
   * TinyMCE.
-* Supports for most (if not all) CCK fields:
-  * Text field.
-  * Number field.
-  * Node reference field.
-  * FileField/ImageField.
+* Supports for a large variety of CCK fields, including but not limited to:
+  * CCK modules - Text, Number, Node reference and User reference.
+  * FileField module.
+  * ImageField module.
+  * Email Field module.
+  * Video module.
+  * Phone (CCK) module.
 
 
 Required modules
 --------------------------
 
-* Content construction kit (CCK) module.
+* Content Construction Kit (CCK) module.
 * jQuery UI module.
 * Wysiwyg module.
 
@@ -43,3 +45,12 @@ Frequently asked questions
 
 Known issues
 --------------------------
+
+- Following CCK field modules aren't compatible:
+  - Date module.
+  - Link module.
+  - Embedded Media Field module.
+- View Field output doesn't get converted into token on Detach event.
+- Certain fields can't render the preview due to JavaScript or other reasons:
+  - Embed Google Maps Field module.
+  - Video module.
