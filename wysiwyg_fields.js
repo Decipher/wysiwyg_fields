@@ -4,14 +4,14 @@
   Drupal.settings.wysiwygFields = Drupal.settings.wysiwygFields || {};
 
   Drupal.wysiwygFields = {
-
     /**
-     *
+     * Initialize Wysiwyg Fields plugin.
      */
     init: function(id) {
       // MCEditor icon size fix.
       $('.mce_wysiwyg_fields_' + id).addClass('mce_wysiwyg_fields_icon');
 
+      // Create jQuery UI dialog.
       $('#wysiwyg_fields-' + id + '-wrapper').dialog({
         autoOpen: false,
         height: 'auto',
@@ -20,6 +20,7 @@
         width: '80%'
       });
       $('#wysiwyg_fields-' + id + '-wrapper').parents('.ui-dialog').attr('id', 'wysiwyg_fields-' + id + '-dialog');
+
       //$('#wysiwyg_fields-' + id + '-wrapper .wysiwyg_fields_formatters').parent().css({ display: 'inline' });
       this.dialogFix(id);
     },
@@ -60,6 +61,7 @@
         var token = '[' + $(elem).attr('id') + ']';
 
         // Store replacement in Drupal.settings for wysiwygAttach.
+        Drupal.settings.wysiwygFields.replacements = Drupal.settings.wysiwygFields.replacements || {};
         Drupal.settings.wysiwygFields.replacements[token] = $(elem).html();
 
         $($content).find('#' + $(elem).attr('id')).replaceWith(token);
@@ -75,7 +77,7 @@
         op = 'Default';
       }
 
-      $('#wysiwyg_fields-' + id + '-wrapper')./*css('display', 'block').*/dialog('open').focus();
+      $('#wysiwyg_fields-' + id + '-wrapper').dialog('open').focus();
       this.dialogFix(id);
 
       // Invoke appropriate function based on 'op'.
@@ -92,15 +94,14 @@
       if (Drupal.settings.wysiwygFields.fields[id].multiple > 1) {
       }
 
+      // Show last field if multiple is Unlimited.
       else if (Drupal.settings.wysiwygFields.fields[id].multiple == 1) {
+        $('#' + id.replace('_', '-') + '-items').hide();
+        if ($('.wysiwyg_fields-' + id + '-field:last').parents('table#' + id + '_values').length == 1) {
+          $('<div id="wysiwyg_fields-' + id + '-placeholder" />').insertAfter($('.wysiwyg_fields-' + id + '-field:last'));
+          $('.wysiwyg_fields-' + id + '-field:last').prependTo('#wysiwyg_fields-' + id + '-wrapper');
+        }
       }
-
-      //if ($('#' + Drupal.settings.wysiwygFields[id]).parent().attr('id') !== 'wysiwyg_fields-' + id + '-wrapper') {
-      //  // @TODO - Select first empty field, not last field.
-      //  // @TODO - Need to check if field is populated for non-Unlimited values.
-      //  $('#wysiwyg_fields-' + id + '-wrapper div[id$="ahah-wrapper"], #wysiwyg_fields-' + id + '-wrapper div[id$="value-wrapper"]').children(':last').parent().parent().appendTo('#wysiwyg_fields-' + id + '-wrapper');
-      //  Drupal.settings.wysiwygFields[id] = $('#wysiwyg_fields-' + id + '-wrapper').children(':last').parent().parent().attr('id');
-      //}
     },
 
     /**
@@ -109,6 +110,19 @@
     dialogHide: function(id) {
       // @TODO - Find out why jQuery UI dialog Method 'close' doesn't work?
       $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-titlebar-close').trigger('click');
+
+      if (Drupal.settings.wysiwygFields.fields[id].multiple > 1) {
+      }
+
+      // Undo DOM modificatons and trigger 'Add more' button if multiple is
+      // Unlimited.
+      else if (Drupal.settings.wysiwygFields.fields[id].multiple == 1) {
+        if (!$('.wysiwyg_fields-' + id + '-field:first').parent().is('td')) {
+          $('#wysiwyg_fields-' + id + '-placeholder').replaceWith($('.wysiwyg_fields-' + id + '-field:first'));
+          }
+        $('#' + id.replace('_', '-') + '-items').show();
+        $('.form-submit[name="' + id + '_add_more"]').trigger('mousedown');
+      }
     },
 
     /**

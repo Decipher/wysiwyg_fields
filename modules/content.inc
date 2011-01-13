@@ -177,8 +177,7 @@ function _content_wysiwyg_fields_form_alter_alter_submit($form, &$form_state) {
  */
 function content_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
-    case 'insert':
-    case 'update':
+    case 'presave':
       // Delete any Wysiwyg Fields that weren't inserted.
       // @TODO - Check CCK Textarea fields as well.
       $tokens = _wysiwyg_fields_text_to_tokens($node->body);

@@ -62,9 +62,9 @@ function wysiwyg_fields_menu() {
  */
 function wysiwyg_fields_wysiwyg_fields_elements_alter(&$elements) {
   foreach (module_invoke_all('widget_info') as $widget_type => $widget) {
-    $elements[$widget_type] = array(
-      '#process' => array('wysiwyg_fields_elements_process'),
-    );
+    $elements[$widget_type] = is_array($elements[$widget_type]) ? $elements[$widget_type] : array();
+    $elements[$widget_type]['#process'] = is_array($elements[$widget_type]['#process']) ? $elements[$widget_type]['#process'] : array();
+    $elements[$widget_type]['#process'][] = 'wysiwyg_fields_elements_process';
   }
 }
 
@@ -132,7 +132,7 @@ function wysiwyg_fields_elements_process($form_element) {
     $form_element['#element_validate'][] = 'wysiwyg_fields_element_validate';
 
     // AHAH Wrapper.
-    $prefix = "<div id='{$form_element['#id']}-wysiwyg-fields-ahah-wrapper'>";
+    $prefix = "<div id='{$form_element['#id']}-wysiwyg-fields-ahah-wrapper' class='wysiwyg_fields-field wysiwyg_fields-{$form_element['#field_name']}-field'>";
     $form_element['#prefix'] = isset($form_element['#prefix']) ? "{$prefix}{$form_element['#prefix']}" : $prefix;
     $form_element['#suffix'] = isset($form_element['#suffix']) ? "{$form_element['#suffix']}</div>" : '</div>';
 
