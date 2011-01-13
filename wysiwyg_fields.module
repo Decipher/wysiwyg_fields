@@ -14,6 +14,22 @@ function wysiwyg_fields_init() {
       require_once $file;
     }
   }
+
+  // Enable wysiwyg plugins.
+  foreach (content_fields() as $field) {
+    if ($field['widget']['wysiwyg_fields_status']) {
+      foreach (wysiwyg_profile_load_all() as $profile) {
+        $profile->settings = is_array($profile->settings) ? $profile->settings : array();
+        $profile->settings['buttons'] = is_array($profile->settings['buttons']) ? $profile->settings['buttons'] : array();
+
+        $id = "wysiwyg_fields_{$field['field_name']}";
+        if (!isset($profile->settings['buttons']['drupal'][$id]) || empty($profile->settings['buttons']['drupal'][$id])) {
+          $profile->settings['buttons']['drupal'][$id] = 1;
+          db_query("UPDATE {wysiwyg} SET settings = '%s' WHERE format = %d", serialize($profile->settings), $profile->format);
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -134,6 +150,9 @@ function wysiwyg_fields_elements_process($form_element) {
         '#options' => $formatters,
         '#name' => "{$form_element['#name']}[wysiwyg_fields_formatters]",
         '#id' => "{$form_element['#id']}-wysiwyg-fields-formatters",
+        '#attributes' => array(
+          'class' => 'wysiwyg_fields_formatters',
+        ),
         '#weight' => 100
       );
     }
