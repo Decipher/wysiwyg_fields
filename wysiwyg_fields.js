@@ -20,7 +20,7 @@
         width: '80%'
       });
       $('#wysiwyg_fields-' + id + '-wrapper').parents('.ui-dialog').attr('id', 'wysiwyg_fields-' + id + '-dialog');
-      $('#wysiwyg_fields-' + id + '-wrapper .wysiwyg_fields_formatters').parent().css({ display: 'inline' });
+      //$('#wysiwyg_fields-' + id + '-wrapper .wysiwyg_fields_formatters').parent().css({ display: 'inline' });
       this.dialogFix(id);
     },
 
@@ -75,7 +75,7 @@
         op = 'Default';
       }
 
-      $('#wysiwyg_fields-' + id + '-wrapper')./*css('display', 'block').*/dialog('open');
+      $('#wysiwyg_fields-' + id + '-wrapper')./*css('display', 'block').*/dialog('open').focus();
       this.dialogFix(id);
 
       // Invoke appropriate function based on 'op'.
@@ -88,6 +88,13 @@
      *
      */
     dialogShowDefault: function(id) {
+      // @TODO - Figure out why I can't use switch() {} here.
+      if (Drupal.settings.wysiwygFields.fields[id].multiple > 1) {
+      }
+
+      else if (Drupal.settings.wysiwygFields.fields[id].multiple == 1) {
+      }
+
       //if ($('#' + Drupal.settings.wysiwygFields[id]).parent().attr('id') !== 'wysiwyg_fields-' + id + '-wrapper') {
       //  // @TODO - Select first empty field, not last field.
       //  // @TODO - Need to check if field is populated for non-Unlimited values.
@@ -100,7 +107,8 @@
      *
      */
     dialogHide: function(id) {
-
+      // @TODO - Find out why jQuery UI dialog Method 'close' doesn't work?
+      $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-titlebar-close').trigger('click');
     },
 
     /**

@@ -27,6 +27,19 @@ function wysiwyg_fields_wysiwyg_fields_plugin() {
           'icon title' => $field['widget']['label'],
           'settings' => array(),
         );
+
+        drupal_add_js(
+          array(
+            'wysiwygFields' => array(
+              'fields' => array(
+                $field['field_name'] => array(
+                  'multiple' => $field['multiple']
+                )
+              )
+            )
+          ),
+          'setting'
+        );
       }
     }
 
