@@ -25,6 +25,8 @@ function wysiwyg_fields_wysiwyg_fields_plugin() {
           'vendor url' => 'http://drupal.org/project/wysiwyg_fields',
           'icon file' => $field['widget']['wysiwyg_fields_icon'],
           'icon title' => $field['widget']['label'],
+          'css path' => drupal_get_path('module', 'wysiwyg_fields') . '/plugins',
+          'css file' => 'wysiwyg_fields.css',
           'settings' => array(),
         );
 

@@ -215,7 +215,13 @@ function wysiwyg_fields_form_alter_build_after($form_element, &$form_state) {
 
       // Add javascript.
       jquery_ui_add(array('ui.core', 'ui.dialog'));
-      drupal_add_js(drupal_get_path('module', 'wysiwyg_fields') . '/wysiwyg_fields.js');
+      drupal_add_js(drupal_get_path('module', 'wysiwyg_fields') . '/js/wysiwyg_fields.js');
+
+      // @TODO - Move this to modules/wysiwyg.inc
+      foreach (wysiwyg_profile_load_all() as $profile) {
+        // @TODO - Check if file exists.
+        drupal_add_js(drupal_get_path('module', 'wysiwyg_fields') . "/js/wysiwyg.{$profile->editor}.js");
+      }
 
       // Add Style sheets.
       drupal_add_css(drupal_get_path('module', 'wysiwyg_fields') . '/wysiwyg_fields.css');

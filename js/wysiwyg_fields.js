@@ -26,76 +26,23 @@
     },
 
     /**
-     *
+     * @TODO - wysiwygIsNode only fires when the 'node' object changes, so it
+     *   will unselect the SPAN on a second click of the element.
      */
     wysiwygIsNode: function(id, node) {
-      // @TODO - Node doesn't work for text, need to use alternative check.
-      if ($(node).parents('span.wysiwyg_fields-' + id).length == 1) {
-        // FCKEditor - @see FCKDomRange.prototype.SelectBookmark
-        // TinyMCE - @see moveToBookmark();
+      if (node == null) {
+        if ($.isFunction(this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygGetTextNode)) {
+          node = this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygGetTextNode();
+        }
+      }
 
+      if ($(node).parents('span.wysiwyg_fields-' + id).length == 1) {
         // Invoke appropriate function based on active Wysiwyg editor.
-        if ($.isFunction(this._wysiwygIsNode[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor])) {
-          this._wysiwygIsNode[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor]($(node).parents('span.wysiwyg_fields-' + id).get(0));
+        if ($.isFunction(this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygIsNode)) {
+          this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygIsNode($(node).parents('span.wysiwyg_fields-' + id).get(0));
         }
       }
       return $(node).parents('span.wysiwyg_fields-' + id).length == 1;
-    },
-
-    /**
-     *
-     */
-    _wysiwygIsNode: {
-      /**
-       * @TODO - Cross browser support?
-       * @TODO - Remove IMG resize helper.
-       * @TODO - Element path no longer works?
-       */
-      ckeditor: function(element) {
-        editor = CKEDITOR.instances[Drupal.wysiwyg.activeId];
-
-        // Create the range for the element.
-        range = editor.document.$.createRange();
-        range.selectNode(element);
-
-        // Select the range.
-        var sel = editor.getSelection().getNative();
-        sel.removeAllRanges();
-        sel.addRange(range);
-        editor.getSelection().reset();
-      },
-
-      /**
-       * @TODO - Remove IMG resize helper.
-       */
-      fckeditor: function(element) {
-        editor = FCKeditorAPI.Instances[Drupal.wysiwyg.activeId];
-
-        // Create the range for the element.
-        range = editor.EditorDocument.createRange();
-        range.selectNode(element);
-
-        // Select the range.
-        var sel = editor.Selection.GetSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-      },
-
-      /**
-       * @TODO - Remove IMG resize helper.
-       */
-      tinymce: function(element) {
-        editor = tinyMCE.activeEditor;
-
-        // Create the range for the element.
-        range = editor.contentDocument.createRange();
-        range.selectNode(element);
-
-        // Select the range.
-        var sel = editor.selection.getSel();
-        sel.removeAllRanges();
-        sel.addRange(range);
-      }
     },
 
     /**
