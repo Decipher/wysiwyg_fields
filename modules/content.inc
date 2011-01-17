@@ -191,8 +191,23 @@ function content_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NUL
         if ($field['widget']['wysiwyg_fields_status'] == TRUE && $field['widget']['wysiwyg_fields_delete']) {
           foreach (array_keys($node->{$field['field_name']}) as $delta) {
             if (!$fields[$field['field_name']][$delta]) {
+              $fields[$field['field_name']][$delta] = FALSE;
               unset($node->{$field['field_name']}[$delta]);
             }
+          }
+        }
+      }
+
+      // Update token deltas.
+      foreach ($fields as $id => $field) {
+        $minus = 0;
+        ksort($field);
+        foreach ($field as $delta => $value) {
+          $minus = $value ? $minus : $minus + 1;
+          if ($value) {
+            // @TODO - Check CCK Textarea fields as well.
+            $node->body = str_replace("[wysiwyg_fields-{$id}-{$delta}", "[wysiwyg_fields-{$id}-" . ($delta - $minus), $node->body);
+            $node->teaser = str_replace("[wysiwyg_fields-{$id}-{$delta}", "[wysiwyg_fields-{$id}-" . ($delta - $minus), $node->teaser);
           }
         }
       }
