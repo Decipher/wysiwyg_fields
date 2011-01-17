@@ -29,12 +29,55 @@
      *
      */
     wysiwygIsNode: function(id, node) {
-      // @TODO - Check if selection is Wysiwyg field, and if so make content
-      // non-editable based on tinyMCE non-editable plugin.
+      // @TODO - Node doesn't work for text, need to use alternative check.
       if ($(node).parents('span.wysiwyg_fields-' + id).length == 1) {
-        // Code here.
+        // FCKEditor - @see FCKDomRange.prototype.SelectBookmark
+        // TinyMCE - @see moveToBookmark();
+
+        // Invoke appropriate function based on active Wysiwyg editor.
+        if ($.isFunction(this._wysiwygIsNode[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor])) {
+          this._wysiwygIsNode[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor]($(node).parents('span.wysiwyg_fields-' + id).get(0));
+        }
       }
       return $(node).parents('span.wysiwyg_fields-' + id).length == 1;
+    },
+
+    /**
+     *
+     */
+    _wysiwygIsNode: {
+      /**
+       * @TODO - Cross browser support?
+       * @TODO - Remove IMG resize helper.
+       * @TODO - Element path no longer works?
+       */
+      ckeditor: function(element) {
+        editor = CKEDITOR.instances[Drupal.wysiwyg.activeId];
+
+        // Create the range for the element.
+        range = editor.document.$.createRange();
+        range.selectNode(element);
+
+        // Select the range.
+        var sel = editor.getSelection().getNative();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        editor.reset();
+      },
+
+      /**
+       *
+       */
+      fckeditor: function(element) {
+        
+      },
+
+      /**
+       *
+       */
+      tinymce: function(element) {
+
+      }
     },
 
     /**
@@ -84,6 +127,8 @@
       if ($.isFunction(this['dialogShow' + op])) {
         this['dialogShow' + op](id);
       }
+
+      $('#wysiwyg_fields-' + id + '-wrapper > *').css({ padding: "1.5em 1.7em" });
     },
 
     /**
@@ -92,6 +137,7 @@
     dialogShowDefault: function(id) {
       // @TODO - Figure out why I can't use switch() {} here.
       if (Drupal.settings.wysiwygFields.fields[id].multiple > 1) {
+
       }
 
       // Show last field if multiple is Unlimited.
@@ -135,7 +181,6 @@
         $('#' + Drupal.wysiwyg.activeId).parent().css({ position: 'relative' });
         $('#wysiwyg_fields-' + id + '-dialog').css({ left: '10%', top: '20%' });
         $('#wysiwyg_fields-' + id + '-wrapper').css({ height: 'auto', padding: 0, width: '100%' });
-        $('#wysiwyg_fields-' + id + '-wrapper > *').css({ padding: "1.5em 1.7em" });
       }
     }
   }
