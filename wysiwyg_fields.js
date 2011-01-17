@@ -8,9 +8,6 @@
      * Initialize Wysiwyg Fields plugin.
      */
     init: function(id) {
-      // MCEditor icon size fix.
-      $('.mce_wysiwyg_fields_' + id).addClass('mce_wysiwyg_fields_icon');
-
       // Create jQuery UI dialog.
       $('#wysiwyg_fields-' + id + '-wrapper').dialog({
         autoOpen: false,
@@ -23,6 +20,9 @@
 
       //$('#wysiwyg_fields-' + id + '-wrapper .wysiwyg_fields_formatters').parent().css({ display: 'inline' });
       this.dialogFix(id);
+
+      // MCEditor icon size fix.
+      $('.mce_wysiwyg_fields_' + id).addClass('mce_wysiwyg_fields_icon');
     },
 
     /**
@@ -62,21 +62,39 @@
         var sel = editor.getSelection().getNative();
         sel.removeAllRanges();
         sel.addRange(range);
-        editor.reset();
+        editor.getSelection().reset();
       },
 
       /**
-       *
+       * @TODO - Remove IMG resize helper.
        */
       fckeditor: function(element) {
-        
+        editor = FCKeditorAPI.Instances[Drupal.wysiwyg.activeId];
+
+        // Create the range for the element.
+        range = editor.EditorDocument.createRange();
+        range.selectNode(element);
+
+        // Select the range.
+        var sel = editor.Selection.GetSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
       },
 
       /**
-       *
+       * @TODO - Remove IMG resize helper.
        */
       tinymce: function(element) {
+        editor = tinyMCE.activeEditor;
 
+        // Create the range for the element.
+        range = editor.contentDocument.createRange();
+        range.selectNode(element);
+
+        // Select the range.
+        var sel = editor.selection.getSel();
+        sel.removeAllRanges();
+        sel.addRange(range);
       }
     },
 
