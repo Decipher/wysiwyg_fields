@@ -87,6 +87,20 @@ function wysiwyg_fields_theme() {
 }
 
 /**
+ * Implements hook_theme_registry_alter().
+ */
+function wysiwyg_fields_theme_registry_alter(&$theme_registry) {
+  foreach (module_list() as $module) {
+    $function = "{$module}_wysiwyg_fields_theme_bypass";
+    foreach (module_invoke($module, 'widget_info') as $widget_type => $widget) {
+      if ((function_exists($function) && !$function($widget_type)) || !function_exists($function)) {
+        $theme_registry[$widget_type]['function'] = 'theme_wysiwyg_fields_element';
+      }
+    }
+  }
+}
+
+/**
  * Implements hook_wysiwyg_fields_nodeapi_alter().
  */
 function wysiwyg_fields_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NULL) {
@@ -136,6 +150,12 @@ function wysiwyg_fields_elements_process($form_element) {
     $form_element['#prefix'] = isset($form_element['#prefix']) ? "{$prefix}{$form_element['#prefix']}" : $prefix;
     $form_element['#suffix'] = isset($form_element['#suffix']) ? "{$form_element['#suffix']}</div>" : '</div>';
 
+    $form_element['wysiwyg_fields'] = array(
+      '#prefix' => '<div class="clear-block wysiwyg_fields-widget">',
+      '#suffix' => '</div>',
+      '#weight' => 200,
+    );
+
     // Formatters.
     $formatters = array();
     foreach ($field['widget']['wysiwyg_fields_formatters'] as $delta => $formatter) {
@@ -145,7 +165,7 @@ function wysiwyg_fields_elements_process($form_element) {
 
     // Multiple formatters - select field.
     if (count($field['widget']['wysiwyg_fields_formatters']) > 1) {
-      $form_element['wysiwyg_fields_formatters'] = array(
+      $form_element['wysiwyg_fields']['wysiwyg_fields_formatters'] = array(
         '#type' => 'select',
         '#options' => $formatters,
         '#name' => "{$form_element['#name']}[wysiwyg_fields_formatters]",
@@ -153,13 +173,12 @@ function wysiwyg_fields_elements_process($form_element) {
         '#attributes' => array(
           'class' => 'wysiwyg_fields_formatters',
         ),
-        '#weight' => 200
       );
     }
 
     // Single formatter - hidden field.
     else {
-      $form_element['wysiwyg_fields_formatters'] = array(
+      $form_element['wysiwyg_fields']['wysiwyg_fields_formatters'] = array(
         '#type' => 'hidden',
         '#value' => array_shift(array_keys($formatters)),
         '#name' => "{$form_element['#name']}[wysiwyg_fields_formatters]",
@@ -168,7 +187,7 @@ function wysiwyg_fields_elements_process($form_element) {
     }
 
     // Insert button.
-    $form_element['wysiwyg_fields_insert'] = array(
+    $form_element['wysiwyg_fields']['wysiwyg_fields_insert'] = array(
       '#type' => 'submit',
       '#value' => t('Insert'),
       '#ahah' => array(
@@ -180,7 +199,6 @@ function wysiwyg_fields_elements_process($form_element) {
       '#attributes' => array(
         'class' => 'wysiwyg_fields_insert',
       ),
-      '#weight' => 201,
     );
   }
 
@@ -193,10 +211,19 @@ function wysiwyg_fields_elements_process($form_element) {
 function wysiwyg_fields_element_validate($element, &$form_state) {
   if (!empty($form_state['values'][$element['#field_name']])) {
     foreach ($form_state['values'][$element['#field_name']] as $delta => &$field) {
-      if (is_array($field) && !isset($field['wysiwyg_fields_formatters'])) {
-        $field['wysiwyg_fields_formatters'] = $form_state['post'][$element['#field_name']][$delta]['wysiwyg_fields_formatters'];
+      if (is_array($field) && empty($field['wysiwyg_fields']['wysiwyg_fields_formatters'])) {
+        array_walk_recursive($form_state['post'][$element['#field_name']][$delta], '_wysiwyg_fields_element_validate', &$field['wysiwyg_fields']['wysiwyg_fields_formatters']);
       }
     }
+  }
+}
+
+/**
+ *
+ */
+function _wysiwyg_fields_element_validate($item, $key, $formatter) {
+  if ($key == 'wysiwyg_fields_formatters') {
+    $formatter = $item;
   }
 }
 
@@ -318,11 +345,11 @@ function wysiwyg_fields_ahah_insert() {
 
   else {
     $field = content_fields(arg(3));
-    $formatter = explode('_formatter_', $item['wysiwyg_fields_formatters']);
+    $formatter = explode('_formatter_', $item['wysiwyg_fields']['wysiwyg_fields_formatters']);
     $element = _wysiwyg_fields_ahah_get_element($field, $item, $formatter);
 
     // @TODO - Turn this into a theme function?
-    $id = 'wysiwyg_fields-' . arg(3) . '-' . arg(4) . "-{$item['wysiwyg_fields_formatters']}";
+    $id = 'wysiwyg_fields-' . arg(3) . '-' . arg(4) . "-{$item['wysiwyg_fields']['wysiwyg_fields_formatters']}";
     $element = drupal_to_js("<span id=\"{$id}\" class=\"wysiwyg_fields wysiwyg_fields-" . arg(3) . "\">" . theme($element['#theme'], $element) . '</span>');
     $output .= "<script type='text/javascript'>Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].insert({$element}); Drupal.wysiwygFields.dialogHide('" . arg(3) . "')</script>";
   }
@@ -371,4 +398,15 @@ function wysiwyg_fields_wysiwyg_plugin_js() {
 
   header("Content-type: text/javascript");
   print theme('wysiwyg_fields_wysiwyg_plugin_js', $field);
+}
+
+/**
+ *
+ */
+function theme_wysiwyg_fields_element($element) {
+  // @TODO - This likely bypasses theme overides. Test, confirm and fix.
+  if (!isset($element['wysiwyg_fields']) && function_exists($function = "theme_{$element['#type']}")) {
+    return $function($element);
+  }
+  return $element['#children'];
 }

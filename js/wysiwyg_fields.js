@@ -42,7 +42,15 @@
           this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygIsNode($(node).parents('span.wysiwyg_fields-' + id).get(0));
         }
       }
-      return $(node).parents('span.wysiwyg_fields-' + id).length == 1;
+
+      else if ($(node).is('span.wysiwyg_fields-' + id)) {
+        // Invoke appropriate function based on active Wysiwyg editor.
+        if ($.isFunction(this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygIsNode)) {
+          this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygIsNode(node);
+        }
+      }
+
+      return $(node).parents('span.wysiwyg_fields-' + id).length == 1 || $(node).is('span.wysiwyg_fields-' + id);
     },
 
     /**
@@ -106,6 +114,7 @@
       }
 
       // Show last field if multiple is Unlimited.
+      // @TODO - Unlimited Text begins with two items, which breaks things.
       else if (Drupal.settings.wysiwygFields.fields[id].multiple == 1) {
         $('#' + id.replace('_', '-') + '-items').hide();
         if ($('.wysiwyg_fields-' + id + '-field:last').parents('table#' + id + '_values').length == 1) {

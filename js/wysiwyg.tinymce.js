@@ -12,13 +12,6 @@
    */
   Drupal.wysiwygFields.wysiwyg.tinymce = {
     /**
-     * Returns Text node.
-     */
-    wysiwygGetNode: function(element) {
-
-    },
-
-    /**
      * @TODO - Remove IMG resize helper.
      */
     wysiwygIsNode: function(element) {

@@ -21,7 +21,7 @@ function filefield_wysiwyg_fields_elements_alter(&$elements) {
  */
 function _filefield_wysiwyg_fields_elements_alter_after_build($form_element, &$form_state) {
   if (empty($form_element['fid']['#value'])) {
-    unset($form_element['wysiwyg_fields_formatters'], $form_element['wysiwyg_fields_insert']);
+    unset($form_element['wysiwyg_fields']);
   }
   return $form_element;
 }

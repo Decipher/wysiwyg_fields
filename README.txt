@@ -20,9 +20,9 @@ Features
   * CCK modules - Text, Number, Node reference and User reference.
   * FileField module.
   * ImageField module.
+  * Date module.
+  * Link module.
   * Email Field module.
-  * Video module.
-  * Phone (CCK) module.
 
 
 Required modules
@@ -47,8 +47,6 @@ Known issues
 --------------------------
 
 - Following CCK field modules aren't compatible:
-  - Date module.
-  - Link module.
   - Embedded Media Field module.
 - View Field output doesn't get converted into token on Detach event.
 - Certain fields can't render the preview due to JavaScript or other reasons:
