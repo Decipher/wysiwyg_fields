@@ -68,11 +68,13 @@ function _wysiwyg_fields_text_to_tokens($text) {
 function filter_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
     case 'update':
-      // @TODO - Check CCK Textarea fields as well.
       // @TODO - Only flush cache if any of the tokens are affected.
-      $cid = "{$node->format}:" . md5($node->body);
-      if (cache_get($cid, 'cache_filter') != FALSE) {
-        cache_clear_all($cid, 'cache_filter');
+      $textfields = _wysiwyg_fields_textfields($node);
+      foreach ($textfields as $textfield) {
+        $cid = "{$textfield['format']}:" . md5($textfield['value']);
+        if (cache_get($cid, 'cache_filter') != FALSE) {
+          cache_clear_all($cid, 'cache_filter');
+        }
       }
       break;
   }

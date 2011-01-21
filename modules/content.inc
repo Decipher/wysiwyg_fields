@@ -6,8 +6,7 @@
  */
 
 /**
- * @TODO - Add validation for formatters, at least one required if field enabled
- *   for Wysiwyg Fields.
+ *
  */
 function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
   switch ($op) {
@@ -161,8 +160,8 @@ function _content_wysiwyg_fields_form_alter_alter_required_validate($element, &$
 function _content_wysiwyg_fields_form_alter_alter_submit($form, &$form_state) {
   $field = content_fields($form_state['values']['field_name'], $form_state['values']['type_name']);
 
-  // Set display settings to <Hidden>
-  if ($form_state['values']['wysiwyg_fields_hide'] == TRUE) {
+  // Set display settings to <Hidden>.
+  if ($field['widget']['wysiwyg_fields_status'] == TRUE && $form_state['values']['wysiwyg_fields_hide'] == TRUE) {
     foreach ($field['display_settings'] as $name => &$type) {
       if ($name != 'label') {
         $type['format'] = 'hidden';
@@ -178,9 +177,13 @@ function _content_wysiwyg_fields_form_alter_alter_submit($form, &$form_state) {
 function content_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
     case 'presave':
+      $tokens = array();
+      $textfields = _wysiwyg_fields_textfields($node);
+      foreach ($textfields as &$textfield) {
+        $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
+      }
+
       // Delete any Wysiwyg Fields that weren't inserted.
-      // @TODO - Check CCK Textarea fields as well.
-      $tokens = _wysiwyg_fields_text_to_tokens($node->body);
       $fields = array();
       foreach ($tokens as $token) {
         $fields[$token[1]] = is_array($fields[$token[1]]) ? $fields[$token[1]] : array();
@@ -206,12 +209,42 @@ function content_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NUL
         foreach ($field as $delta => $value) {
           $minus = $value ? $minus : $minus + 1;
           if ($value) {
-            // @TODO - Check CCK Textarea fields as well.
-            $node->body = str_replace("[wysiwyg_fields-{$id}-{$delta}", "[wysiwyg_fields-{$id}-" . ($delta - $minus), $node->body);
-            $node->teaser = str_replace("[wysiwyg_fields-{$id}-{$delta}", "[wysiwyg_fields-{$id}-" . ($delta - $minus), $node->teaser);
+            foreach ($textfields as &$textfield) {
+              $textfield['value'] = str_replace("[wysiwyg_fields-{$id}-{$delta}", "[wysiwyg_fields-{$id}-" . ($delta - $minus), $textfield['value']);
+            }
           }
         }
       }
       break;
   }
+}
+
+function _wysiwyg_fields_textfields($node) {
+  $textfields = array();
+
+  // Node body field.
+  $textfields['body'] = array(
+    'value' => &$node->body,
+    'format' => $node->format,
+  );
+
+  // Node teaser field.
+  $textfields['teaser'] = array(
+    'value' => &$node->teaser,
+    'format' => $node->format,
+  );
+
+  // CCK Textarea fields.
+  foreach (content_fields(NULL, $node->type) as $field) {
+    if ($field['widget']['type'] == 'text_textarea') {
+      foreach ($node->{$field['field_name']} as $delta => $data) {
+        $textfields["{$field['field_name']}-{$delta}"] = array(
+          'value' => &$node->{$field['field_name']}[$delta]['value'],
+          'format' => $node->{$field['field_name']}[$delta]['format'],
+        );
+      }
+    }
+  }
+
+  return $textfields;
 }

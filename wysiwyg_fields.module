@@ -41,16 +41,14 @@ function wysiwyg_fields_menu() {
   $items['ahah/wysiwyg_fields'] = array(
     'title' => 'Wysiwyg Fields AHAH callback',
     'page callback' => 'wysiwyg_fields_ahah',
-    // @TODO - proper permissions.
-    'access arguments' => array('administer content'),
+    'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
 
   $items[drupal_get_path('module', 'wysiwyg_fields') . '/plugins'] = array(
     'title' => 'Wysiwyg Fields dynamic Wysiwyg plugin js',
     'page callback' => 'wysiwyg_fields_wysiwyg_plugin_js',
-    // @TODO - proper permissions.
-    'access arguments' => array('administer content'),
+    'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
 
@@ -92,9 +90,11 @@ function wysiwyg_fields_theme() {
 function wysiwyg_fields_theme_registry_alter(&$theme_registry) {
   foreach (module_list() as $module) {
     $function = "{$module}_wysiwyg_fields_theme_bypass";
-    foreach (module_invoke($module, 'widget_info') as $widget_type => $widget) {
-      if ((function_exists($function) && !$function($widget_type)) || !function_exists($function)) {
-        $theme_registry[$widget_type]['function'] = 'theme_wysiwyg_fields_element';
+    if (is_array(module_invoke($module, 'widget_info'))) {
+      foreach (module_invoke($module, 'widget_info') as $widget_type => $widget) {
+        if (isset($theme_registry[$widget_type]) && ((function_exists($function) && !$function($widget_type)) || !function_exists($function))) {
+          $theme_registry[$widget_type]['function'] = 'theme_wysiwyg_fields_element';
+        }
       }
     }
   }
@@ -107,9 +107,12 @@ function wysiwyg_fields_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a
   switch ($op) {
     case 'prepare':
     case 'validate':
-      // @TODO - Do CCK Textareas as well.
-      $values = array();
-      $tokens = _wysiwyg_fields_text_to_tokens($node->body);
+      $tokens = array();
+      $textfields = _wysiwyg_fields_textfields($node);
+      foreach ($textfields as &$textfield) {
+        $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
+      }
+
       foreach ($tokens as $token) {
         $values[$token[0]] = _wysiwyg_fields_filter_process($node, $token[0]);
       }
@@ -211,7 +214,7 @@ function wysiwyg_fields_elements_process($form_element) {
 function wysiwyg_fields_element_validate($element, &$form_state) {
   if (!empty($form_state['values'][$element['#field_name']])) {
     foreach ($form_state['values'][$element['#field_name']] as $delta => &$field) {
-      if (is_array($field) && empty($field['wysiwyg_fields']['wysiwyg_fields_formatters'])) {
+      if (is_array($field) && empty($field['wysiwyg_fields']['wysiwyg_fields_formatters']) && is_array($form_state['post'][$element['#field_name']][$delta])) {
         array_walk_recursive($form_state['post'][$element['#field_name']][$delta], '_wysiwyg_fields_element_validate', &$field['wysiwyg_fields']['wysiwyg_fields_formatters']);
       }
     }
