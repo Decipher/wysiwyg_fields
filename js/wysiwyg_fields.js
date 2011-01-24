@@ -1,5 +1,8 @@
 // $Id$
 
+// @TODO - Add more event triggers Wysiwyg Detach and also kills Wysiwyg Fields
+//         settings - Fix!
+
 (function ($) {
   Drupal.settings.wysiwygFields = Drupal.settings.wysiwygFields || {};
 
@@ -16,9 +19,10 @@
         title: Drupal.settings.wysiwyg.plugins[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].format].drupal['wysiwyg_fields_' + id].title,
         width: '80%'
       });
+      $('#wysiwyg_fields-' + id + '-wrapper').bind('dialogclose', function(event, ui) {
+        Drupal.wysiwygFields.dialogClose(id);
+      });
       $('#wysiwyg_fields-' + id + '-wrapper').parents('.ui-dialog').attr('id', 'wysiwyg_fields-' + id + '-dialog');
-
-      //$('#wysiwyg_fields-' + id + '-wrapper .wysiwyg_fields_formatters').parent().css({ display: 'inline' });
       this.dialogFix(id);
 
       // MCEditor icon size fix.
@@ -140,8 +144,8 @@
       if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
         $('#' + id.replace('_', '-') + '-items').hide();
         if ($('#edit-' + id.replace('_', '-') + '-' + token[2] + '-ahah-wrapper').parents('table#' + id + '_values').length == 1) {
-          $('<div id="wysiwyg_fields-' + id + '-placeholder" />').insertAfter($('#edit-' + id.replace('_', '-') + '-' + token[2] + '-ahah-wrapper'));
-          $('#edit-' + id.replace('_', '-') + '-' + token[2] + '-ahah-wrapper').prependTo('#wysiwyg_fields-' + id + '-wrapper');
+          $('<div id="wysiwyg_fields-' + id + '-placeholder" />').insertAfter($('#edit-' + id.replace('_', '-') + '-' + token[2] + '-ahah-wrapper').parents('.wysiwyg_fields-' + id + '-field'));
+          $('#edit-' + id.replace('_', '-') + '-' + token[2] + '-ahah-wrapper').parents('.wysiwyg_fields-' + id + '-field').prependTo('#wysiwyg_fields-' + id + '-wrapper');
         }
       }
     },
@@ -149,10 +153,7 @@
     /**
      *
      */
-    dialogHide: function(id) {
-      // @TODO - Find out why jQuery UI dialog Method 'close' doesn't work?
-      $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-titlebar-close').trigger('click');
-
+    dialogClose: function(id) {
       if (Drupal.settings.wysiwygFields.fields[id].multiple > 1) {
       }
 
@@ -161,9 +162,8 @@
       else if (Drupal.settings.wysiwygFields.fields[id].multiple == 1) {
         if (!$('.wysiwyg_fields-' + id + '-field:first').parent().is('td')) {
           $('#wysiwyg_fields-' + id + '-placeholder').replaceWith($('.wysiwyg_fields-' + id + '-field:first'));
-          }
+        }
         $('#' + id.replace('_', '-') + '-items').show();
-        $('.form-submit[name="' + id + '_add_more"]').trigger('mousedown');
       }
     },
 
