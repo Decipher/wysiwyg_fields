@@ -1,5 +1,6 @@
 /** $Id$ **/
 
-.wysiwyg_fields {
+div.wysiwyg_fields {
   border: 1px dashed #CCC;
+  display: inline-block;
 }

@@ -353,7 +353,7 @@ function wysiwyg_fields_ahah_insert() {
 
     // @TODO - Turn this into a theme function?
     $id = 'wysiwyg_fields-' . arg(3) . '-' . arg(4) . "-{$item['wysiwyg_fields']['wysiwyg_fields_formatters']}";
-    $element = drupal_to_js("<span id=\"{$id}\" class=\"wysiwyg_fields wysiwyg_fields-" . arg(3) . "\">" . theme($element['#theme'], $element) . '</span>');
+    $element = drupal_to_js("<div id=\"{$id}\" class=\"wysiwyg_fields wysiwyg_fields-" . arg(3) . "\">" . theme($element['#theme'], $element) . '</div>');
     $output .= "<script type='text/javascript'>Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].insert({$element}); Drupal.wysiwygFields.dialogHide('" . arg(3) . "')</script>";
   }
 

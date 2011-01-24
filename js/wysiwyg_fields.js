@@ -27,30 +27,31 @@
 
     /**
      * @TODO - wysiwygIsNode only fires when the 'node' object changes, so it
-     *   will unselect the SPAN on a second click of the element.
+     *   will unselect the DIV on a second click of the element.
      */
     wysiwygIsNode: function(id, node) {
+      delete Drupal.settings.wysiwygFields.fields[id].active;
+
+      // Get TextNode if node is empty.
       if (node == null) {
         if ($.isFunction(this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygGetTextNode)) {
           node = this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygGetTextNode();
         }
       }
 
-      if ($(node).parents('span.wysiwyg_fields-' + id).length == 1) {
-        // Invoke appropriate function based on active Wysiwyg editor.
-        if ($.isFunction(this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygIsNode)) {
-          this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygIsNode($(node).parents('span.wysiwyg_fields-' + id).get(0));
-        }
-      }
-
-      else if ($(node).is('span.wysiwyg_fields-' + id)) {
-        // Invoke appropriate function based on active Wysiwyg editor.
+      node = ($(node).parents('div.wysiwyg_fields-' + id).length == 1) ? $(node).parents('div.wysiwyg_fields-' + id).get(0) : node;
+      if ($(node).is('div.wysiwyg_fields-' + id)) {
+        // Select Wysiwyg Fields wrapper.
+        //// Invoke appropriate function based on active Wysiwyg editor.
         if ($.isFunction(this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygIsNode)) {
           this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygIsNode(node);
         }
+
+        // Store active token in settings.
+        Drupal.settings.wysiwygFields.fields[id].active = $(node).attr('id');
       }
 
-      return $(node).parents('span.wysiwyg_fields-' + id).length == 1 || $(node).is('span.wysiwyg_fields-' + id);
+      return $(node).parents('div.wysiwyg_fields-' + id).length == 1 || $(node).is('div.wysiwyg_fields-' + id);
     },
 
     /**
@@ -61,7 +62,7 @@
       if ((matches = content.match(regex))) {
         $.each($(matches), function(i, elem) {
           elemId = elem.substr(1, elem.length - 2);
-          replacement = "<span id='" + elemId + "' class='wysiwyg_fields wysiwyg_fields-" + id + "'>" + Drupal.settings.wysiwygFields.replacements[elem] + "</span>";
+          replacement = "<div id='" + elemId + "' class='wysiwyg_fields wysiwyg_fields-" + id + "'>" + Drupal.settings.wysiwygFields.replacements[elem] + "</div>";
           content = content.replace(elem, replacement);
         });
       }
@@ -73,7 +74,7 @@
      */
     wysiwygDetach: function(id, content, settings, instanceId) {
       var $content = $('<div>' + content + '</div>');
-      $.each($('span.wysiwyg_fields-' + id, $content), function(i, elem) {
+      $.each($('div.wysiwyg_fields-' + id, $content), function(i, elem) {
         var token = '[' + $(elem).attr('id') + ']';
 
         // Store replacement in Drupal.settings for wysiwygAttach.
@@ -89,7 +90,13 @@
      *
      */
     dialogShow: function(id, op) {
-      if (op == undefined) {
+      // If there is an active field, render update dialog.
+      if (typeof Drupal.settings.wysiwygFields.fields[id].active !== "undefined") {
+        op = 'Update';
+      }
+
+      // If no operation is defined, use default.
+      else if (op == undefined) {
         op = 'Default';
       }
 
@@ -120,6 +127,21 @@
         if ($('.wysiwyg_fields-' + id + '-field:last').parents('table#' + id + '_values').length == 1) {
           $('<div id="wysiwyg_fields-' + id + '-placeholder" />').insertAfter($('.wysiwyg_fields-' + id + '-field:last'));
           $('.wysiwyg_fields-' + id + '-field:last').prependTo('#wysiwyg_fields-' + id + '-wrapper');
+        }
+      }
+    },
+
+    /**
+     *
+     */
+    dialogShowUpdate: function(id) {
+      token = Drupal.settings.wysiwygFields.fields[id].active.split('-');
+
+      if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
+        $('#' + id.replace('_', '-') + '-items').hide();
+        if ($('#edit-' + id.replace('_', '-') + '-' + token[2] + '-ahah-wrapper').parents('table#' + id + '_values').length == 1) {
+          $('<div id="wysiwyg_fields-' + id + '-placeholder" />').insertAfter($('#edit-' + id.replace('_', '-') + '-' + token[2] + '-ahah-wrapper'));
+          $('#edit-' + id.replace('_', '-') + '-' + token[2] + '-ahah-wrapper').prependTo('#wysiwyg_fields-' + id + '-wrapper');
         }
       }
     },

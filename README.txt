@@ -48,7 +48,7 @@ Known issues
 
 - Following CCK field modules aren't compatible:
   - Embedded Media Field module.
-- View Field output doesn't get converted into token on Detach event.
 - Certain fields can't render the preview due to JavaScript or other reasons:
   - Embed Google Maps Field module.
   - Video module.
+- Inserted ViewField doesn't respect querystring variables.
