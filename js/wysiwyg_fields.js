@@ -46,7 +46,7 @@
       node = ($(node).parents('div.wysiwyg_fields-' + id).length == 1) ? $(node).parents('div.wysiwyg_fields-' + id).get(0) : node;
       if ($(node).is('div.wysiwyg_fields-' + id)) {
         // Select Wysiwyg Fields wrapper.
-        //// Invoke appropriate function based on active Wysiwyg editor.
+        // Invoke appropriate function based on active Wysiwyg editor.
         if ($.isFunction(this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygIsNode)) {
           this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygIsNode(node);
         }
@@ -112,6 +112,7 @@
         this['dialogShow' + op](id);
       }
 
+      // @TODO - Move this to stylesheet.
       $('#wysiwyg_fields-' + id + '-wrapper > *').css({ padding: "1.5em 1.7em" });
     },
 
@@ -143,10 +144,15 @@
 
       if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
         $('#' + id.replace('_', '-') + '-items').hide();
-        if ($('#edit-' + id.replace('_', '-') + '-' + token[2] + '-ahah-wrapper').parents('table#' + id + '_values').length == 1) {
-          $('<div id="wysiwyg_fields-' + id + '-placeholder" />').insertAfter($('#edit-' + id.replace('_', '-') + '-' + token[2] + '-ahah-wrapper').parents('.wysiwyg_fields-' + id + '-field'));
-          $('#edit-' + id.replace('_', '-') + '-' + token[2] + '-ahah-wrapper').parents('.wysiwyg_fields-' + id + '-field').prependTo('#wysiwyg_fields-' + id + '-wrapper');
+        if ($('#edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper').parents('table#' + id + '_values').length == 1) {
+          $('<div id="wysiwyg_fields-' + id + '-placeholder" />').insertAfter($('#edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper'));
+          $('#edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper').prependTo('#wysiwyg_fields-' + id + '-wrapper');
         }
+      }
+
+      if ($('.wysiwyg_fields-' + id + '-field:first .wysiwyg_fields-widget').length == 1) {
+        $('.wysiwyg_fields-' + id + '-field:first .wysiwyg_fields-widget input').val(Drupal.t('Update'));
+        $('.wysiwyg_fields-' + id + '-field:first .wysiwyg_fields-widget select').val(token[3]);
       }
     },
 
@@ -178,6 +184,12 @@
         $('#wysiwyg_fields-' + id + '-dialog').css({ left: '10%', top: '20%' });
         $('#wysiwyg_fields-' + id + '-wrapper').css({ height: 'auto', padding: 0, width: '100%' });
       }
+    }
+  }
+
+  Drupal.behaviors.wysiwygFields = function(context) {
+    if (context !== document) {
+      // Do stuff here.
     }
   }
 })(jQuery);
