@@ -4,9 +4,43 @@
   display: none;
 }
 
-.ui-dialog-content > * {
+.ui-dialog .wysiwyg_fields-icon-expand {
+  height: 18px;
+  left: 0.3em;
+  margin: -10px 0 0;
+  padding: 1px;
+  position: absolute;
+  top: 50%;
+  width: 19px;
+}
+
+.ui-dialog .wysiwyg_fields-icon-expand:hover,
+.ui-dialog .wysiwyg_fields-icon-expand:focus {
+  padding: 0;
+}
+
+.ui-dialog .wysiwyg_fields-icon-expand span {
+  display: block;
+  margin: 1px;
+}
+
+.ui-dialog .ui-dialog-titlebar .ui-dialog-title {
+  margin-left: 16px;
+}
+
+.ui-dialog .ui-dialog-content > * {
   padding: 1.5em 1.7em;
 }
+
+
+/* jQuery UI 1.6 fixes. */
+.ui-icon {
+  background-repeat: no-repeat;
+  display: block;
+  overflow: hidden;
+  text-indent: -99999px;
+}
+
 
 /* MCEditor icon size fix. */
 .defaultSkin .mce_wysiwyg_fields_icon img.mceIcon {

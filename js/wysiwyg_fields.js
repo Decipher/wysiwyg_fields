@@ -28,6 +28,22 @@
       $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane').hide();
       this.dialogFix(id);
 
+      // Expand icon.
+      $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-titlebar').prepend('<a class="ui-corner-all wysiwyg_fields-icon-expand" href="#" role="button" unselectable="on"><span class="ui-icon ui-icon-plusthick ui-plus-default" unselectable="on">Expand</span></a>');
+      $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-titlebar .wysiwyg_fields-icon-expand')
+        .hover(
+          function() {
+            $(this).addClass('ui-state-hover');
+          },
+          function() {
+            $(this).removeClass('ui-state-hover');
+          }
+        )
+        .bind('click', function() {
+          Drupal.wysiwygFields.dialogShow(id, 'All');
+          return false;
+        });
+
       // MCEditor icon size fix.
       $('.mce_wysiwyg_fields_' + id).addClass('mce_wysiwyg_fields_icon');
     },
@@ -162,6 +178,22 @@
     /**
      *
      */
+    dialogShowAll: function(id) {
+      this.dialogClose(id);
+      this.buttonsAttach(id);
+      $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-titlebar .wysiwyg_fields-icon-expand .ui-icon')
+        .html('Contract')
+        // jQuery UI 1.6
+        .removeClass('ui-plus-default')
+        .addClass('ui-minus-default')
+        // jQuery UI 1.7
+        .removeClass('ui-icon-plusthick')
+        .addClass('ui-icon-minusthick');
+    },
+
+    /**
+     *
+     */
     dialogClose: function(id) {
       if (Drupal.settings.wysiwygFields.fields[id].multiple > 1) {
       }
@@ -178,6 +210,14 @@
       $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane').hide();
       $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane button').html(Drupal.t('Insert'));
       $('#wysiwyg_fields-' + id + '-formatters_placeholder').replaceWith($('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane select'));
+
+      $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-titlebar .wysiwyg_fields-icon-expand .ui-icon')
+        // jQuery UI 1.6
+        .addClass('ui-plus-default')
+        .removeClass('ui-minus-default')
+        // jQuery UI 1.7
+        .addClass('ui-icon-plusthick')
+        .removeClass('ui-icon-minusthick');
     },
 
     /**
