@@ -1,12 +1,11 @@
 /** $Id: wysiwyg_fields.css,v 1.3 2010/08/18 06:08:35 deciphered Exp $ **/
 
 .wysiwyg_fields-widget {
-  clear: both;
+  display: none;
 }
 
-.wysiwyg_fields-widget div {
-  display: inline;
-  float: none !important;
+.ui-dialog-content > * {
+  padding: 1.5em 1.7em;
 }
 
 /* MCEditor icon size fix. */

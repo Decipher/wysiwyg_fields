@@ -154,7 +154,7 @@ function wysiwyg_fields_elements_process($form_element) {
     $form_element['#suffix'] = isset($form_element['#suffix']) ? "{$form_element['#suffix']}</div>" : '</div>';
 
     $form_element['wysiwyg_fields'] = array(
-      '#prefix' => '<div class="clear-block wysiwyg_fields-widget">',
+      '#prefix' => '<div class="wysiwyg_fields-widget">',
       '#suffix' => '</div>',
       '#weight' => 200,
     );
