@@ -113,15 +113,28 @@ function wysiwyg_fields_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a
         $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
       }
 
+      $replacements = array();
+      $values = array();
       foreach ($tokens as $token) {
-        $values[$token[0]] = _wysiwyg_fields_filter_process($node, $token[0]);
+        $replacements[$token[0]] = _wysiwyg_fields_filter_process($node, $token[0]);
+        $values[$token[1]] = is_array($values[$token[1]]) ? $values[$token[1]] : array();
+        $values[$token[1]][$token[2]] = TRUE;
       }
 
-      // Store token values in JavaScript settings for Wysiwyg plugin.
+      $fields = array();
+      foreach (content_fields(NULL, $node->type) as $field) {
+        $fields[$field['field_name']] = array(
+          'multiple' => $field['multiple'],
+          'values' => $values[$field['field_name']]
+        );
+      }
+
+      // Convert settings to JavaScript for Wysiwyg plugin.
       drupal_add_js(
         array(
           'wysiwygFields' => array(
-            'replacements' => $values
+            'fields' => $fields,
+            'replacements' => $replacements
           )
         ),
         'setting'

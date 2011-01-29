@@ -138,7 +138,14 @@
     dialogShowDefault: function(id) {
       // @TODO - Figure out why I can't use switch() {} here.
       if (Drupal.settings.wysiwygFields.fields[id].multiple > 1) {
-
+        if (Drupal.settings.wysiwygFields.fields[id].values == null) {
+          delta = 0;
+        }
+        $('#wysiwyg_fields-' + id + '-wrapper table').hide();
+        if ($('#edit-' + id.replace('_', '-') + '-' + delta + '-wysiwyg-fields-ahah-wrapper').parents('table#' + id + '_values').length == 1) {
+          $('<div id="wysiwyg_fields-' + id + '-placeholder" />').insertAfter($('#edit-' + id.replace('_', '-') + '-' + delta + '-wysiwyg-fields-ahah-wrapper'));
+          $('#edit-' + id.replace('_', '-') + '-' + delta + '-wysiwyg-fields-ahah-wrapper').prependTo('#wysiwyg_fields-' + id + '-wrapper');
+        }
       }
 
       // Show last field if multiple is Unlimited.
@@ -163,7 +170,7 @@
       token = Drupal.settings.wysiwygFields.fields[id].active.split('-');
 
       if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
-        $('#' + id.replace('_', '-') + '-items').hide();
+        $('#' + id.replace('_', '-') + '-items, #wysiwyg_fields-' + id + '-wrapper table').hide();
         if ($('#edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper').parents('table#' + id + '_values').length == 1) {
           $('<div id="wysiwyg_fields-' + id + '-placeholder" />').insertAfter($('#edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper'));
           $('#edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper').prependTo('#wysiwyg_fields-' + id + '-wrapper');
@@ -196,10 +203,13 @@
      */
     dialogClose: function(id) {
       if (Drupal.settings.wysiwygFields.fields[id].multiple > 1) {
+        if (!$('.wysiwyg_fields-' + id + '-field:first').parent().is('td')) {
+          $('#wysiwyg_fields-' + id + '-placeholder').replaceWith($('.wysiwyg_fields-' + id + '-field:first'));
+        }
+        $('#wysiwyg_fields-' + id + '-wrapper table').show();
       }
 
-      // Undo DOM modificatons and trigger 'Add more' button if multiple is
-      // Unlimited.
+      // Undo DOM modificatons.
       else if (Drupal.settings.wysiwygFields.fields[id].multiple == 1) {
         if (!$('.wysiwyg_fields-' + id + '-field:first').parent().is('td')) {
           $('#wysiwyg_fields-' + id + '-placeholder').replaceWith($('.wysiwyg_fields-' + id + '-field:first'));

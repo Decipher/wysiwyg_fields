@@ -33,6 +33,12 @@ Required modules
 * Wysiwyg module.
 
 
+Recommended modules
+--------------------------
+
+* jQuery Update module (in conjunction with jQuery UI 1.7).
+
+
 Configuration
 --------------------------
 

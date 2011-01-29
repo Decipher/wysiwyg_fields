@@ -29,19 +29,6 @@ function wysiwyg_fields_wysiwyg_fields_plugin() {
           'css file' => 'wysiwyg_fields.css',
           'settings' => array(),
         );
-
-        drupal_add_js(
-          array(
-            'wysiwygFields' => array(
-              'fields' => array(
-                $field['field_name'] => array(
-                  'multiple' => $field['multiple']
-                )
-              )
-            )
-          ),
-          'setting'
-        );
       }
     }
 
