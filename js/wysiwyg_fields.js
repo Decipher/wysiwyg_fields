@@ -114,7 +114,7 @@
      */
     dialogShow: function(id, op) {
       // If there is an active field, render update dialog.
-      if (typeof Drupal.settings.wysiwygFields.fields[id].active !== "undefined") {
+      if (op == undefined && typeof Drupal.settings.wysiwygFields.fields[id].active !== "undefined") {
         op = 'Update';
       }
 
@@ -136,25 +136,17 @@
      *
      */
     dialogShowDefault: function(id) {
-      // @TODO - Figure out why I can't use switch() {} here.
-      if (Drupal.settings.wysiwygFields.fields[id].multiple > 1) {
-        if (Drupal.settings.wysiwygFields.fields[id].values == null) {
-          delta = 0;
-        }
-        $('#wysiwyg_fields-' + id + '-wrapper table').hide();
+      // Get field delta.
+      delta = 0;
+      if (Drupal.settings.wysiwygFields.fields[id].delta !== null) {
+        delta = Drupal.settings.wysiwygFields.fields[id].delta;
+      }
+
+      if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
+        $('#' + id.replace('_', '-') + '-items, #wysiwyg_fields-' + id + '-wrapper table').hide();
         if ($('#edit-' + id.replace('_', '-') + '-' + delta + '-wysiwyg-fields-ahah-wrapper').parents('table#' + id + '_values').length == 1) {
           $('<div id="wysiwyg_fields-' + id + '-placeholder" />').insertAfter($('#edit-' + id.replace('_', '-') + '-' + delta + '-wysiwyg-fields-ahah-wrapper'));
           $('#edit-' + id.replace('_', '-') + '-' + delta + '-wysiwyg-fields-ahah-wrapper').prependTo('#wysiwyg_fields-' + id + '-wrapper');
-        }
-      }
-
-      // Show last field if multiple is Unlimited.
-      // @TODO - Unlimited Text begins with two items, which breaks things.
-      else if (Drupal.settings.wysiwygFields.fields[id].multiple == 1) {
-        $('#' + id.replace('_', '-') + '-items').hide();
-        if ($('.wysiwyg_fields-' + id + '-field:last').parents('table#' + id + '_values').length == 1) {
-          $('<div id="wysiwyg_fields-' + id + '-placeholder" />').insertAfter($('.wysiwyg_fields-' + id + '-field:last'));
-          $('.wysiwyg_fields-' + id + '-field:last').prependTo('#wysiwyg_fields-' + id + '-wrapper');
         }
       }
 
@@ -268,6 +260,15 @@
         $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane button').html(Drupal.t(label));
       }
       $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane').show();
+    },
+
+    /**
+     * Increment field delta.
+     */
+    deltaUpdate: function(id, delta) {
+      if (Drupal.settings.wysiwygFields.fields[id].delta <= delta) {
+        Drupal.settings.wysiwygFields.fields[id].delta = delta + 1;
+      }
     }
   }
 

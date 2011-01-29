@@ -114,18 +114,18 @@ function wysiwyg_fields_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a
       }
 
       $replacements = array();
-      $values = array();
+      $delta = array();
       foreach ($tokens as $token) {
         $replacements[$token[0]] = _wysiwyg_fields_filter_process($node, $token[0]);
-        $values[$token[1]] = is_array($values[$token[1]]) ? $values[$token[1]] : array();
-        $values[$token[1]][$token[2]] = TRUE;
+        $delta[$token[1]] = isset($delta[$token[1]]) ? $delta[$token[1]] : 0;
+        $delta[$token[1]] = $token[2] + 1 > $delta[$token[1]] ? $token[2] + 1 : $delta[$token[1]];
       }
 
       $fields = array();
       foreach (content_fields(NULL, $node->type) as $field) {
         $fields[$field['field_name']] = array(
           'multiple' => $field['multiple'],
-          'values' => $values[$field['field_name']]
+          'delta' => isset($delta[$field['field_name']]) ? $delta[$field['field_name']] : 0,
         );
       }
 
@@ -374,6 +374,7 @@ function wysiwyg_fields_ahah_insert() {
       <script type='text/javascript'>
         Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].insert({$element});
         $('#wysiwyg_fields-" . arg(3) . "-wrapper').dialog('close');
+        Drupal.wysiwygFields.deltaUpdate('" . arg(3) . "', " . arg(4) . ");
         if (typeof Drupal.settings.wysiwygFields.fields." . arg(3) . ".active == 'undefined') {
           $('.form-submit[name=\"" . arg(3) . "_add_more\"]').trigger('mousedown');
         }
