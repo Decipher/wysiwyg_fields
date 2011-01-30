@@ -145,8 +145,9 @@
       if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
         $('#' + id.replace('_', '-') + '-items, #wysiwyg_fields-' + id + '-wrapper table').hide();
         if ($('#edit-' + id.replace('_', '-') + '-' + delta + '-wysiwyg-fields-ahah-wrapper').parents('table#' + id + '_values').length == 1) {
-          $('<div id="wysiwyg_fields-' + id + '-placeholder" />').insertAfter($('#edit-' + id.replace('_', '-') + '-' + delta + '-wysiwyg-fields-ahah-wrapper'));
-          $('#edit-' + id.replace('_', '-') + '-' + delta + '-wysiwyg-fields-ahah-wrapper').prependTo('#wysiwyg_fields-' + id + '-wrapper');
+          $('#edit-' + id.replace('_', '-') + '-' + delta + '-wysiwyg-fields-ahah-wrapper')
+            .before('<div id="edit-' + id.replace('_', '-') + '-' + delta + '-wysiwyg-fields-ahah-wrapper-placeholder" class="placeholder" />')
+            .prependTo('#wysiwyg_fields-' + id + '-wrapper');
         }
       }
 
@@ -164,8 +165,9 @@
       if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
         $('#' + id.replace('_', '-') + '-items, #wysiwyg_fields-' + id + '-wrapper table').hide();
         if ($('#edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper').parents('table#' + id + '_values').length == 1) {
-          $('<div id="wysiwyg_fields-' + id + '-placeholder" />').insertAfter($('#edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper'));
-          $('#edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper').prependTo('#wysiwyg_fields-' + id + '-wrapper');
+          $('#edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper')
+            .before('<div id="edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper-placeholder" class="placeholder" />')
+            .prependTo('#wysiwyg_fields-' + id + '-wrapper');
         }
       }
 
@@ -180,6 +182,16 @@
     dialogShowAll: function(id) {
       this.dialogClose(id);
       this.buttonsAttach(id);
+
+      // Reposition Multiselect checkboxes.
+      if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
+        $('#wysiwyg_fields-' + id + '-dialog .wysiwyg_fields_select').each(function() {
+          $(this)
+            .before('<div id="' + $(this).attr('id') + '-placeholder" class="placeholder" />')
+            .appendTo($(this).parents('tr:first').find('td:first'));
+        });
+      }
+
       $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-titlebar .wysiwyg_fields-icon-expand .ui-icon')
         .html('Contract')
         // jQuery UI 1.6
@@ -194,18 +206,18 @@
      *
      */
     dialogClose: function(id) {
-      // Undo DOM modificatons.
       if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
-        if (!$('.wysiwyg_fields-' + id + '-field:first').parent().is('td')) {
-          $('#wysiwyg_fields-' + id + '-placeholder').replaceWith($('.wysiwyg_fields-' + id + '-field:first'));
-        }
         $('#wysiwyg_fields-' + id + '-wrapper table, #' + id.replace('_', '-') + '-items').show();
       }
+
+      // Undo DOM modificatons.
+      $('.placeholder').each(function() {
+        $(this).replaceWith($('#' + $(this).attr('id').substr(0, $(this).attr('id').length - 12)));
+      });
 
       // Reset button pane.
       $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane').hide();
       $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane button').html(Drupal.t('Insert'));
-      $('#wysiwyg_fields-' + id + '-formatters_placeholder').replaceWith($('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane select'));
 
       // Reset expand icon.
       $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-titlebar .wysiwyg_fields-icon-expand .ui-icon')
@@ -246,7 +258,7 @@
             marginRight: button.css('margin-right'),
             marginTop: button.css('margin-top')
           })
-          .before('<div id="wysiwyg_fields-' + id + '-formatters_placeholder" />')
+          .before('<div id="' + $('.wysiwyg_fields-' + id + '-field:first .wysiwyg_fields-widget select').attr('id') + '-placeholder" class="placeholder" />')
           .appendTo('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane'); // @TODO - Append or Prepend based on jQuery 1.6/1.7
       }
       if (label !== undefined) {
@@ -269,8 +281,11 @@
 
   Drupal.behaviors.wysiwygFields = function(context) {
     if (context !== document) {
-      $.each(Drupal.settings.wysiwygFields.fields, function(field) {
-        Drupal.wysiwygFields.buttonsAttach(field);
+      $.each(Drupal.settings.wysiwygFields.fields, function(id) {
+        Drupal.wysiwygFields.buttonsAttach(id);
+        if ($('#wysiwyg_fields-' + id + '-dialog').css('display') == 'block' && $('#wysiwyg_fields-' + id + '-dialog .wysiwyg_fields-icon-expand .ui-icon').hasClass('ui-icon-minusthick')) {
+          Drupal.wysiwygFields.dialogShowAll(id);
+        }
       });
     }
   }

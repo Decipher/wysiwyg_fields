@@ -216,6 +216,17 @@ function wysiwyg_fields_elements_process($form_element) {
         'class' => 'wysiwyg_fields_insert',
       ),
     );
+
+    // Multiselect checkbox.
+    $form_element['wysiwyg_fields']['wysiwyg_fields_select'] = array(
+      '#type' => 'checkbox',
+      '#defult_value' => FALSE,
+      '#name' => "{$form_element['#name']}[wysiwyg_fields_select]",
+      '#id' => "{$form_element['#id']}-wysiwyg-fields-select",
+      '#attributes' => array(
+        'class' => 'wysiwyg_fields_select',
+      ),
+    );
   }
 
   return $form_element;
