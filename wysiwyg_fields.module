@@ -350,6 +350,7 @@ function wysiwyg_fields_ahah_insert() {
   // we're in AHAH here, so that won't happen. Make them go away.
   unset($_SESSION['messages']);
 
+  unset($form[arg(3)][arg(4)]['#prefix'], $form[arg(3)][arg(4)]['#suffix']);
   $output = drupal_render($form[arg(3)][arg(4)]);
   $errors = form_get_errors();
   $item = $form_state['values'][arg(3)][arg(4)];

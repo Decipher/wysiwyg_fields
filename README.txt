@@ -58,3 +58,4 @@ Known issues
   - Embed Google Maps Field module.
   - Video module.
 - Inserted ViewField doesn't respect querystring variables.
+- Recursive Node references = infinite loop.

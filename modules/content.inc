@@ -189,8 +189,6 @@ function content_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NUL
         $fields[$token[1]] = is_array($fields[$token[1]]) ? $fields[$token[1]] : array();
         $fields[$token[1]][$token[2]] = TRUE;
       }
-
-      // @TODO - Check this, one test showed a text element deleted unintentionally.
       foreach (content_fields(NULL, $node->type) as $field) {
         if ($field['widget']['wysiwyg_fields_status'] == TRUE && $field['widget']['wysiwyg_fields_delete']) {
           foreach (array_keys($node->{$field['field_name']}) as $delta) {

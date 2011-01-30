@@ -194,25 +194,20 @@
      *
      */
     dialogClose: function(id) {
-      if (Drupal.settings.wysiwygFields.fields[id].multiple > 1) {
-        if (!$('.wysiwyg_fields-' + id + '-field:first').parent().is('td')) {
-          $('#wysiwyg_fields-' + id + '-placeholder').replaceWith($('.wysiwyg_fields-' + id + '-field:first'));
-        }
-        $('#wysiwyg_fields-' + id + '-wrapper table').show();
-      }
-
       // Undo DOM modificatons.
-      else if (Drupal.settings.wysiwygFields.fields[id].multiple == 1) {
+      if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
         if (!$('.wysiwyg_fields-' + id + '-field:first').parent().is('td')) {
           $('#wysiwyg_fields-' + id + '-placeholder').replaceWith($('.wysiwyg_fields-' + id + '-field:first'));
         }
-        $('#' + id.replace('_', '-') + '-items').show();
+        $('#wysiwyg_fields-' + id + '-wrapper table, #' + id.replace('_', '-') + '-items').show();
       }
 
+      // Reset button pane.
       $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane').hide();
       $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane button').html(Drupal.t('Insert'));
       $('#wysiwyg_fields-' + id + '-formatters_placeholder').replaceWith($('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane select'));
 
+      // Reset expand icon.
       $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-titlebar .wysiwyg_fields-icon-expand .ui-icon')
         // jQuery UI 1.6
         .addClass('ui-plus-default')
