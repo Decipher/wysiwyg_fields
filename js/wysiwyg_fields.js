@@ -14,6 +14,8 @@
         buttons: {
           'Insert': function() {
             $('#wysiwyg_fields-' + id + '-dialog .wysiwyg_fields-widget input.form-submit:first').trigger('mousedown');
+            $('#wysiwyg_fields-' + id + '-wrapper').dialog('close');
+            Drupal.wysiwygFields.dialogClose(id);
           }
         },
         height: 'auto',

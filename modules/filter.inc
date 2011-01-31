@@ -40,6 +40,7 @@ function _wysiwyg_fields_filter_process($node, $text) {
 
     $formatter = explode('_formatter_', $token[3]);
 
+    // @TODO - Redo for multi-field support.
     $element = _wysiwyg_fields_ahah_get_element($field, $item, $formatter);
     $text = str_replace($token[0], theme($element['#theme'], $element), $text);
   }
