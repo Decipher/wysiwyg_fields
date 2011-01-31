@@ -166,14 +166,24 @@
      *
      */
     dialogShowUpdate: function(id) {
-      token = Drupal.settings.wysiwygFields.fields[id].active.split('-');
-
       if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
-        $('#' + id.replace('_', '-') + '-items, #wysiwyg_fields-' + id + '-wrapper table').hide();
-        if ($('#edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper').parents('table#' + id + '_values').length == 1) {
-          $('#edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper')
-            .before('<div id="edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper-placeholder" class="placeholder" />')
-            .prependTo('#wysiwyg_fields-' + id + '-wrapper');
+        token = Drupal.settings.wysiwygFields.fields[id].active.split('-');
+        deltas = token[2].split('_');
+
+        if (deltas.length == 1) {
+          $('#' + id.replace('_', '-') + '-items, #wysiwyg_fields-' + id + '-wrapper table').hide();
+          if ($('#edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper').parents('table#' + id + '_values').length == 1) {
+            $('#edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper')
+              .before('<div id="edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper-placeholder" class="placeholder" />')
+              .prependTo('#wysiwyg_fields-' + id + '-wrapper');
+          }
+        }
+
+        else {
+          this.dialogShowAll(id);
+          $.each(deltas, function(delta) {
+            $('#edit-' + id.replace('_', '-') + '-' + delta + '-wysiwyg-fields-select').attr('checked', 'checked');
+          });
         }
       }
 
@@ -277,7 +287,7 @@
       }
       if (label !== undefined) {
         token = Drupal.settings.wysiwygFields.fields[id].active.split('-');
-        $('.wysiwyg_fields-' + id + '-field:first .wysiwyg_fields-widget select').val(token[3]);
+        $('#wysiwyg_fields-' + id + '-dialog select.wysiwyg_fields_formatters').val(token[3]);
         $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane button').html(Drupal.t(label));
       }
       $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane').show();
