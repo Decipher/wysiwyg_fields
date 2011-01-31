@@ -187,7 +187,10 @@ function content_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NUL
       $fields = array();
       foreach ($tokens as $token) {
         $fields[$token[1]] = is_array($fields[$token[1]]) ? $fields[$token[1]] : array();
-        $fields[$token[1]][$token[2]] = TRUE;
+        $token[2] = explode('_', $token[2]);
+        foreach ($token[2] as $delta) {
+          $fields[$token[1]][$delta] = TRUE;
+        }
       }
       foreach (content_fields(NULL, $node->type) as $field) {
         if ($field['widget']['wysiwyg_fields_status'] == TRUE && $field['widget']['wysiwyg_fields_delete']) {

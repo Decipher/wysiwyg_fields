@@ -8,46 +8,50 @@
      * Initialize Wysiwyg Fields plugin.
      */
     init: function(id) {
-      // Create jQuery UI dialog.
-      $('#wysiwyg_fields-' + id + '-wrapper').dialog({
-        autoOpen: false,
-        buttons: {
-          'Insert': function() {
-            $('#wysiwyg_fields-' + id + '-dialog .wysiwyg_fields-widget input.form-submit:first').trigger('mousedown');
-            $('#wysiwyg_fields-' + id + '-wrapper').dialog('close');
-            Drupal.wysiwygFields.dialogClose(id);
-          }
-        },
-        height: 'auto',
-        modal: true,
-        title: Drupal.settings.wysiwyg.plugins[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].format].drupal['wysiwyg_fields_' + id].title,
-        width: '80%'
-      });
-      $('#wysiwyg_fields-' + id + '-wrapper').bind('dialogclose', function(event, ui) {
-        Drupal.wysiwygFields.dialogClose(id);
-      });
-      $('#wysiwyg_fields-' + id + '-wrapper').parents('.ui-dialog').attr('id', 'wysiwyg_fields-' + id + '-dialog');
-      $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane').hide();
-      this.dialogFix(id);
+      if (typeof Drupal.settings.wysiwygFields.fields[id].init == "undefined") {
+        Drupal.settings.wysiwygFields.fields[id].init = true;
 
-      // Expand icon.
-      $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-titlebar').prepend('<a class="ui-corner-all wysiwyg_fields-icon-expand" href="#" role="button" unselectable="on"><span class="ui-icon ui-icon-plusthick ui-plus-default" unselectable="on">Expand</span></a>');
-      $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-titlebar .wysiwyg_fields-icon-expand')
-        .hover(
-          function() {
-            $(this).addClass('ui-state-hover');
+        // Create jQuery UI dialog.
+        $('#wysiwyg_fields-' + id + '-wrapper').dialog({
+          autoOpen: false,
+          buttons: {
+            'Insert': function() {
+              $('#wysiwyg_fields-' + id + '-dialog .wysiwyg_fields-widget input.form-submit:first').trigger('mousedown');
+              $('#wysiwyg_fields-' + id + '-wrapper').dialog('close');
+              Drupal.wysiwygFields.dialogClose(id);
+            }
           },
-          function() {
-            $(this).removeClass('ui-state-hover');
-          }
-        )
-        .bind('click', function() {
-          Drupal.wysiwygFields.dialogShow(id, 'All');
-          return false;
+          height: 'auto',
+          modal: true,
+          title: Drupal.settings.wysiwyg.plugins[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].format].drupal['wysiwyg_fields_' + id].title,
+          width: '80%'
         });
+        $('#wysiwyg_fields-' + id + '-wrapper').bind('dialogclose', function(event, ui) {
+          Drupal.wysiwygFields.dialogClose(id);
+        });
+        $('#wysiwyg_fields-' + id + '-wrapper').parents('.ui-dialog').attr('id', 'wysiwyg_fields-' + id + '-dialog');
+        $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane').hide();
+        this.dialogFix(id);
 
-      // MCEditor icon size fix.
-      $('.mce_wysiwyg_fields_' + id).addClass('mce_wysiwyg_fields_icon');
+        // Expand icon.
+        $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-titlebar').prepend('<a class="ui-corner-all wysiwyg_fields-icon-expand" href="#" role="button" unselectable="on"><span class="ui-icon ui-icon-plusthick ui-plus-default" unselectable="on">' + Drupal.t('Expand') + '</span></a>');
+        $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-titlebar .wysiwyg_fields-icon-expand')
+          .hover(
+            function() {
+              $(this).addClass('ui-state-hover');
+            },
+            function() {
+              $(this).removeClass('ui-state-hover');
+            }
+          )
+          .bind('click', function() {
+            Drupal.wysiwygFields.dialogShow(id, 'All');
+            return false;
+          });
+
+        // MCEditor icon size fix.
+        $('.mce_wysiwyg_fields_' + id).addClass('mce_wysiwyg_fields_icon');
+      }
     },
 
     /**
@@ -83,7 +87,7 @@
      * Convert tokens to the appropriate rendered preview.
      */
     wysiwygAttach: function(id, content, settings, instanceId) {
-      var regex = new RegExp('(\\[wysiwyg_fields-' + id + '-(\\d)-(.*?)\\])', 'g');
+      var regex = new RegExp('(\\[wysiwyg_fields-' + id + '-([\\d_])+-(.*?)\\])', 'g');
       if ((matches = content.match(regex))) {
         $.each($(matches), function(i, elem) {
           elemId = elem.substr(1, elem.length - 2);
@@ -182,26 +186,33 @@
      *
      */
     dialogShowAll: function(id) {
-      this.dialogClose(id);
-      this.buttonsAttach(id);
+      if ($('#wysiwyg_fields-' + id + '-dialog .ui-dialog-titlebar .wysiwyg_fields-icon-expand .ui-icon').html() == Drupal.t('Expand')) {
+        this.dialogClose(id);
+        this.buttonsAttach(id);
 
-      // Reposition Multiselect checkboxes.
-      if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
-        $('#wysiwyg_fields-' + id + '-dialog .wysiwyg_fields_select').each(function() {
-          $(this)
-            .before('<div id="' + $(this).attr('id') + '-placeholder" class="placeholder" />')
-            .appendTo($(this).parents('tr:first').find('td:first'));
-        });
+        // Reposition Multiselect checkboxes.
+        if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
+          $('#wysiwyg_fields-' + id + '-dialog .wysiwyg_fields_select').each(function() {
+            $(this)
+              .before('<div id="' + $(this).attr('id') + '-placeholder" class="placeholder" />')
+              .appendTo($(this).parents('tr:first').find('td:first'));
+          });
+        }
+
+        $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-titlebar .wysiwyg_fields-icon-expand .ui-icon')
+          .html(Drupal.t('Contract'))
+          // jQuery UI 1.6
+          .removeClass('ui-plus-default')
+          .addClass('ui-minus-default')
+          // jQuery UI 1.7
+          .removeClass('ui-icon-plusthick')
+          .addClass('ui-icon-minusthick');
       }
 
-      $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-titlebar .wysiwyg_fields-icon-expand .ui-icon')
-        .html('Contract')
-        // jQuery UI 1.6
-        .removeClass('ui-plus-default')
-        .addClass('ui-minus-default')
-        // jQuery UI 1.7
-        .removeClass('ui-icon-plusthick')
-        .addClass('ui-icon-minusthick');
+      else {
+        this.dialogClose(id);
+        this.dialogShow(id);
+      }
     },
 
     /**
@@ -223,6 +234,7 @@
 
       // Reset expand icon.
       $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-titlebar .wysiwyg_fields-icon-expand .ui-icon')
+        .html(Drupal.t('Expand'))
         // jQuery UI 1.6
         .addClass('ui-plus-default')
         .removeClass('ui-minus-default')

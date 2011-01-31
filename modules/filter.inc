@@ -36,13 +36,28 @@ function _wysiwyg_fields_filter_process($node, $text) {
     $fields[$token[1]] = isset($fields[$token[1]]) ? $fields[$token[1]] : content_fields($token[1], $node->type);
 
     $field = $fields[$token[1]];
-    $item = $node->{$token[1]}[$token[2]];
+    $token[2] = explode('_', $token[2]);
+    $items = array();
+    foreach ($token[2] as $delta) {
+      $items[] = $node->{$token[1]}[$delta];
+    }
 
-    $formatter = explode('_formatter_', $token[3]);
+    list($field_type, $formatter_name) = explode('_formatter_', $token[3]);
+    $formatter = _content_get_formatter($formatter_name, $field_type);
 
-    // @TODO - Redo for multi-field support.
-    $element = _wysiwyg_fields_ahah_get_element($field, $item, $formatter);
-    $text = str_replace($token[0], theme($element['#theme'], $element), $text);
+    if (!$formatter->multiple) {
+      $element = '';
+      foreach ($items as $item) {
+        $item = _wysiwyg_fields_ahah_get_element($field, $item, array($field_type, $formatter_name));
+        $element .= theme($item['#theme'], $item);
+      }
+      $text = str_replace($token[0], $element, $text);
+    }
+
+    else {
+      $element = _wysiwyg_fields_ahah_get_element($field, $items, array($field_type, $formatter_name));
+      $text = str_replace($token[0], theme($element['#theme'], $element), $text);
+    }
   }
 
   return $text;
@@ -52,7 +67,7 @@ function _wysiwyg_fields_filter_process($node, $text) {
  *
  */
 function _wysiwyg_fields_text_to_tokens($text) {
-  preg_match_all('/\[wysiwyg_fields-(.*?)-(\d+)-(.*?)\]/', $text, $matches, PREG_SET_ORDER);
+  preg_match_all('/\[wysiwyg_fields-(.*?)-([\d_]+)-(.*?)\]/', $text, $matches, PREG_SET_ORDER);
 
   // Use token as array key to ensure no unnecessary processing.
   $tokens = array();
