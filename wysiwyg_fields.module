@@ -297,7 +297,7 @@ function wysiwyg_fields_form_alter_build_after($form_element, &$form_state) {
       }
 
       // jQuery 1.6 theme.
-      else if (file_exists($css = drupal_get_path('module', 'jquery_ui') . '/jquery.ui/themes/default/ui.all.css')) {
+      elseif (file_exists($css = drupal_get_path('module', 'jquery_ui') . '/jquery.ui/themes/default/ui.all.css')) {
         drupal_add_css($css);
       }
 

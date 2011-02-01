@@ -32,6 +32,11 @@
   padding: 1.5em 1.7em;
 }
 
+.ui-dialog .content-multiple-table td.content-multiple-drag {
+  min-width: 45px;
+  width: 45px;
+}
+
 
 /* jQuery UI 1.6 fixes. */
 .ui-icon {

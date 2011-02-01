@@ -303,12 +303,16 @@
     }
   }
 
+  /**
+   *
+   */
   Drupal.behaviors.wysiwygFields = function(context) {
     if (context !== document) {
       $.each(Drupal.settings.wysiwygFields.fields, function(id) {
         Drupal.wysiwygFields.buttonsAttach(id);
         if ($('#wysiwyg_fields-' + id + '-dialog').css('display') == 'block' && $('#wysiwyg_fields-' + id + '-dialog .wysiwyg_fields-icon-expand .ui-icon').hasClass('ui-icon-minusthick')) {
-          Drupal.wysiwygFields.dialogShowAll(id);
+          Drupal.wysiwygFields.dialogClose(id);
+          Drupal.wysiwygFields.dialogShow(id, 'All');
         }
       });
     }

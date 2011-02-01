@@ -52,10 +52,21 @@ Frequently asked questions
 Known issues
 --------------------------
 
-- Following CCK field modules aren't compatible:
+- Following CCK field modules aren't compatible: @TODO - write incompatability detection code.
   - Embedded Media Field module.
-- Certain fields can't render the preview due to JavaScript or other reasons:
+- Certain fields can't render the preview due to JavaScript or other reasons: @TODO - Write hook for alternative preview.
   - Embed Google Maps Field module.
   - Video module.
 - Inserted ViewField doesn't respect querystring variables.
 - Recursive Node references = infinite loop.
+- Locale can't read dynamic JS files.
+- Can insert empty fields. @TODO - Flag fields as required when inserting.
+- jQuery 1.6:
+  - Button bar position.
+  - Overflow is hidden, should scroll or Dialog should grow.
+- Firefox issues:
+  - Images and DIVs are resizable.
+- Rubik theme:
+  - Description tooltip causes scrolling in dialog.
+- Chameleon and Marvin theme:
+  - jQuery UI 1.7 Dialog conflict.
