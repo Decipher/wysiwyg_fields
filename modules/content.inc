@@ -177,21 +177,24 @@ function _content_wysiwyg_fields_form_alter_alter_submit($form, &$form_state) {
 function content_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
     case 'presave':
-      $tokens = array();
-      $textfields = _wysiwyg_fields_textfields($node);
-      foreach ($textfields as &$textfield) {
-        $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
+      // Re-assign deltas to mach CCKs changes.
+      list($fields, $textfields) = _content_wysiwyg_fields_get_fields($node);
+      foreach ($fields as $id => $items) {
+        ksort($items);
+        foreach ($items as $delta => $val) {
+          foreach ($node->{$id} as $field_delta => $item) {
+            if ($item['wysiwyg_fields']['wysiwyg_fields_delta'] == $delta) {
+              foreach ($textfields as &$textfield) {
+                $textfield['value'] = str_replace("[wysiwyg_fields-{$id}-{$delta}", "[wysiwyg_fields-{$id}-{$field_delta}", $textfield['value']);
+              }
+              break;
+            }
+          }
+        }
       }
 
       // Delete any Wysiwyg Fields that weren't inserted.
-      $fields = array();
-      foreach ($tokens as $token) {
-        $fields[$token[1]] = is_array($fields[$token[1]]) ? $fields[$token[1]] : array();
-        $token[2] = explode('_', $token[2]);
-        foreach ($token[2] as $delta) {
-          $fields[$token[1]][$delta] = TRUE;
-        }
-      }
+      list($fields, $textfields) = _content_wysiwyg_fields_get_fields($node);
       foreach (content_fields(NULL, $node->type) as $field) {
         if ($field['widget']['wysiwyg_fields_status'] == TRUE && $field['widget']['wysiwyg_fields_delete']) {
           foreach (array_keys($node->{$field['field_name']}) as $delta) {
@@ -220,6 +223,9 @@ function content_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NUL
   }
 }
 
+/**
+ *
+ */
 function _wysiwyg_fields_textfields($node) {
   $textfields = array();
 
@@ -248,4 +254,27 @@ function _wysiwyg_fields_textfields($node) {
   }
 
   return $textfields;
+}
+
+/**
+ *
+ */
+function _content_wysiwyg_fields_get_fields($node) {
+  // Get all tokens from all textfields.
+  $tokens = array();
+  $textfields = _wysiwyg_fields_textfields($node);
+  foreach ($textfields as &$textfield) {
+    $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
+  }
+
+  $fields = array();
+  foreach ($tokens as $token) {
+    $fields[$token[1]] = is_array($fields[$token[1]]) ? $fields[$token[1]] : array();
+    $token[2] = explode('_', $token[2]);
+    foreach ($token[2] as $delta) {
+      $fields[$token[1]][$delta] = TRUE;
+    }
+  }
+
+  return array($fields, $textfields);
 }
