@@ -425,14 +425,28 @@ function wysiwyg_fields_ahah_insert() {
         </div>");
     }
 
+    // Get first empty delta.
+    $delta = NULL;
+    $function = "{$field['module']}_content_is_empty";
+    ksort($_POST[arg(3)]);
+    foreach ($_POST[arg(3)] as $count => $item) {
+      if ($function($item, $field)) {
+        $delta = $count;
+        break;
+      }
+    }
+    $add_more = is_null($delta);
+    $delta = is_null($delta) ? $count + 1 : $delta;
+
+    // Trigger 'Add more' button.
+    $add_more = ($field['multiple'] == 1 && $add_more) ? "$('.form-submit[name=\"" . arg(3) . "_add_more\"]').trigger('mousedown');" : '';
+
     // @TODO - Turn this into a theme function?
     $output .= "
       <script type='text/javascript'>
         Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].insert({$element});
-        if (typeof Drupal.settings.wysiwygFields.fields." . arg(3) . ".active == 'undefined') {
-          $('.form-submit[name=\"" . arg(3) . "_add_more\"]').trigger('mousedown');
-          Drupal.wysiwygFields.deltaUpdate('" . arg(3) . "', " . arg(4) . ");
-        }
+        Drupal.settings.wysiwygFields.fields['" . arg(3) . "'].delta = {$delta};
+        {$add_more}
       </script>";
   }
 

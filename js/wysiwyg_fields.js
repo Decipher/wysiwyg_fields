@@ -291,19 +291,6 @@
         $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane button').html(Drupal.t(label));
       }
       $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane').show();
-    },
-
-    /**
-     * Increment field delta.
-     */
-    deltaUpdate: function(id, delta) {
-      if (Drupal.settings.wysiwygFields.fields[id].multiple == 1) {
-        Drupal.settings.wysiwygFields.fields[id].delta = $('#' + id + '_values tbody tr').length - 1;
-      }
-
-      else if (Drupal.settings.wysiwygFields.fields[id].multiple > 1 && typeof delta !== "undefined") {
-        
-      }
     }
   }
 
@@ -318,8 +305,6 @@
           Drupal.wysiwygFields.dialogClose(id);
           Drupal.wysiwygFields.dialogShow(id, 'All');
         }
-
-        Drupal.wysiwygFields.deltaUpdate(id);
       });
     }
   }

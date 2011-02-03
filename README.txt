@@ -36,6 +36,7 @@ Required modules
 Recommended modules
 --------------------------
 
+* Custom Formatters module.
 * jQuery Update module (in conjunction with jQuery UI 1.7).
 
 
