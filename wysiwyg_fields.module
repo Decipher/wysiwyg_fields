@@ -411,19 +411,12 @@ function wysiwyg_fields_ahah_insert() {
         $item = _wysiwyg_fields_ahah_get_element($field, $item, array($field_type, $formatter_name));
         $element .= theme($item['#theme'], $item);
       }
-      $element = drupal_to_js("
-        <div id='{$id}' class='wysiwyg_fields wysiwyg_fields-" . arg(3) . "'>
-          " . $element . "
-        </div>");
     }
-
     else {
       $element = _wysiwyg_fields_ahah_get_element($field, $items, array($field_type, $formatter_name));
-      $element = drupal_to_js("
-        <div id='{$id}' class='wysiwyg_fields wysiwyg_fields-" . arg(3) . "'>
-          " . theme($element['#theme'], $element) . "
-        </div>");
+      $element = theme($element['#theme'], $element);
     }
+    $element = drupal_to_js("<wysiwyg_field id='{$id}' class='wysiwyg_fields wysiwyg_fields-" . arg(3) . "'>" . $element . "</wysiwyg_field>");
 
     // Get first empty delta.
     $delta = NULL;

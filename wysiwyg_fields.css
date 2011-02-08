@@ -28,8 +28,9 @@
   margin-left: 16px;
 }
 
-.ui-dialog .ui-dialog-content > * {
-  padding: 1.5em 1.7em;
+.ui-dialog .ui-dialog-content {
+  padding: 1.5em 1.7em !important;
+  width: auto !important;
 }
 
 .ui-dialog .content-multiple-table td.content-multiple-drag {

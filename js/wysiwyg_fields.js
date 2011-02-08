@@ -4,10 +4,20 @@
   Drupal.settings.wysiwygFields = Drupal.settings.wysiwygFields || {};
 
   Drupal.wysiwygFields = {
+    wrapperElement: 'wysiwyg_field',
+    wrapperElementDefault: 'wysiwyg_field',
+
     /**
      * Initialize Wysiwyg Fields plugin.
      */
     init: function(id) {
+      this.wrapperElement = (typeof this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wrapperElement == 'undefined')
+        ? this.wrapperElementDefault
+        : this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wrapperElement;
+
+      // MCEditor icon size fix.
+      $('.mce_wysiwyg_fields_' + id).addClass('mce_wysiwyg_fields_icon');
+
       if (typeof Drupal.settings.wysiwygFields.fields[id].init == "undefined") {
         Drupal.settings.wysiwygFields.fields[id].init = true;
 
@@ -48,9 +58,6 @@
             Drupal.wysiwygFields.dialogShow(id, 'All');
             return false;
           });
-
-        // MCEditor icon size fix.
-        $('.mce_wysiwyg_fields_' + id).addClass('mce_wysiwyg_fields_icon');
       }
     },
 
@@ -68,8 +75,9 @@
         }
       }
 
-      node = ($(node).parents('div.wysiwyg_fields-' + id).length == 1) ? $(node).parents('div.wysiwyg_fields-' + id).get(0) : node;
-      if ($(node).is('div.wysiwyg_fields-' + id)) {
+      // @TODO - Allow use of different wrapper element per Wysiwyg library.
+      node = ($(node).parents('wysiwyg_field.wysiwyg_fields-' + id).length == 1) ? $(node).parents('wysiwyg_field.wysiwyg_fields-' + id).get(0) : node;
+      if ($(node).is('wysiwyg_field.wysiwyg_fields-' + id)) {
         // Select Wysiwyg Fields wrapper.
         // Invoke appropriate function based on active Wysiwyg editor.
         if ($.isFunction(this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygIsNode)) {
@@ -80,7 +88,8 @@
         Drupal.settings.wysiwygFields.fields[id].active = $(node).attr('id');
       }
 
-      return $(node).parents('div.wysiwyg_fields-' + id).length == 1 || $(node).is('div.wysiwyg_fields-' + id);
+      // @TODO - Allow use of different wrapper element per Wysiwyg library.
+      return $(node).parents('wysiwyg_field.wysiwyg_fields-' + id).length == 1 || $(node).is('wysiwyg_field.wysiwyg_fields-' + id);
     },
 
     /**
@@ -91,28 +100,55 @@
       if ((matches = content.match(regex))) {
         $.each($(matches), function(i, elem) {
           elemId = elem.substr(1, elem.length - 2);
-          replacement = "<div id='" + elemId + "' class='wysiwyg_fields wysiwyg_fields-" + id + "'>" + Drupal.settings.wysiwygFields.replacements[elem] + "</div>";
+          // @TODO - Allow use of different wrapper element per Wysiwyg library.
+          replacement = '<wysiwyg_field id="' + elemId + '" class="wysiwyg_fields wysiwyg_fields-placeholder wysiwyg_fields-' + id + '">&nbsp;</wysiwyg_field>';
           content = content.replace(elem, replacement);
         });
       }
+      this._wysiwygAttach();
       return content;
+    },
+
+    /**
+     *
+     */
+    _wysiwygAttach: function() {
+      if (typeof Drupal.settings.wysiwygFields.timer == 'undefined') {
+        Drupal.settings.wysiwygFields.timer = setTimeout(
+          function() {
+            // Invoke appropriate function based on active Wysiwyg editor.
+            if ($.isFunction(Drupal.wysiwygFields.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].divToWysiwygField)) {
+              Drupal.wysiwygFields.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].divToWysiwygField();
+            }
+          },
+          100
+        );
+      }
     },
 
     /**
      * Convert rendered previews to the appropriate token.
      */
     wysiwygDetach: function(id, content, settings, instanceId) {
-      var $content = $('<div>' + content + '</div>');
-      $.each($('div.wysiwyg_fields-' + id, $content), function(i, elem) {
-        var token = '[' + $(elem).attr('id') + ']';
+      if (content.indexOf('wysiwyg_fields-placeholder') == -1) {
+        // @TODO - Allow use of different wrapper element per Wysiwyg library.
+        var regex = new RegExp('<wysiwyg_field.*?wysiwyg_fields-' + id + '.*?>[\\n\\s\\S]*?</wysiwyg_field>', 'g');
+        if ((matches = content.match(regex))) {
+          $.each($(matches), function(i, elem) {
+            // @TODO - Allow use of different wrapper element per Wysiwyg library.
+            var regex = new RegExp('<wysiwyg_field.*?>([\\n\\s\\S]*?)</wysiwyg_field>');
+            var item = elem.match(regex);
+            var token = '[' + $(elem).attr('id') + ']';
 
-        // Store replacement in Drupal.settings for wysiwygAttach.
-        Drupal.settings.wysiwygFields.replacements = Drupal.settings.wysiwygFields.replacements || {};
-        Drupal.settings.wysiwygFields.replacements[token] = $(elem).html();
+            // Store replacement in Drupal.settings for wysiwygAttach.
+            Drupal.settings.wysiwygFields.replacements = Drupal.settings.wysiwygFields.replacements || {};
+            Drupal.settings.wysiwygFields.replacements[token] = item[1];
 
-        $($content).find('#' + $(elem).attr('id')).replaceWith(token);
-      });
-      return $content.html();
+            content = content.replace(elem, token);
+          });
+        }
+      }
+      return content;
     },
 
     /**
