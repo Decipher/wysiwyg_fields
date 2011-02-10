@@ -47,6 +47,14 @@
           $(this).removeClass('wysiwyg_fields-placeholder');
           replacement = "<wysiwyg_field id='" + $(this).attr('id') + "' class='" + $(this).attr('class') + "'>" + Drupal.settings.wysiwygFields.replacements['[' + $(this).attr('id') + ']'] + "</wysiwyg_field>";
           Drupal.wysiwygFields.wysiwyg.ckeditor.wysiwygIsNode(this);
+
+          // This is required to slow down this function so that the insert
+          // doesn't get fired to early. It is hacky and needs fixing.
+          timestamp = now = new Date();
+          while (timestamp.getMilliseconds == now.getMilliseconds()) {
+            now = new Date();
+          }
+
           Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].insert(replacement);
         });
       }

@@ -75,9 +75,8 @@
         }
       }
 
-      // @TODO - Allow use of different wrapper element per Wysiwyg library.
-      node = ($(node).parents('wysiwyg_field.wysiwyg_fields-' + id).length == 1) ? $(node).parents('wysiwyg_field.wysiwyg_fields-' + id).get(0) : node;
-      if ($(node).is('wysiwyg_field.wysiwyg_fields-' + id)) {
+      node = ($(node).parents(this.wrapperElement + '.wysiwyg_fields-' + id).length == 1) ? $(node).parents(this.wrapperElement + '.wysiwyg_fields-' + id).get(0) : node;
+      if ($(node).is(this.wrapperElement + '.wysiwyg_fields-' + id)) {
         // Select Wysiwyg Fields wrapper.
         // Invoke appropriate function based on active Wysiwyg editor.
         if ($.isFunction(this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygIsNode)) {
@@ -88,8 +87,7 @@
         Drupal.settings.wysiwygFields.fields[id].active = $(node).attr('id');
       }
 
-      // @TODO - Allow use of different wrapper element per Wysiwyg library.
-      return $(node).parents('wysiwyg_field.wysiwyg_fields-' + id).length == 1 || $(node).is('wysiwyg_field.wysiwyg_fields-' + id);
+      return $(node).parents(this.wrapperElement + '.wysiwyg_fields-' + id).length == 1 || $(node).is(this.wrapperElement + '.wysiwyg_fields-' + id);
     },
 
     /**
@@ -100,8 +98,8 @@
       if ((matches = content.match(regex))) {
         $.each($(matches), function(i, elem) {
           elemId = elem.substr(1, elem.length - 2);
-          // @TODO - Allow use of different wrapper element per Wysiwyg library.
-          replacement = '<wysiwyg_field id="' + elemId + '" class="wysiwyg_fields wysiwyg_fields-placeholder wysiwyg_fields-' + id + '">&nbsp;</wysiwyg_field>';
+          wrapperElement = Drupal.wysiwygFields.wrapperElement;
+          replacement = '<' + wrapperElement + ' id="' + elemId + '" class="wysiwyg_fields wysiwyg_fields-placeholder wysiwyg_fields-' + id + '">&nbsp;</' + wrapperElement + '>';
           content = content.replace(elem, replacement);
         });
       }
@@ -131,12 +129,11 @@
      */
     wysiwygDetach: function(id, content, settings, instanceId) {
       if (content.indexOf('wysiwyg_fields-placeholder') == -1) {
-        // @TODO - Allow use of different wrapper element per Wysiwyg library.
-        var regex = new RegExp('<wysiwyg_field.*?wysiwyg_fields-' + id + '.*?>[\\n\\s\\S]*?</wysiwyg_field>', 'g');
+        wrapperElement = this.wrapperElement;
+        var regex = new RegExp('<' + wrapperElement + '.*?wysiwyg_fields-' + id + '.*?>[\\n\\s\\S]*?</' + wrapperElement + '>', 'g');
         if ((matches = content.match(regex))) {
           $.each($(matches), function(i, elem) {
-            // @TODO - Allow use of different wrapper element per Wysiwyg library.
-            var regex = new RegExp('<wysiwyg_field.*?>([\\n\\s\\S]*?)</wysiwyg_field>');
+            var regex = new RegExp('<' + wrapperElement + '.*?>([\\n\\s\\S]*?)</' + wrapperElement + '>');
             var item = elem.match(regex);
             var token = '[' + $(elem).attr('id') + ']';
 
@@ -155,6 +152,8 @@
      *
      */
     dialogShow: function(id, op) {
+      this.dialogClose(id);
+
       // If there is an active field, render update dialog.
       if (op == undefined && typeof Drupal.settings.wysiwygFields.fields[id].active !== "undefined") {
         op = 'Update';
@@ -307,7 +306,7 @@
      */
     buttonsAttach: function(id, label) {
       if ($('.wysiwyg_fields-' + id + '-field:first .wysiwyg_fields-widget select').length == 1 && $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane select').length == 0) {
-        button = $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane button')
+        button = $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane button');
         $('.wysiwyg_fields-' + id + '-field:first .wysiwyg_fields-widget select')
           .css({
             fontSize: button.css('font-size'),
@@ -336,10 +335,12 @@
   Drupal.behaviors.wysiwygFields = function(context) {
     if (context !== document) {
       $.each(Drupal.settings.wysiwygFields.fields, function(id) {
-        Drupal.wysiwygFields.buttonsAttach(id);
-        if ($('#wysiwyg_fields-' + id + '-dialog').css('display') == 'block' && $('#wysiwyg_fields-' + id + '-dialog .wysiwyg_fields-icon-expand .ui-icon').hasClass('ui-icon-minusthick')) {
-          Drupal.wysiwygFields.dialogClose(id);
-          Drupal.wysiwygFields.dialogShow(id, 'All');
+        if ($('#wysiwyg_fields-' + id + '-dialog').css('display') == 'block') {
+          Drupal.wysiwygFields.buttonsAttach(id);
+          if ($('#wysiwyg_fields-' + id + '-dialog .wysiwyg_fields-icon-expand .ui-icon').hasClass('ui-icon-minusthick')) {
+            Drupal.wysiwygFields.dialogClose(id);
+            Drupal.wysiwygFields.dialogShow(id, 'All');
+          }
         }
       });
     }
