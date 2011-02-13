@@ -12,6 +12,34 @@
    */
   Drupal.wysiwygFields.wysiwyg.ckeditor = {
     /**
+     *
+     */
+    init: function(id) {
+      if (typeof CKEDITOR.instances[Drupal.wysiwyg.activeId] !== "undefined" && typeof CKEDITOR.instances[Drupal.wysiwyg.activeId].document !== "undefined") {
+        $(CKEDITOR.instances[Drupal.wysiwyg.activeId].document.$).bind('mouseup', function() {
+          Drupal.wysiwygFields.wysiwyg.ckeditor.isNode(id);
+        });
+      }
+      else {
+        setTimeout(
+          function() {
+            Drupal.wysiwygFields.wysiwyg.ckeditor.init(id);
+          },
+          10
+        );
+      }
+    },
+
+    /**
+     * @see http://drupal.org/node/1060552
+     */
+    isNode: function(id) {
+      var node = CKEDITOR.instances[Drupal.wysiwyg.activeId].getSelection().getSelectedElement();
+      var state = Drupal.wysiwygFields.wysiwygIsNode(id, node ? node.$ : null) ? CKEDITOR.TRISTATE_ON : CKEDITOR.TRISTATE_OFF;
+      CKEDITOR.instances[Drupal.wysiwyg.activeId].getCommand('wysiwyg_fields_' + id).setState(state);
+    },
+
+    /**
      * Returns Text node.
      */
     wysiwygGetTextNode: function() {

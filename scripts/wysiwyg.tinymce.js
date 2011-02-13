@@ -14,6 +14,11 @@
     // Wrapper element override.
     wrapperElement: 'span',
 
+    init: function(id) {
+      // MCEditor icon size fix.
+      $('.mce_wysiwyg_fields_' + id).addClass('mce_wysiwyg_fields_icon');
+    },
+
     /**
      * @TODO - Remove IMG resize helper.
      */

@@ -114,18 +114,27 @@ function wysiwyg_fields_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a
       }
 
       $replacements = array();
-      $delta = array();
       foreach ($tokens as $token) {
         $replacements[$token[0]] = _wysiwyg_fields_filter_process($node, $token[0]);
-        $delta[$token[1]] = isset($delta[$token[1]]) ? $delta[$token[1]] : 0;
-        $delta[$token[1]] = $token[2] + 1 > $delta[$token[1]] ? $token[2] + 1 : $delta[$token[1]];
       }
 
       $fields = array();
       foreach (content_fields(NULL, $node->type) as $field) {
+        // Get first empty delta.
+        $delta = NULL;
+        $function = "{$field['module']}_content_is_empty";
+        if (is_array($node->{$field['field_name']})) {
+          foreach ($node->{$field['field_name']} as $count => $item) {
+            if ($function($item, $field)) {
+              $delta = $count;
+              break;
+            }
+          }
+        }
+
         $fields[$field['field_name']] = array(
           'multiple' => $field['multiple'],
-          'delta' => isset($delta[$field['field_name']]) ? $delta[$field['field_name']] : 0,
+          'delta' => !is_null($delta) ? $delta : count($node->{$field['field_name']}),
         );
       }
 

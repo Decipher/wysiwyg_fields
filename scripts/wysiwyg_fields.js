@@ -11,12 +11,13 @@
      * Initialize Wysiwyg Fields plugin.
      */
     init: function(id) {
+      if ($.isFunction(this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].init)) {
+        node = this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].init(id);
+      }
+
       this.wrapperElement = (typeof this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wrapperElement == 'undefined')
         ? this.wrapperElementDefault
         : this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wrapperElement;
-
-      // MCEditor icon size fix.
-      $('.mce_wysiwyg_fields_' + id).addClass('mce_wysiwyg_fields_icon');
 
       if (typeof Drupal.settings.wysiwygFields.fields[id].init == "undefined") {
         Drupal.settings.wysiwygFields.fields[id].init = true;
