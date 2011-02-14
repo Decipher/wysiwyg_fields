@@ -61,7 +61,7 @@ Known issues
 - Inserted ViewField doesn't respect querystring variables.
 - Recursive Node references = infinite loop.
 - Locale can't read dynamic JS files.
-- Can insert empty fields. @TODO - Flag fields as required when inserting.
+- Error message on non-multi insert doesn't work properly.
 - jQuery 1.6:
   - Button bar position.
   - Overflow is hidden, should scroll or Dialog should grow.

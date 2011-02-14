@@ -16,7 +16,7 @@
      */
     init: function(id) {
       if (typeof CKEDITOR.instances[Drupal.wysiwyg.activeId] !== "undefined" && typeof CKEDITOR.instances[Drupal.wysiwyg.activeId].document !== "undefined") {
-        $(CKEDITOR.instances[Drupal.wysiwyg.activeId].document.$).bind('mouseup', function() {
+        $(CKEDITOR.instances[Drupal.wysiwyg.activeId].document.$).bind('mouseup keyup', function() {
           Drupal.wysiwygFields.wysiwyg.ckeditor.isNode(id);
         });
       }

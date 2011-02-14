@@ -28,8 +28,6 @@
           buttons: {
             'Insert': function() {
               $('#wysiwyg_fields-' + id + '-dialog .wysiwyg_fields-widget input.form-submit:first').trigger('mousedown');
-              $('#wysiwyg_fields-' + id + '-wrapper').dialog('close');
-              Drupal.wysiwygFields.dialogClose(id);
             }
           },
           height: 'auto',
@@ -153,8 +151,6 @@
      *
      */
     dialogShow: function(id, op) {
-      this.dialogClose(id);
-
       // If there is an active field, render update dialog.
       if (op == undefined && typeof Drupal.settings.wysiwygFields.fields[id].active !== "undefined") {
         op = 'Update';
@@ -178,6 +174,8 @@
      *
      */
     dialogShowDefault: function(id) {
+      this.dialogClose(id);
+
       // Get field delta.
       delta = 0;
       if (Drupal.settings.wysiwygFields.fields[id].delta !== null) {
@@ -202,6 +200,8 @@
      *
      */
     dialogShowUpdate: function(id) {
+      this.dialogClose(id);
+
       if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
         token = Drupal.settings.wysiwygFields.fields[id].active.split('-');
         deltas = token[2].split('_');

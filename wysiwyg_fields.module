@@ -398,23 +398,43 @@ function wysiwyg_fields_ahah_insert() {
       $deltas[] = $delta;
     }
   }
-  $items = count($items) > 0 ? $items : $form_state['values'][arg(3)][arg(4)];
+  $items = count($items) > 0 ? $items : array($form_state['values'][arg(3)][arg(4)]);
   $deltas = count($deltas) > 0 ? $deltas : array(arg(4));
 
-  $item = $form_state['values'][arg(3)][arg(4)];
-  if (isset($errors) && (isset($errors[$item['_error_element']]) || isset($errors[arg(3)]))) {
-    $error = isset($errors[$item['_error_element']]) ? $errors[$item['_error_element']] : $errors[arg(3)];
-    drupal_set_message($error, 'error');
+  // Check for empty fields.
+  $field = content_fields(arg(3));
+  $is_empty = "{$field['module']}_content_is_empty";
+  $error = FALSE;
+  $message = '';
+  foreach ($items as $item) {
+    if ($is_empty($item, $field) && empty($errors[$item['_error_element']])) {
+      $errors[$item['_error_element']] = t("Can't insert an empty field.");
+    }
+
+    if (isset($errors[$item['_error_element']])) {
+      $error = TRUE;
+      $message .= $errors[$item['_error_element']];
+    }
+  }
+
+  // @TODO - Add multi-field error checking.
+  //$item = $form_state['values'][arg(3)][arg(4)];
+  //if (isset($errors) && (isset($errors[$item['_error_element']]) || isset($errors[arg(3)]))) {
+  //  $error = isset($errors[$item['_error_element']]) ? $errors[$item['_error_element']] : $errors[arg(3)];
+  //  drupal_set_message($error, 'error');
+  //  $output = theme('status_messages') . $output;
+  //}
+  if ($error) {
+    drupal_set_message($message, 'error');
     $output = theme('status_messages') . $output;
   }
 
   else {
-    $field = content_fields(arg(3));
-    list($field_type, $formatter_name) = explode('_formatter_', $item['wysiwyg_fields']['wysiwyg_fields_formatters']);
+    list($field_type, $formatter_name) = explode('_formatter_', $items[current(array_keys($items))]['wysiwyg_fields']['wysiwyg_fields_formatters']);
     $formatter = _content_get_formatter($formatter_name, $field_type);
-    $id = 'wysiwyg_fields-' . arg(3) . '-' . implode('_', $deltas) . "-{$item['wysiwyg_fields']['wysiwyg_fields_formatters']}";
+    $id = 'wysiwyg_fields-' . arg(3) . '-' . implode('_', $deltas) . "-{$items[current(array_keys($items))]['wysiwyg_fields']['wysiwyg_fields_formatters']}";
 
-    if ($items !== $form_state['values'][arg(3)][arg(4)] && !$formatter->multiple) {
+    if (!$formatter->multiple) {
       $element = '';
       foreach ($items as $item) {
         $item = _wysiwyg_fields_ahah_get_element($field, $item, array($field_type, $formatter_name));
@@ -429,10 +449,9 @@ function wysiwyg_fields_ahah_insert() {
 
     // Get first empty delta.
     $delta = NULL;
-    $function = "{$field['module']}_content_is_empty";
     ksort($_POST[arg(3)]);
     foreach ($_POST[arg(3)] as $count => $item) {
-      if ($function($item, $field)) {
+      if ($is_empty($item, $field)) {
         $delta = $count;
         break;
       }
@@ -447,6 +466,8 @@ function wysiwyg_fields_ahah_insert() {
     // @TODO - Clean/Improve up this code.
     $output .= "
       <script type='text/javascript'>
+        $('#wysiwyg_fields-" . arg(3) . "-wrapper').dialog('close');
+        Drupal.wysiwygFields.dialogClose('" . arg(3) . "');
         content = {$element};
         content = content.replace('wrapper_element', Drupal.wysiwygFields.wrapperElement, 'g');
         Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].insert(content);
