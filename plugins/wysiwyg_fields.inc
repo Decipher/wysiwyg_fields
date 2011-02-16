@@ -15,7 +15,7 @@ function wysiwyg_fields_wysiwyg_fields_plugin() {
    * $_SESSION['wysiwyg_fields'] contains active content type as
    * hook_wysiwyg_fields_plugin() provides no context.
    *
-   * @see wysiwyg_fields_after_build().
+   * @see wysiwyg_fields_after_build()
    */
   if (isset($_SESSION['wysiwyg_fields'])) {
     foreach (content_fields(NULL, $_SESSION['wysiwyg_fields']) as $field) {

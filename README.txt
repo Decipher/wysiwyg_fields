@@ -16,7 +16,7 @@ Features
 * Support for Wysiwyg module libraries:
   * CKEditor/FCKEditor.
   * TinyMCE.
-* Supports for a large variety of CCK fields, including but not limited to:
+* Supports for most CCK fields, including but not limited to:
   * CCK modules - Text, Number, Node reference and User reference.
   * FileField module.
   * ImageField module.
@@ -43,11 +43,31 @@ Recommended modules
 Configuration
 --------------------------
 
+Wysiwyg Fields settings can be found with the standard CCK field settings:
+  Administer > Content management > Content types > [content type] > Manage fields > [field] > Configure
+  http://[www.yoursite.com/path/to/drupal]/admin/content/node-type/[content-type]/fields/[field]
+
+- Expand the 'Wysiwyg Fields settings' fieldset.
+- Check the 'Attach to Wysiwyg?' checkbox.
+- Choose an icon for the Wysiwyg Field.
+- Select at least one (1) formatter.
+- (optional) Expand and configure the 'Advanced settings'.
 
 
 Frequently asked questions
 --------------------------
 
+Q. Where did my CCK field go?
+
+A. For usability purposes, Wysiwyg Fields consumes the fields that it is enabled
+   on. If the field is required for use outside of the Wysiwyg it is recommended
+   that you create a second field specifically for use with Wysiwyg Fields.
+
+
+Q. How can I see all the items on a Wysiwyg Field?
+
+A. While the Wysiwyg Fields dialog is active you will see a '+' icon to the left
+   of the dialog title, simply click the '+' to display the full CCK field view.
 
 
 Known issues

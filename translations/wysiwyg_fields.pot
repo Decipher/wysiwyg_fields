@@ -1,19 +1,20 @@
-# $Id: wysiwyg_imagefield.pot,v 1.2 2010/08/09 23:53:11 deciphered Exp $
+# $Id$
 #
 # LANGUAGE translation of Drupal (general)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:
-#  wysiwyg_imagefield.module,v 1.1 2010/08/06 11:05:26 deciphered
-#  help.inc,v 1.1 2010/08/06 11:05:26 deciphered
-#  wysiwyg_imagefield.info: n/a
-#  wysiwyg_imagefield.inc,v 1.1 2010/08/06 11:05:26 deciphered
-#  wysiwyg_imagefield.js,v 1.2 2010/08/08 03:18:59 deciphered
+#  wysiwyg_fields.module: n/a
+#  help.inc,v 1.2 2010/08/09 23:53:11 deciphered
+#  scripts/wysiwyg_fields.js: n/a
+#  wysiwyg_fields.info: n/a
+#  modules/content.inc: n/a
+#  modules/filter.inc: n/a
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2010-08-10 09:37+1000\n"
+"POT-Creation-Date: 2011-02-16 20:46+0000\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -22,36 +23,84 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: wysiwyg_imagefield.module:43 modules/help.inc:19
-msgid "Use with WYSIWYG ImageField?"
+#: wysiwyg_fields.module:227 modules/help.inc:20 scripts/wysiwyg_fields.js:0
+msgid "Insert"
 msgstr ""
 
-#: wysiwyg_imagefield.module:47
-msgid "If checked, this ImageField will be used for the WYSIWYG ImageField module."
+#: wysiwyg_fields.module:321
+msgid "No jQuery UI theme found, please download the appropriate files from: !url"
 msgstr ""
 
-#: wysiwyg_imagefield.module:48
-msgid "Note"
+#: wysiwyg_fields.module:340;354
+msgid "An unrecoverable error occurred."
 msgstr ""
 
-#: wysiwyg_imagefield.module:48
-msgid "Only one ImageField can be used with WYSIWYG ImageField at any one time."
+#: wysiwyg_fields.module:411
+msgid "Can't insert an empty field."
 msgstr ""
 
-#: wysiwyg_imagefield.module:84
-msgid "Insert is required to use this field with WYSIWYG ImageField."
+#: wysiwyg_fields.module:42
+msgid "Wysiwyg Fields AHAH callback"
 msgstr ""
 
-#: wysiwyg_imagefield.module:89
-msgid "'Number of values' must be set 'Unlimited' to use this field with WYSIWYG ImageField."
+#: wysiwyg_fields.module:49
+msgid "Wysiwyg Fields dynamic Wysiwyg plugin js"
 msgstr ""
 
-#: wysiwyg_imagefield.info:0 plugins/wysiwyg_imagefield.inc:17;20 plugins/wysiwyg_imagefield/wysiwyg_imagefield.js:0
-msgid "WYSIWYG ImageField"
+#: wysiwyg_fields.info:0
+msgid "Wysiwyg Fields"
 msgstr ""
 
-#: wysiwyg_imagefield.info:0
-msgid "An ImageField based IMCE alternative"
+#: wysiwyg_fields.info:0
+msgid "CCK Field support for the WYSIWYG module"
+msgstr ""
+
+#: wysiwyg_fields.info:0
+msgid "CCK"
+msgstr ""
+
+#: modules/content.inc:17
+msgid "Wysiwyg Fields settings"
+msgstr ""
+
+#: modules/content.inc:25
+msgid "Attach to Wysiwyg?"
+msgstr ""
+
+#: modules/content.inc:35
+msgid "Icon"
+msgstr ""
+
+#: modules/content.inc:39;54
+msgid "Upload"
+msgstr ""
+
+#: modules/content.inc:59
+msgid "Formatters"
+msgstr ""
+
+#: modules/content.inc:71
+msgid "Advanced settings"
+msgstr ""
+
+#: modules/content.inc:78
+msgid "Set field display settings to &lt;Hidden&gt;."
+msgstr ""
+
+#: modules/content.inc:87
+msgid "Delete field items not inserted on Node save."
+msgstr ""
+
+#: modules/content.inc:141
+msgid "At least one Formatter must be selected to be used with Wysiwyg Fields."
+msgstr ""
+
+#: modules/content.inc:163
+msgid "Field must not be required to be used with Wysiwyg Fields."
+msgstr ""
+
+#: modules/filter.inc:15
+msgid "Wysiwyg Fields filter"
 msgstr ""
 
 #: modules/help.inc:15
@@ -59,7 +108,7 @@ msgid "Configuration"
 msgstr ""
 
 #: modules/help.inc:16
-msgid "WYSIWYG ImageField must be enabled and configured on each desire Content type, follow these simple steps to do so:"
+msgid "Wysiwyg ImageField must be enabled and configured on each desire Content type, follow these simple steps to do so:"
 msgstr ""
 
 #: modules/help.inc:18
@@ -74,12 +123,12 @@ msgstr ""
 msgid "Check the !wif_checkbox checkbox."
 msgstr ""
 
-#: modules/help.inc:20
-msgid "Under the !insert section, check the !insert_btn checkbox and configure the !enabled_styles and !default_styles sections."
+#: modules/help.inc:19
+msgid "Use with Wysiwyg ImageField?"
 msgstr ""
 
 #: modules/help.inc:20
-msgid "Insert"
+msgid "Under the !insert section, check the !insert_btn checkbox and configure the !enabled_styles and !default_styles sections."
 msgstr ""
 
 #: modules/help.inc:20
@@ -119,7 +168,7 @@ msgid "Unlimited"
 msgstr ""
 
 #: modules/help.inc:24
-msgid "Once WYSIWYG ImageField is configured in your desired Content types, enable the WYSIWYG plugin on your desired WYSIWYG profile and you are ready to go."
+msgid "Once Wysiwyg ImageField is configured in your desired Content types, enable the Wysiwyg plugin on your desired Wysiwyg profile and you are ready to go."
 msgstr ""
 
 #: modules/help.inc:25
@@ -143,11 +192,11 @@ msgid "Where did my ImageField go?"
 msgstr ""
 
 #: modules/help.inc:31
-msgid "To make the process of adding inline images as streamlined as possible, WYSIWYG ImageField removes the ImageField widget from the user interface, making in visible only when needed."
+msgid "To make the process of adding inline images as streamlined as possible, Wysiwyg ImageField removes the ImageField widget from the user interface, making in visible only when needed."
 msgstr ""
 
 #: modules/help.inc:32
-msgid "It is recommended that if you require a ImageField accessible outside of the WYSIWYG ImageField experience that you create an ImageField for the sole purpose of using it with ImageField instead of using your existing ImageField."
+msgid "It is recommended that if you require a ImageField accessible outside of the Wysiwyg ImageField experience that you create an ImageField for the sole purpose of using it with ImageField instead of using your existing ImageField."
 msgstr ""
 
 #: modules/help.inc:35
@@ -171,7 +220,7 @@ msgid "The View can be modified at:"
 msgstr ""
 
 #: modules/help.inc:43
-msgid "How can I see all the files uploaded to the WYSIWYG ImageField widget?"
+msgid "How can I see all the files uploaded to the Wysiwyg ImageField widget?"
 msgstr ""
 
 #: modules/help.inc:45
@@ -180,5 +229,13 @@ msgstr ""
 
 #: modules/help.inc:46
 msgid "Ideas have been put forward and there will be a solution for this in a future release."
+msgstr ""
+
+#: scripts/wysiwyg_fields.js:0;0;0
+msgid "Expand"
+msgstr ""
+
+#: scripts/wysiwyg_fields.js:0
+msgid "Contract"
 msgstr ""
 

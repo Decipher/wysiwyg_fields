@@ -39,7 +39,9 @@ function _wysiwyg_fields_filter_process($node, $text) {
     $token[2] = explode('_', $token[2]);
     $items = array();
     foreach ($token[2] as $delta) {
-      $items[] = $node->{$token[1]}[$delta];
+      if (isset($node->{$token[1]}[$delta])) {
+        $items[] = $node->{$token[1]}[$delta];
+      }
     }
 
     list($field_type, $formatter_name) = explode('_formatter_', $token[3]);
