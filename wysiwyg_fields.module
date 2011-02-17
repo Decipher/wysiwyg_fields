@@ -33,26 +33,15 @@ function wysiwyg_fields_init() {
 }
 
 /**
- * Implements hook_menu().
+ * Implements hook_wysiwyg_fields_menu_alter().
  */
-function wysiwyg_fields_menu() {
-  $items = array();
-
+function wysiwyg_fields_wysiwyg_fields_menu_alter(&$items) {
   $items['ahah/wysiwyg_fields'] = array(
     'title' => 'Wysiwyg Fields AHAH callback',
     'page callback' => 'wysiwyg_fields_ahah',
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
-
-  $items[drupal_get_path('module', 'wysiwyg_fields') . '/plugins'] = array(
-    'title' => 'Wysiwyg Fields dynamic Wysiwyg plugin js',
-    'page callback' => 'wysiwyg_fields_wysiwyg_plugin_js',
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK,
-  );
-
-  return $items;
 }
 
 /**
@@ -328,6 +317,27 @@ function wysiwyg_fields_form_alter_build_after($form_element, &$form_state) {
 }
 
 /**
+ * @TODO - Store in Cache table.
+ */
+function wysiwyg_fields_icons($checksum = NULL) {
+  static $icons = array();
+
+  if (count($icons) == 0) {
+    $directories = module_invoke_all('wysiwyg_fields_icons');
+    foreach ($directories as $directory) {
+      foreach (scandir($directory) as $file) {
+        if (!is_dir($file)) {
+          // User MD5 checksum to prevent duplicates.
+          $icons[md5_file("{$directory}/{$file}")] = "{$directory}/{$file}";
+        }
+      }
+    }
+  }
+
+  return isset($checksum) ? $icons[$checksum] : $icons;
+}
+
+/**
  * Page callback; Wysiwyg Fields AHAH.
  */
 function wysiwyg_fields_ahah() {
@@ -520,17 +530,6 @@ function _wysiwyg_fields_ahah_get_element($field, $items, $formatter) {
   );
 
   return $element;
-}
-
-/**
- * Page callback; Render dynamic Wysiwyg plugin js.
- */
-function wysiwyg_fields_wysiwyg_plugin_js() {
-  $request = explode('/', request_uri());
-  $field = drupal_substr($request[count($request) - 2], 15);
-
-  header("Content-type: text/javascript");
-  print theme('wysiwyg_fields_wysiwyg_plugin_js', $field);
 }
 
 /**

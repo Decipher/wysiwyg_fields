@@ -14,3 +14,39 @@ function wysiwyg_fields_wysiwyg_include_directory($type) {
       return $type;
   }
 }
+
+/**
+ * Implements hook_wysiwyg_fields_menu_alter() on behalf of wysiwyg.module.
+ */
+function wysiwyg_wysiwyg_fields_menu_alter(&$items) {
+  $items[drupal_get_path('module', 'wysiwyg_fields') . '/plugins'] = array(
+    'title' => 'Wysiwyg Fields dynamic Wysiwyg plugin callback',
+    'page callback' => 'wysiwyg_fields_wysiwyg_plugin_callback',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+}
+
+/**
+ * Page callback; Render dynamic Wysiwyg plugin js or icon.
+ */
+function wysiwyg_fields_wysiwyg_plugin_callback() {
+  $request = explode('/', request_uri());
+  switch ($request[count($request) - 2]) {
+    case 'images':
+      $file = wysiwyg_fields_icons($request[count($request) - 1]);
+      $info = pathinfo($file);
+
+      header("Content-Type: image/{$info['extension']}");
+      header('Cache-Control: public');
+      readfile($file);
+      break;
+
+    default:
+      $field = drupal_substr($request[count($request) - 2], 15);
+
+      header("Content-type: text/javascript");
+      print theme('wysiwyg_fields_wysiwyg_plugin_js', $field);
+      break;
+  }
+}

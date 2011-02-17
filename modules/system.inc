@@ -6,6 +6,15 @@
  */
 
 /**
+ * Implements hook_menu().
+ */
+function wysiwyg_fields_menu() {
+  $items = array();
+  drupal_alter('wysiwyg_fields_menu', $items);
+  return $items;
+}
+
+/**
  * Implements hook_elements().
  */
 function wysiwyg_fields_elements() {
@@ -20,7 +29,6 @@ function wysiwyg_fields_elements() {
 function wysiwyg_fields_form_alter(&$form, &$form_state, $form_id) {
   drupal_alter('wysiwyg_fields_form_alter', &$form, &$form_state, $form_id);
 }
-
 
 /**
  * Implements hook_nodeapi().

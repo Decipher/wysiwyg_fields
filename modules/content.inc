@@ -33,12 +33,12 @@ function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
         '#title' => t('Icon'),
         '#type' => 'radios',
         '#options' => /*array_merge(*/
-          _wysiwyg_fields_icons(),
+          _wysiwyg_fields_widget_settings_alter_icons(),
         //  array('upload' => t('Upload'))
         //),
         '#default_value' => isset($widget['wysiwyg_fields_icon'])
           ? $widget['wysiwyg_fields_icon']
-          : current(array_keys(_wysiwyg_fields_icons()))
+          : current(array_keys(_wysiwyg_fields_widget_settings_alter_icons()))
         ,
         '#attributes' => array(
           'class' => 'container-inline',
@@ -95,16 +95,11 @@ function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
 /**
  *
  */
-function _wysiwyg_fields_icons() {
-  $icons = array();
-
-  foreach (scandir(dirname(__FILE__) . '/../images/icons') as $file) {
-    if (!is_dir($file)) {
-      $file = "/images/icons/{$file}";
-      $icons["../../..{$file}"] = theme('image', drupal_get_path('module', 'wysiwyg_fields') . $file);
-    }
+function _wysiwyg_fields_widget_settings_alter_icons() {
+  $icons = wysiwyg_fields_icons();
+  foreach ($icons as &$icon) {
+    $icon = theme('image', $icon);
   }
-
   return $icons;
 }
 
