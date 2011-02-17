@@ -10,14 +10,14 @@
  */
 function date_wysiwyg_fields_elements_alter(&$elements) {
   $elements['date_select'] = array(
-    '#process' => array('date_wysiwyg_fields_element_alter_process'),
+    '#process' => array('_date_wysiwyg_fields_element_alter_process'),
   );
 }
 
 /**
  *
  */
-function date_wysiwyg_fields_element_alter_process($form_element) {
+function _date_wysiwyg_fields_element_alter_process($form_element) {
   $field = content_fields($form_element['#field']['field_name'], $form_element['#field']['type_name']);
   if (isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status'] == TRUE) {
     $form_element['#field_name'] = $form_element['#field']['field_name'];
