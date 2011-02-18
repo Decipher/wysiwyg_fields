@@ -34,7 +34,7 @@ function wysiwyg_fields_wysiwyg_plugin_callback() {
   $request = explode('/', request_uri());
   switch ($request[count($request) - 2]) {
     case 'images':
-      $file = wysiwyg_fields_icons($request[count($request) - 1]);
+      $file = wysiwyg_fields_icons(current(explode('?', $request[count($request) - 1])));
       $info = pathinfo($file);
 
       header("Content-Type: image/{$info['extension']}");
