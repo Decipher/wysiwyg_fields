@@ -58,11 +58,13 @@ function wysiwyg_fields_features_export_render($module_name = '', $data) {
  * @see http://drupal.org/node/1064340
  */
 function wysiwyg_fields_features_export_assets($module_name = '', $data) {
-  $icons = array();
+  $assets = array();
+
   foreach ($data as $checksum) {
-    $icons[] = wysiwyg_fields_icons($checksum);
+    $assets['images'][] = wysiwyg_fields_icons($checksum);
   }
-  return $icons;
+
+  return $assets;
 }
 
 /**

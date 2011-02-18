@@ -15,6 +15,15 @@ function wysiwyg_fields_menu() {
 }
 
 /**
+ * Implements hook_theme().
+ */
+function wysiwyg_fields_theme() {
+  $items = array();
+  drupal_alter('wysiwyg_fields_theme', $items);
+  return $items;
+}
+
+/**
  * Implements hook_elements().
  */
 function wysiwyg_fields_elements() {

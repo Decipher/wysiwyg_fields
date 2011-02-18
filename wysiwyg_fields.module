@@ -56,12 +56,12 @@ function wysiwyg_fields_wysiwyg_fields_elements_alter(&$elements) {
 }
 
 /**
- * Implements hook_theme().
+ * Implements hook_wysiwyg_fields_theme_alter().
  */
-function wysiwyg_fields_theme() {
-  $items = array();
+function wysiwyg_fields_wysiwyg_fields_theme_alter(&$items) {
   $path = drupal_get_path('module', 'wysiwyg_fields') . '/templates';
 
+  // @TODO - Move to wysiwyg.inc.
   $items['wysiwyg_fields_wysiwyg_plugin_js'] = array(
     'arguments' => array(
       'field' => NULL,
@@ -69,8 +69,6 @@ function wysiwyg_fields_theme() {
     'template' => 'wysiwyg_fields_wysiwyg_plugin_js',
     'path' => $path,
   );
-
-  return $items;
 }
 
 /**
@@ -317,21 +315,28 @@ function wysiwyg_fields_form_alter_build_after($form_element, &$form_state) {
 }
 
 /**
- * @TODO - Store in Cache table.
+ *
  */
-function wysiwyg_fields_icons($checksum = NULL) {
+function wysiwyg_fields_icons($checksum = NULL, $reset = FALSE) {
   static $icons = array();
+
+  if (!$reset && $cache = cache_get('wysiwyg_fields_icons')) {
+    $icons = $cache->data;
+  }
 
   if (count($icons) == 0) {
     $directories = module_invoke_all('wysiwyg_fields_icons');
     foreach ($directories as $directory) {
-      foreach (scandir($directory) as $file) {
-        if (!is_dir($file)) {
-          // User MD5 checksum to prevent duplicates.
-          $icons[md5_file("{$directory}/{$file}")] = "{$directory}/{$file}";
+      if (is_dir($directory)) {
+        foreach (scandir($directory) as $file) {
+          if (!is_dir($file)) {
+            // User MD5 checksum to prevent duplicates.
+            $icons[md5_file("{$directory}/{$file}")] = "{$directory}/{$file}";
+          }
         }
       }
     }
+    cache_set('wysiwyg_fields_icons', $icons);
   }
 
   return isset($checksum) ? $icons[$checksum] : $icons;

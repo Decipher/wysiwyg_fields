@@ -6,17 +6,32 @@
  */
 
 /**
- *
+ * Implements hook_wysiwyg_fields_theme_alter() on behalf of content.module.
+ */
+function content_wysiwyg_fields_theme_alter(&$items) {
+  $items['wysiwyg_fields_widget_settings_alter'] = array(
+    'arguments' => array(
+      'element' => array(),
+    ),
+    'file' => 'modules/content.inc',
+  );
+}
+
+/**
+ * Implements hook_widget_settings_alter().
  */
 function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
   switch ($op) {
     case 'form':
+      drupal_add_css(drupal_get_path('module', 'wysiwyg_fields') . '/styles/settings_form.css');
+
       $settings['wysiwyg_fields'] = array(
         '#title' => t('Wysiwyg Fields settings'),
         '#type' => 'fieldset',
         '#weight' => 10,
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
+        '#theme' => 'wysiwyg_fields_widget_settings_alter',
       );
 
       $settings['wysiwyg_fields']['wysiwyg_fields_status'] = array(
@@ -32,17 +47,23 @@ function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
       $settings['wysiwyg_fields']['wysiwyg_fields_icon'] = array(
         '#title' => t('Icon'),
         '#type' => 'radios',
-        '#options' => /*array_merge(*/
-          _wysiwyg_fields_widget_settings_alter_icons(),
-        //  array('upload' => t('Upload'))
-        //),
+        '#options' => array_merge(
+          array('upload' => t('Upload')),
+          _wysiwyg_fields_widget_settings_alter_icons()
+        ),
         '#default_value' => isset($widget['wysiwyg_fields_icon'])
           ? $widget['wysiwyg_fields_icon']
           : current(array_keys(_wysiwyg_fields_widget_settings_alter_icons()))
         ,
         '#attributes' => array(
-          'class' => 'container-inline',
+          'class' => 'container-inline wysiwyg_fields_icons',
         ),
+      );
+
+      $settings['wysiwyg_fields']['wysiwyg_fields_upload'] = array(
+        '#title' => t('Upload'),
+        '#type' => 'file',
+        '#element_validate' => array('_wysiwyg_fields_widget_settings_alter_upload_validate'),
       );
 
       $settings['wysiwyg_fields']['wysiwyg_fields_formatters'] = array(
@@ -96,11 +117,32 @@ function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
  *
  */
 function _wysiwyg_fields_widget_settings_alter_icons() {
-  $icons = wysiwyg_fields_icons();
+  $icons = wysiwyg_fields_icons(NULL, TRUE);
   foreach ($icons as &$icon) {
     $icon = theme('image', $icon);
   }
   return $icons;
+}
+
+/**
+ *
+ */
+function _wysiwyg_fields_widget_settings_alter_upload_validate($element, &$form_state) {
+  if ($form_state['values']['wysiwyg_fields_icon'] == 'upload' && empty($_FILES['files']['name']['wysiwyg_fields_upload'])) {
+    form_error($element, t('You must select a file to upload or an existing icon.'));
+  }
+
+  // Upload and reference new icon.
+  $validators = array(
+    'file_validate_is_image' => array(),
+    'file_validate_image_resolution' => array('16x16'),
+  );
+  if ($form_state['values']['wysiwyg_fields_icon'] == 'upload' && $file = file_save_upload('wysiwyg_fields_upload', $validators)) {
+    file_check_directory($directory = file_directory_path() . '/wysiwyg_fields', TRUE);
+    file_move($file, 'wysiwyg_fields', FILE_EXISTS_RENAME);
+    $form_state['values']['wysiwyg_fields_icon'] = md5_file($file->filepath);
+    cache_clear_all('wysiwyg_fields_icons', 'cache');
+  }
 }
 
 /**
@@ -125,6 +167,17 @@ function _wysiwyg_fields_widget_settings_alter_formatters_validate($element, &$f
   if ($form_state['values']['wysiwyg_fields_status'] == TRUE && empty($form_state['values']['wysiwyg_fields_formatters'])) {
     form_error($element, t('At least one Formatter must be selected to be used with Wysiwyg Fields.'));
   }
+}
+
+/**
+ *
+ */
+function theme_wysiwyg_fields_widget_settings_alter($element) {
+  unset($element['wysiwyg_fields_upload']['#title']);
+  $element['wysiwyg_fields_icon'] = array('#value' => drupal_render($element['wysiwyg_fields_icon']));
+  $element['wysiwyg_fields_icon']['#value'] = str_replace(t('Upload'), drupal_render($element['wysiwyg_fields_upload']), $element['wysiwyg_fields_icon']['#value']);
+
+  return drupal_render($element);
 }
 
 /**
