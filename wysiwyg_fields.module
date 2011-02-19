@@ -142,7 +142,7 @@ function wysiwyg_fields_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a
 /**
  * Implements hook_wysiwyg_fields_form_alter_alter().
  */
-function wysiwyg_fields_wysiwyg_fields_form_alter_alter(&$form, &$form_state, $form_id) {
+function wysiwyg_fields_wysiwyg_fields_form_alter_alter($form, $form_state, $form_id) {
   if (isset($form['type']['#value']) && $form_id == "{$form['type']['#value']}_node_form") {
     $form['#after_build'][] = 'wysiwyg_fields_form_alter_build_after';
   }
@@ -293,13 +293,13 @@ function wysiwyg_fields_form_alter_build_after($form_element, &$form_state) {
       drupal_add_css(drupal_get_path('module', 'wysiwyg_fields') . '/styles/node_form.css');
 
       // jQuery 1.7 theme.
-      if (file_exists($css = drupal_get_path('module', 'jquery_ui') . '/jquery.ui/themes/base/ui.all.css')) {
+      if (file_exists($css = JQUERY_UI_PATH . '/themes/base/ui.all.css')) {
         // @TODO - Change if #388384 ever gets resolved.
         drupal_add_css($css);
       }
 
       // jQuery 1.6 theme.
-      elseif (file_exists($css = drupal_get_path('module', 'jquery_ui') . '/jquery.ui/themes/default/ui.all.css')) {
+      elseif (file_exists($css = JQUERY_UI_PATH . '/themes/default/ui.all.css')) {
         drupal_add_css($css);
       }
 

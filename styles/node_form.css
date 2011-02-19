@@ -47,6 +47,9 @@
   text-indent: -99999px;
 }
 
+.ui-dialog-buttonpane {
+  position: relative !important;
+}
 
 /* MCEditor icon size fix. */
 .defaultSkin .mce_wysiwyg_fields_icon img.mceIcon {

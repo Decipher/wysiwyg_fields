@@ -83,7 +83,6 @@ Known issues
 - Locale can't read dynamic JS files.
 - Error message on non-multi insert doesn't work properly.
 - jQuery 1.6:
-  - Button bar position.
   - Overflow is hidden, should scroll or Dialog should grow.
 - Firefox issues:
   - Images and DIVs are resizable.
