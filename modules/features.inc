@@ -53,11 +53,11 @@ function wysiwyg_fields_features_export_render($module_name = '', $data) {
 }
 
 /**
- * Implements hook_features_export_assets().
+ * Implements hook_features_export_wysiwyg_fields_assets().
  *
  * @see http://drupal.org/node/1064340
  */
-function wysiwyg_fields_features_export_assets($module_name = '', $data) {
+function wysiwyg_fields_features_export_wysiwyg_fields_assets($data, $export, $module_name) {
   $assets = array();
 
   foreach ($data as $checksum) {

@@ -144,7 +144,7 @@ function wysiwyg_fields_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a
  */
 function wysiwyg_fields_wysiwyg_fields_form_alter_alter($form, $form_state, $form_id) {
   if (isset($form['type']['#value']) && $form_id == "{$form['type']['#value']}_node_form") {
-    $form['#after_build'][] = 'wysiwyg_fields_form_alter_build_after';
+    $form['#after_build'][] = 'wysiwyg_fields_form_alter_after_build';
   }
 }
 
@@ -269,11 +269,11 @@ function _wysiwyg_fields_element_validate($item, $key, $formatter) {
 /**
  *
  */
-function wysiwyg_fields_form_alter_build_after($form_element, &$form_state) {
+function wysiwyg_fields_form_alter_after_build($form_element, &$form_state) {
   // Store Content Type in $_SESSION['wysiwyg_fields'] to provide context.
   $_SESSION['wysiwyg_fields'] = $form_element['type']['#value'];
 
-  foreach (content_fields(NULL, $form_element['type']['#value']) as $field) {
+  foreach ($form_element['#field_info'] as $field) {
     if (isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status']) {
       // Modify field element.
       $form_element[$field['field_name']]['#prefix'] = "<div id='wysiwyg_fields-{$field['field_name']}-wrapper'>{$form_element[$field['field_name']]['#prefix']}";
