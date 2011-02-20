@@ -10,6 +10,19 @@ Wysiwyg Fields was written and is maintained by Stuart Clark (deciphered).
 - http://stuar.tc/lark
 
 
+Testing
+--------------------------
+
+Setup a test with all dependancies + some extra modules for testing purposes
+with the following Drush Make command:
+
+  drush make http://dl.dropbox.com/u/1804559/wysiwyg_fields.make [destination]
+
+
+Note: [destination] should be replaced with the directory you wish the site to
+      live in, e.g. wysiwyg_fields)
+
+
 Features
 --------------------------
 
