@@ -25,6 +25,17 @@ function wif2wf_menu() {
  *
  */
 function wif2wf_migrate(&$form_state) {
+  $op = is_null($form_state['storage']) ? 'form' : 'confirm';
+  if (function_exists($function = "wif2wf_migrate_{$op}")) {
+    return $function($form_state);
+  }
+  return array();
+}
+
+/**
+ *
+ */
+function wif2wf_migrate_form(&$form_state) {
   $form = array();
 
   $fields = array();
@@ -54,19 +65,50 @@ function wif2wf_migrate(&$form_state) {
   return $form;
 }
 
-function wif2wf_migrate_submit($form, &$form_state) {
-  foreach ($form_state['values']['fields'] as $key => $label) {
-    list($content_type_name, $field_name) = explode('-', $key);
-    $field = content_fields($field_name, $content_type_name);
-
-    $batch = array(
-      'operations' => array(
-        array('wif2wf_batch_update', array($field)),
+/**
+ *
+ */
+function wif2wf_migrate_confirm(&$form_state) {
+  return confirm_form(
+    array(
+      'fields' => array(
+        '#type' => 'value',
+        '#value' => $form_state['storage']['fields'],
       ),
-      'title' => t('Migrating'),
-      'error_message' => t('The migration has encountered an error.'),
-    );
-    batch_set($batch);
+    ),
+    t('Are you sure you want to migrate all data from Wysiwyg ImageField to Wysiwyg Fields?'),
+    'admin/content/wif2wf',
+    t('This action cannot be undone.'),
+    t('Confirm'),
+    t('Cancel')
+  );
+}
+
+/**
+ *
+ */
+function wif2wf_migrate_submit($form, &$form_state) {
+  switch ($form_state['clicked_button']['#value']) {
+    case t('Migrate'):
+      $form_state['storage']['fields'] = $form_state['values']['fields'];
+      break;
+
+    case t('Confirm'):
+      unset($form_state['storage']);
+      foreach ($form_state['values']['fields'] as $key => $label) {
+        list($content_type_name, $field_name) = explode('-', $key);
+        $field = content_fields($field_name, $content_type_name);
+
+        $batch = array(
+          'operations' => array(
+            array('wif2wf_batch_update', array($field)),
+          ),
+          'title' => t('Migrating'),
+          'error_message' => t('The migration has encountered an error.'),
+        );
+        batch_set($batch);
+      }
+      break;
   }
 }
 
