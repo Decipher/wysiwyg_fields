@@ -55,7 +55,6 @@ function wif2wf_migrate_form(&$form_state) {
       '#default_value' => array_keys($fields),
     );
 
-    // @TODO - Make this a confirm.
     $form['submit'] = array(
       '#type' => 'submit',
       '#value' => t('Migrate'),

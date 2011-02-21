@@ -19,12 +19,19 @@ purposes) with the following Drush Make command:
   drush make http://dl.dropbox.com/u/1804559/wysiwyg_fields.make [destination]
 
 
+A feature is also included with the make file - 'Wysiwyg Fields test' - which if
+enabled will install the the necessary module, setup a Content Type, create an
+ImageField preconfigured for use with Wysiwyg Fields, setup your Input Formats
+and attach Wysiwyg libraries to them and have you ready to start testing in a
+matter of seconds. The feature will be at the very top of you module list so you
+can't miss it.
+
 Notes:
   * [destination] should be replaced with the directory you wish the site to
     live in, e.g. wysiwyg_fields)
 
   * The jQuery UI 1.7 library is downloaded in this make file, so jQuery Update
-    is required.
+    is required (this is enabled with the 'Wysiwyg Fields test' feature).
 
 
 Features

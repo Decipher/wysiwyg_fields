@@ -149,7 +149,7 @@ function _wysiwyg_fields_widget_settings_alter_upload_validate($element, &$form_
  *
  */
 function _wysiwyg_fields_formatters() {
-  $field = content_fields(arg(5), arg(3));
+  $field = content_fields(arg(5), str_replace('-', '_', arg(3)));
   $field_types = _content_field_types();
 
   $formatters = array();
