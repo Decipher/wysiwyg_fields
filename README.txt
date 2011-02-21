@@ -19,8 +19,12 @@ purposes) with the following Drush Make command:
   drush make http://dl.dropbox.com/u/1804559/wysiwyg_fields.make [destination]
 
 
-Note: [destination] should be replaced with the directory you wish the site to
-      live in, e.g. wysiwyg_fields)
+Notes:
+  * [destination] should be replaced with the directory you wish the site to
+    live in, e.g. wysiwyg_fields)
+
+  * The jQuery UI 1.7 library is downloaded in this make file, so jQuery Update
+    is required.
 
 
 Features
