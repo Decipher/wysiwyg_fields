@@ -31,7 +31,6 @@ function wysiwyg_fields_wysiwyg_fields_plugin() {
         );
       }
     }
-
     unset($_SESSION['wysiwyg_fields']);
   }
 

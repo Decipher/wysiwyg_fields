@@ -15,19 +15,25 @@ function wysiwyg_fields_init() {
     }
   }
 
-  // Enable wysiwyg plugins.
-  foreach (content_fields() as $field) {
-    if ($field['widget']['wysiwyg_fields_status']) {
-      foreach (wysiwyg_profile_load_all() as $profile) {
-        $profile->settings = is_array($profile->settings) ? $profile->settings : array();
-        $profile->settings['buttons'] = is_array($profile->settings['buttons']) ? $profile->settings['buttons'] : array();
+  if (drupal_match_path($_GET['q'], implode("\r\n", array('node/add/*', 'node/edit/*')))) {
+    // Enable wysiwyg plugins.
+    foreach (content_fields() as $field) {
+      if ($field['widget']['wysiwyg_fields_status']) {
+        foreach (wysiwyg_profile_load_all() as $profile) {
+          $profile->settings = is_array($profile->settings) ? $profile->settings : array();
+          $profile->settings['buttons'] = is_array($profile->settings['buttons']) ? $profile->settings['buttons'] : array();
 
-        $id = "wysiwyg_fields_{$field['field_name']}";
-        if (!isset($profile->settings['buttons']['drupal'][$id]) || empty($profile->settings['buttons']['drupal'][$id])) {
-          $profile->settings['buttons']['drupal'][$id] = 1;
-          db_query("UPDATE {wysiwyg} SET settings = '%s' WHERE format = %d", serialize($profile->settings), $profile->format);
+          $id = "wysiwyg_fields_{$field['field_name']}";
+          if (!isset($profile->settings['buttons']['drupal'][$id]) || empty($profile->settings['buttons']['drupal'][$id])) {
+            $profile->settings['buttons']['drupal'][$id] = 1;
+            db_query("UPDATE {wysiwyg} SET settings = '%s' WHERE format = %d", serialize($profile->settings), $profile->format);
+          }
         }
       }
+    }
+
+    if ($_POST['op'] == t('Preview')) {
+      cache_clear_all("form_{$_POST['form_build_id']}", 'cache_form');
     }
   }
 }
@@ -144,6 +150,9 @@ function wysiwyg_fields_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a
  */
 function wysiwyg_fields_wysiwyg_fields_form_alter_alter($form, $form_state, $form_id) {
   if (isset($form['type']['#value']) && $form_id == "{$form['type']['#value']}_node_form") {
+    // Store Content Type in $_SESSION['wysiwyg_fields'] to provide context.
+    $_SESSION['wysiwyg_fields'] = $form['type']['#value'];
+
     $form['#after_build'][] = 'wysiwyg_fields_form_alter_after_build';
   }
 }
@@ -270,9 +279,6 @@ function _wysiwyg_fields_element_validate($item, $key, $formatter) {
  *
  */
 function wysiwyg_fields_form_alter_after_build($form_element, &$form_state) {
-  // Store Content Type in $_SESSION['wysiwyg_fields'] to provide context.
-  $_SESSION['wysiwyg_fields'] = $form_element['type']['#value'];
-
   foreach ($form_element['#field_info'] as $field) {
     if (isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status']) {
       // Modify field element.

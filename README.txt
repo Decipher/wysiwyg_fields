@@ -13,8 +13,8 @@ Wysiwyg Fields was written and is maintained by Stuart Clark (deciphered).
 Testing
 --------------------------
 
-Setup a test with all dependancies + some extra modules for testing purposes
-with the following Drush Make command:
+Setup a test site with all dependencies (plus some extra modules for testing
+purposes) with the following Drush Make command:
 
   drush make http://dl.dropbox.com/u/1804559/wysiwyg_fields.make [destination]
 
@@ -86,7 +86,7 @@ A. While the Wysiwyg Fields dialog is active you will see a '+' icon to the left
 Known issues
 --------------------------
 
-- Following CCK field modules aren't compatible: @TODO - write incompatability detection code.
+- Following CCK field modules aren't compatible: @TODO - write incompatibility detection code.
   - Embedded Media Field module.
 - Certain fields can't render the preview due to JavaScript or other reasons: @TODO - Write hook for alternative preview.
   - Embed Google Maps Field module.
