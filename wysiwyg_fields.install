@@ -23,3 +23,10 @@ function wysiwyg_fields_install() {
     }
   }
 }
+
+/**
+ * Implements hook_enable().
+ */
+function wysiwyg_fields_enable() {
+  variable_set('wysiwyg_fields_enable', TRUE);
+}

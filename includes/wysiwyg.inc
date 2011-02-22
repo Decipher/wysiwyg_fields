@@ -6,6 +6,22 @@
  */
 
 /**
+ * Implements hook_wysiwyg_fields_init_alter() on behalf of wysiwyg.module.
+ */
+function wysiwyg_wysiwyg_fields_init_alter($data) {
+  // Rebuild menu after module is enabled.
+  if (variable_get('wysiwyg_fields_enable', FALSE)) {
+    variable_del('wysiwyg_fields_enable');
+    menu_rebuild();
+  }
+
+  // Store Content Type in $_SESSION['wysiwyg_fields'] to provide context.
+  if (isset($_POST) && isset($_POST['form_id']) && strpos($_POST['form_id'], '_node_form') == strlen($_POST['form_id']) - 10) {
+    $_SESSION['wysiwyg_fields'] = str_replace('_node_form', '', $_POST['form_id']);
+  }
+}
+
+/**
  * Implements hook_wysiwyg_include_directory().
  */
 function wysiwyg_fields_wysiwyg_include_directory($type) {

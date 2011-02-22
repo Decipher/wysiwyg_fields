@@ -146,33 +146,37 @@ function wif2wf_batch_update($field, &$context) {
     foreach ($node->{$field['field_name']} as $delta => $item) {
       foreach (array_filter($field['widget']['insert_styles']) as $style_name) {
         $style = insert_style_load($style_name);
-        $item = insert_content($item, $style, $field['widget']);
+        $formatter = wif2wf_style2formatter($item, $style, $field['widget']);
+        $item_replacement = insert_content($item, $style, $field['widget']);
 
         // @TODO - Proper replacements.
-        $item = str_replace('__title__', '', $item);
-        $item = str_replace('__alt__', '', $item);
+        $item_replacement = str_replace('__title__', '', $item_replacement);
+        $item_replacement = str_replace('__alt__', '', $item_replacement);
+        $item_replacement = str_replace('__description__', '', $item_replacement);
 
         // Turn the insert_content() output into a regular expression to ignore
         // the order of the element attributes that the Wysiwyg will likely have
         // re-ordered.
-        preg_match_all('/\<[a-z].*?\>/', $item, $elements, PREG_SET_ORDER);
+        $item_replacement = preg_replace('/[<>\/]/', '\\\\\0', $item_replacement);
+        preg_match_all('/\<[a-z].*?\>/', $item_replacement, $elements, PREG_SET_ORDER);
         foreach ($elements as $element) {
-          $element_replacement = preg_replace('/[<>\/]/', '\\\\\0', $element[0]);
-          preg_match_all('/\s\w+=[\'"].*?[\'"]/', $element_replacement, $attributes, PREG_SET_ORDER);
+          $element_replacement = $element[0];
+          preg_match_all('/\s\w+=[\'"].*?[\'"]/', $element[0], $attributes, PREG_SET_ORDER);
           foreach ($attributes as $attribute) {
             $attribute_replacement = "(?=[^>]*{$attribute[0]})" . ($attribute == end($attributes) ? '.*?' : '');
             $element_replacement = str_replace($attribute[0], $attribute_replacement, $element_replacement);
           }
-          $item = str_replace($element[0], $element_replacement, $item);
+          $item_replacement = str_replace($element[0], $element_replacement, $item_replacement);
         }
 
         $textfields = _wysiwyg_fields_textfields($node);
         foreach ($textfields as &$textfield) {
-          // @TODO - Insert doesn't really use formatters... compensate.
-          $textfield['value'] = preg_replace("/{$item}/", "[wysiwyg_fields-{$field['field_name']}-{$delta}-]", $textfield['value']);
+          $textfield['value'] = preg_replace("/{$item_replacement}/", "[wysiwyg_fields-{$field['field_name']}-{$delta}-{$formatter}]", $textfield['value']);
         }
       }
     }
+
+    node_save($node);
 
     // Update our progress information.
     $context['sandbox']['progress']++;
@@ -184,4 +188,15 @@ function wif2wf_batch_update($field, &$context) {
   if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
     $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
   }
+}
+
+/**
+ *
+ */
+function wif2wf_style2formatter($item, $style, $widget) {
+  module_load_include('inc', 'wif2wf', "includes/{$style['module']}");
+  if (function_exists($function = "{$style['module']}_wif2wf_style2formatter")) {
+    return $function($item, $style, $widget);
+  }
+  return "{$style['module']}_formatter_{$style['name']}";
 }
