@@ -133,43 +133,7 @@ function wysiwyg_fields_wysiwyg_fields_form_alter_alter($form, $form_state, $for
     // Store Content Type in $_SESSION['wysiwyg_fields'] to provide context.
     $_SESSION['wysiwyg_fields'] = $form['type']['#value'];
 
-    foreach ($form['#field_info'] as $field) {
-      if (isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status']) {
-        // Modify field element.
-        $form[$field['field_name']]['#prefix'] = "<div id='wysiwyg_fields-{$field['field_name']}-wrapper'>{$form[$field['field_name']]['#prefix']}";
-        $form[$field['field_name']]['#suffix'] = "{$form[$field['field_name']]['#suffix']}</div>";
-
-        // Add javascript.
-        jquery_ui_add(array('ui.core', 'ui.dialog'));
-        drupal_add_js(drupal_get_path('module', 'wysiwyg_fields') . '/scripts/wysiwyg_fields.js');
-
-        // @TODO - Move this to modules/wysiwyg.inc
-        foreach (wysiwyg_profile_load_all() as $profile) {
-          if (isset($profile->editor) && file_exists($js = drupal_get_path('module', 'wysiwyg_fields') . "/scripts/wysiwyg.{$profile->editor}.js")) {
-            drupal_add_js($js);
-          }
-        }
-
-        // Add Style sheets.
-        drupal_add_css(drupal_get_path('module', 'wysiwyg_fields') . '/styles/node_form.css');
-
-        // jQuery 1.7 theme.
-        if (file_exists($css = JQUERY_UI_PATH . '/themes/base/ui.all.css')) {
-          // @TODO - Change if #388384 ever gets resolved.
-          drupal_add_css($css);
-        }
-
-        // jQuery 1.6 theme.
-        elseif (file_exists($css = JQUERY_UI_PATH . '/themes/default/ui.all.css')) {
-          drupal_add_css($css);
-        }
-
-        else {
-          // @TODO - Move this to hook_requirements?
-          drupal_set_message(t('No jQuery UI theme found, please download the appropriate files from: !url', array('!url' => l('http://blog.jqueryui.com/2010/02/jquery-ui-download-builderthemeroller-status/', 'http://blog.jqueryui.com/2010/02/jquery-ui-download-builderthemeroller-status/'))), 'warning');
-        }
-      }
-    }
+    $form['#after_build'][] = 'wysiwyg_fields_form_alter_after_build';
   }
 }
 
@@ -289,6 +253,53 @@ function _wysiwyg_fields_element_validate($item, $key, $formatter) {
   if ($key == 'wysiwyg_fields_formatters') {
     $formatter = $item;
   }
+}
+
+/**
+ *
+ */
+function wysiwyg_fields_form_alter_after_build($form_element, &$form_state) {
+  if (isset($form_element['#field_info'])) {
+    foreach ($form_element['#field_info'] as $field) {
+      if (isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status']) {
+        // Modify field element.
+        $form_element[$field['field_name']]['#prefix'] = "<div id='wysiwyg_fields-{$field['field_name']}-wrapper'>{$form_element[$field['field_name']]['#prefix']}";
+        $form_element[$field['field_name']]['#suffix'] = "{$form_element[$field['field_name']]['#suffix']}</div>";
+
+        // Add javascript.
+        jquery_ui_add(array('ui.core', 'ui.dialog'));
+        drupal_add_js(drupal_get_path('module', 'wysiwyg_fields') . '/scripts/wysiwyg_fields.js');
+
+        // @TODO - Move this to modules/wysiwyg.inc
+        foreach (wysiwyg_profile_load_all() as $profile) {
+          if (isset($profile->editor) && file_exists($js = drupal_get_path('module', 'wysiwyg_fields') . "/scripts/wysiwyg.{$profile->editor}.js")) {
+            drupal_add_js($js);
+          }
+        }
+
+        // Add Style sheets.
+        drupal_add_css(drupal_get_path('module', 'wysiwyg_fields') . '/styles/node_form.css');
+
+        // jQuery 1.7 theme.
+        if (file_exists($css = JQUERY_UI_PATH . '/themes/base/ui.all.css')) {
+          // @TODO - Change if #388384 ever gets resolved.
+          drupal_add_css($css);
+        }
+
+        // jQuery 1.6 theme.
+        elseif (file_exists($css = JQUERY_UI_PATH . '/themes/default/ui.all.css')) {
+          drupal_add_css($css);
+        }
+
+        else {
+          // @TODO - Move this to hook_requirements?
+          drupal_set_message(t('No jQuery UI theme found, please download the appropriate files from: !url', array('!url' => l('http://blog.jqueryui.com/2010/02/jquery-ui-download-builderthemeroller-status/', 'http://blog.jqueryui.com/2010/02/jquery-ui-download-builderthemeroller-status/'))), 'warning');
+        }
+      }
+    }
+  }
+
+  return $form_element;
 }
 
 /**

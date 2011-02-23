@@ -244,7 +244,7 @@ function content_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NUL
       // Delete any Wysiwyg Fields that weren't inserted.
       list($fields, $textfields) = _content_wysiwyg_fields_get_fields($node);
       foreach (content_fields(NULL, $node->type) as $field) {
-        if ($field['widget']['wysiwyg_fields_status'] == TRUE && $field['widget']['wysiwyg_fields_delete']) {
+        if ($field['widget']['wysiwyg_fields_status'] == TRUE && $field['widget']['wysiwyg_fields_delete'] && isset($node->{$field['field_name']})) {
           foreach (array_keys($node->{$field['field_name']}) as $delta) {
             if (!$fields[$field['field_name']][$delta]) {
               $fields[$field['field_name']][$delta] = FALSE;

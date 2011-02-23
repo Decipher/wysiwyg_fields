@@ -47,7 +47,8 @@ function _wysiwyg_fields_filter_process($node, $text) {
     list($field_type, $formatter_name) = explode('_formatter_', $token[3]);
     $formatter = _content_get_formatter($formatter_name, $field_type);
 
-    if (!$formatter->multiple) {
+    // @TODO - Merge logic with AHAH version.
+    if ($formatter->multiple == CONTENT_HANDLE_CORE) {
       $element = '';
       foreach ($items as $item) {
         $item = _wysiwyg_fields_ahah_get_element($field, $item, array($field_type, $formatter_name));
