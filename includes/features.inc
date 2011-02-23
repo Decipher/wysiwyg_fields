@@ -47,7 +47,7 @@ function wysiwyg_fields_features_export($data, &$export, $module_name = '') {
 function wysiwyg_fields_features_export_render($module_name = '', $data) {
   return array(
     'wysiwyg_fields_icons' => "  return array(
-    drupal_get_path('module', '{$module_name}') . '/assets/wysiwyg_fields',
+    drupal_get_path('module', '{$module_name}') . '/images/wysiwyg_fields',
   );"
   );
 }
