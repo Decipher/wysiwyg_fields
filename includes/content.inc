@@ -43,7 +43,6 @@ function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
         ,
       );
 
-      // @TODO: Allow for uploaded icons and manual URLs.
       $settings['wysiwyg_fields']['wysiwyg_fields_icon'] = array(
         '#title' => t('Icon'),
         '#type' => 'radios',
@@ -185,6 +184,9 @@ function theme_wysiwyg_fields_widget_settings_alter($element) {
  */
 function content_wysiwyg_fields_form_alter_alter($form, $form_state, $form_id) {
   if ($form_id == 'content_field_edit_form') {
+    $form['#attributes'] = isset($form['#attributes']) ? $form['#attributes'] : array();
+    $form['#attributes']['enctype'] = 'multipart/form-data';
+
     $form['field']['required']['#element_validate'] = is_array($form['field']['required']['#element_validate'])
       ? array_merge($form['field']['required']['#element_validate'], array('_content_wysiwyg_fields_form_alter_alter_required_validate'))
       : array('_content_wysiwyg_fields_form_alter_alter_required_validate');
@@ -291,7 +293,7 @@ function _wysiwyg_fields_textfields($node) {
 
   // CCK Textarea fields.
   foreach (content_fields(NULL, $node->type) as $field) {
-    if ($field['widget']['type'] == 'text_textarea') {
+    if ($field['widget']['type'] == 'text_textarea' && isset($node->{$field['field_name']})) {
       foreach ($node->{$field['field_name']} as $delta => $data) {
         $textfields["{$field['field_name']}-{$delta}"] = array(
           'value' => &$node->{$field['field_name']}[$delta]['value'],
