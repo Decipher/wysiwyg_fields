@@ -19,9 +19,11 @@ function wysiwyg_fields_wysiwyg_fields_plugin() {
    * @see wysiwyg_wysiwyg_fields_init()
    */
   if (isset($_SESSION['wysiwyg_fields'])) {
+    // @TODO - Report issue with content_fields(), returns fields that aren't attached the the reference content type.
     foreach (content_fields(NULL, $_SESSION['wysiwyg_fields']) as $field) {
       if (isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status']) {
         // Define Wysiwyg plugin.
+        // @TODO - Wysiwyg plugins aren't being ordered by weight, fix.
         $plugins["wysiwyg_fields_{$field['field_name']}"] = array(
           'title' => $field['widget']['label'],
           'vendor url' => 'http://drupal.org/project/wysiwyg_fields',

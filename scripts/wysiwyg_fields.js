@@ -183,10 +183,10 @@
       }
 
       if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
-        $('#' + id.replace('_', '-') + '-items, #wysiwyg_fields-' + id + '-wrapper table').hide();
-        if ($('#edit-' + id.replace('_', '-') + '-' + delta + '-wysiwyg-fields-ahah-wrapper').parents('table#' + id + '_values').length == 1) {
-          $('#edit-' + id.replace('_', '-') + '-' + delta + '-wysiwyg-fields-ahah-wrapper')
-            .before('<div id="edit-' + id.replace('_', '-') + '-' + delta + '-wysiwyg-fields-ahah-wrapper-placeholder" class="placeholder" />')
+        $('#' + id.replace('_', '-', 'g') + '-items, #wysiwyg_fields-' + id + '-wrapper table').hide();
+        if ($('#edit-' + id.replace('_', '-', 'g') + '-' + delta + '-wysiwyg-fields-ahah-wrapper').parents('table#' + id + '_values').length == 1) {
+          $('#edit-' + id.replace('_', '-', 'g') + '-' + delta + '-wysiwyg-fields-ahah-wrapper')
+            .before('<div id="edit-' + id.replace('_', '-', 'g') + '-' + delta + '-wysiwyg-fields-ahah-wrapper-placeholder" class="placeholder" />')
             .prependTo('#wysiwyg_fields-' + id + '-wrapper');
         }
       }
@@ -207,10 +207,10 @@
         deltas = token[2].split('_');
 
         if (deltas.length == 1) {
-          $('#' + id.replace('_', '-') + '-items, #wysiwyg_fields-' + id + '-wrapper table').hide();
-          if ($('#edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper').parents('table#' + id + '_values').length == 1) {
-            $('#edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper')
-              .before('<div id="edit-' + id.replace('_', '-') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper-placeholder" class="placeholder" />')
+          $('#' + id.replace('_', '-', 'g') + '-items, #wysiwyg_fields-' + id + '-wrapper table').hide();
+          if ($('#edit-' + id.replace('_', '-', 'g') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper').parents('table#' + id + '_values').length == 1) {
+            $('#edit-' + id.replace('_', '-', 'g') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper')
+              .before('<div id="edit-' + id.replace('_', '-', 'g') + '-' + token[2] + '-wysiwyg-fields-ahah-wrapper-placeholder" class="placeholder" />')
               .prependTo('#wysiwyg_fields-' + id + '-wrapper');
           }
         }
@@ -218,7 +218,7 @@
         else {
           this.dialogShowAll(id);
           $.each(deltas, function(delta) {
-            $('#edit-' + id.replace('_', '-') + '-' + delta + '-wysiwyg-fields-select').attr('checked', 'checked');
+            $('#edit-' + id.replace('_', '-', 'g') + '-' + delta + '-wysiwyg-fields-select').attr('checked', 'checked');
           });
         }
       }
@@ -266,7 +266,7 @@
      */
     dialogClose: function(id) {
       if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
-        $('#wysiwyg_fields-' + id + '-wrapper table, #' + id.replace('_', '-') + '-items').show();
+        $('#wysiwyg_fields-' + id + '-wrapper table, #' + id.replace('_', '-', 'g') + '-items').show();
       }
 
       // Undo DOM modificatons.
