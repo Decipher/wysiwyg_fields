@@ -1,6 +1,14 @@
-// $Id$
-
 Wysiwyg Fields 6.x-1.x-dev, xxxx-xx-xx (Development release)
+----------------------------------
+
+- Added implementation of hook_requirements().
+- Improved icon lookup functionality.
+- Updated help documentation.
+- Updated translation template.
+- Removed all deprecated CVS $Id$ strings.
+
+
+Wysiwyg Fields 6.x-1.0-alpha1, 2011-02-26
 ----------------------------------
 
 - Initial 6.x release.

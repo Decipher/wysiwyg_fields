@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * CCK Field support for the WYSIWYG module.
@@ -39,22 +38,6 @@ function wysiwyg_fields_wysiwyg_fields_elements_alter(&$elements) {
     $elements[$widget_type]['#process'] = is_array($elements[$widget_type]['#process']) ? $elements[$widget_type]['#process'] : array();
     $elements[$widget_type]['#process'][] = 'wysiwyg_fields_elements_process';
   }
-}
-
-/**
- * Implements hook_wysiwyg_fields_theme_alter().
- */
-function wysiwyg_fields_wysiwyg_fields_theme_alter(&$items) {
-  $path = drupal_get_path('module', 'wysiwyg_fields') . '/templates';
-
-  // @TODO - Move to wysiwyg.inc.
-  $items['wysiwyg_fields_wysiwyg_plugin_js'] = array(
-    'arguments' => array(
-      'field' => NULL,
-    ),
-    'template' => 'wysiwyg_fields_wysiwyg_plugin_js',
-    'path' => $path,
-  );
 }
 
 /**
@@ -269,13 +252,7 @@ function wysiwyg_fields_form_alter_after_build($form_element, &$form_state) {
         // Add javascript.
         jquery_ui_add(array('ui.core', 'ui.dialog'));
         drupal_add_js(drupal_get_path('module', 'wysiwyg_fields') . '/scripts/wysiwyg_fields.js');
-
-        // @TODO - Move this to modules/wysiwyg.inc
-        foreach (wysiwyg_profile_load_all() as $profile) {
-          if (isset($profile->editor) && file_exists($js = drupal_get_path('module', 'wysiwyg_fields') . "/scripts/wysiwyg.{$profile->editor}.js")) {
-            drupal_add_js($js);
-          }
-        }
+        module_invoke_all('wysiwyg_fields_add_js', 'node_form');
 
         // Add Style sheets.
         drupal_add_css(drupal_get_path('module', 'wysiwyg_fields') . '/styles/node_form.css');
@@ -289,11 +266,6 @@ function wysiwyg_fields_form_alter_after_build($form_element, &$form_state) {
         // jQuery 1.6 theme.
         elseif (file_exists($css = JQUERY_UI_PATH . '/themes/default/ui.all.css')) {
           drupal_add_css($css);
-        }
-
-        else {
-          // @TODO - Move this to hook_requirements?
-          drupal_set_message(t('No jQuery UI theme found, please download the appropriate files from: !url', array('!url' => l('http://blog.jqueryui.com/2010/02/jquery-ui-download-builderthemeroller-status/', 'http://blog.jqueryui.com/2010/02/jquery-ui-download-builderthemeroller-status/'))), 'warning');
         }
       }
     }
@@ -317,9 +289,9 @@ function wysiwyg_fields_icons($checksum = NULL, $reset = FALSE) {
     foreach ($directories as $directory) {
       if (is_dir($directory)) {
         foreach (scandir($directory) as $file) {
-          if (!is_dir($file)) {
+          if (!is_dir($file) && count(file_validate_is_image($file = (object) array('filepath' => "{$directory}/{$file}"))) == 0) {
             // User MD5 checksum to prevent duplicates.
-            $icons[md5_file("{$directory}/{$file}")] = "{$directory}/{$file}";
+            $icons[md5_file($file->filepath)] = $file->filepath;
           }
         }
       }
@@ -362,7 +334,6 @@ function wysiwyg_fields_ahah() {
 
 /**
  * @TODO - Weight field becomes visible after AHAH - fix.
- * @TODO - Formatter changes.
  */
 function wysiwyg_fields_ahah_insert() {
   // Include node definition.

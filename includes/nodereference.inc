@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Node Reference module integration.

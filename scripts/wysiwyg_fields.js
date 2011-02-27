@@ -1,5 +1,3 @@
-// $Id$
-
 (function ($) {
   Drupal.settings.wysiwygFields = Drupal.settings.wysiwygFields || {};
 

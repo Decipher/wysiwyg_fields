@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Date module integration.

@@ -1,4 +1,3 @@
-; $Id$
 name = "Wysiwyg Fields"
 description = "CCK Field support for the WYSIWYG module"
 package = "CCK"

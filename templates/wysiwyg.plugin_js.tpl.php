@@ -1,12 +1,9 @@
 <?php
-// $Id$
 /**
  * @file
  * Template for Wysiwyg Fields dynamic Wysiwyg plugin.
  */
 ?>
-// $Id$
-
 (function ($) {
   Drupal.wysiwyg.plugins['wysiwyg_fields_<?php print $field; ?>'] = {
 

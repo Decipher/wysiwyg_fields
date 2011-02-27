@@ -1,20 +1,21 @@
-# $Id$
-#
 # LANGUAGE translation of Drupal (general)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:
 #  wysiwyg_fields.module: n/a
-#  help.inc,v 1.2 2010/08/09 23:53:11 deciphered
 #  scripts/wysiwyg_fields.js: n/a
+#  wysiwyg_fields.install: n/a
 #  wysiwyg_fields.info: n/a
-#  modules/content.inc: n/a
-#  modules/filter.inc: n/a
+#  includes/content.inc: n/a
+#  includes/features.inc: n/a
+#  includes/filter.inc: n/a
+#  modules/wif2wf/wif2wf.module: n/a
+#  modules/wif2wf/wif2wf.info: n/a
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2011-02-16 20:52+0000\n"
+"POT-Creation-Date: 2011-02-28 08:53+1100\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -23,28 +24,32 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: wysiwyg_fields.module:227 modules/help.inc:20 scripts/wysiwyg_fields.js:0
+#: wysiwyg_fields.module:186 scripts/wysiwyg_fields.js:0
 msgid "Insert"
 msgstr ""
 
-#: wysiwyg_fields.module:321
-msgid "No jQuery UI theme found, please download the appropriate files from: !url"
-msgstr ""
-
-#: wysiwyg_fields.module:340;354
+#: wysiwyg_fields.module:316;330
 msgid "An unrecoverable error occurred."
 msgstr ""
 
-#: wysiwyg_fields.module:411
+#: wysiwyg_fields.module:386
 msgid "Can't insert an empty field."
 msgstr ""
 
-#: wysiwyg_fields.module:42
-msgid "Wysiwyg Fields AHAH callback"
+#: (duplicate) wysiwyg_fields.install:37 
+msgid "No jQuery UI theme found, please download the appropriate files from: !url"
 msgstr ""
 
-#: wysiwyg_fields.module:49
-msgid "Wysiwyg Fields dynamic Wysiwyg plugin js"
+#: (duplicate) wysiwyg_fields.install:41 
+msgid "jQuery UI theme"
+msgstr ""
+
+#: (duplicate) wysiwyg_fields.install:42 
+msgid "Exists"
+msgstr ""
+
+#: (duplicate) wysiwyg_fields.install:42 
+msgid "Missing"
 msgstr ""
 
 #: wysiwyg_fields.info:0
@@ -59,176 +64,104 @@ msgstr ""
 msgid "CCK"
 msgstr ""
 
-#: modules/content.inc:17
+#: includes/content.inc:28
 msgid "Wysiwyg Fields settings"
 msgstr ""
 
-#: modules/content.inc:25
+#: includes/content.inc:37
 msgid "Attach to Wysiwyg?"
 msgstr ""
 
-#: modules/content.inc:35
+#: includes/content.inc:46
 msgid "Icon"
 msgstr ""
 
-#: modules/content.inc:39;54
+#: includes/content.inc:49;62;176
 msgid "Upload"
 msgstr ""
 
-#: modules/content.inc:59
+#: includes/content.inc:68
 msgid "Formatters"
 msgstr ""
 
-#: modules/content.inc:71
+#: includes/content.inc:80
 msgid "Advanced settings"
 msgstr ""
 
-#: modules/content.inc:78
+#: includes/content.inc:87
 msgid "Set field display settings to &lt;Hidden&gt;."
 msgstr ""
 
-#: modules/content.inc:87
+#: includes/content.inc:96
 msgid "Delete field items not inserted on Node save."
 msgstr ""
 
-#: modules/content.inc:141
+#: includes/content.inc:130
+msgid "You must select a file to upload or an existing icon."
+msgstr ""
+
+#: includes/content.inc:166
 msgid "At least one Formatter must be selected to be used with Wysiwyg Fields."
 msgstr ""
 
-#: modules/content.inc:163
+#: includes/content.inc:202
 msgid "Field must not be required to be used with Wysiwyg Fields."
 msgstr ""
 
-#: modules/filter.inc:15
+#: includes/features.inc:13
+msgid "Wysiwyg Fields: Icon"
+msgstr ""
+
+#: includes/filter.inc:14
 msgid "Wysiwyg Fields filter"
 msgstr ""
 
-#: modules/help.inc:15
-msgid "Configuration"
+#: modules/wif2wf/wif2wf.module:51
+msgid "Fields"
 msgstr ""
 
-#: modules/help.inc:16
-msgid "Wysiwyg ImageField must be enabled and configured on each desire Content type, follow these simple steps to do so:"
+#: modules/wif2wf/wif2wf.module:59;90
+msgid "Migrate"
 msgstr ""
 
-#: modules/help.inc:18
-msgid "Create a new ImageField or edit a pre-defined ImageField on the desire Content types !manage_fields page."
+#: modules/wif2wf/wif2wf.module:77
+msgid "Are you sure you want to migrate all data from Wysiwyg ImageField to Wysiwyg Fields?"
 msgstr ""
 
-#: modules/help.inc:18
-msgid "Manage fields"
+#: modules/wif2wf/wif2wf.module:79
+msgid "This action cannot be undone."
 msgstr ""
 
-#: modules/help.inc:19
-msgid "Check the !wif_checkbox checkbox."
+#: modules/wif2wf/wif2wf.module:80;94
+msgid "Confirm"
 msgstr ""
 
-#: modules/help.inc:19
-msgid "Use with Wysiwyg ImageField?"
+#: modules/wif2wf/wif2wf.module:81
+msgid "Cancel"
 msgstr ""
 
-#: modules/help.inc:20
-msgid "Under the !insert section, check the !insert_btn checkbox and configure the !enabled_styles and !default_styles sections."
+#: modules/wif2wf/wif2wf.module:104
+msgid "Migrating"
 msgstr ""
 
-#: modules/help.inc:20
-msgid "Enable insert button"
+#: modules/wif2wf/wif2wf.module:105
+msgid "The migration has encountered an error."
 msgstr ""
 
-#: modules/help.inc:20
-msgid "Enabled insert styles"
+#: modules/wif2wf/wif2wf.module:182
+msgid "Processing %title"
 msgstr ""
 
-#: modules/help.inc:20
-msgid "Default insert styles"
+#: modules/wif2wf/wif2wf.module:14
+msgid "Migrate Wysiwyg ImageFields"
 msgstr ""
 
-#: modules/help.inc:21
-msgid "(optional*) Under the !file_sources section, check the !autocomplete checkbox."
+#: modules/wif2wf/wif2wf.info:0
+msgid "WIF 1.x to WF"
 msgstr ""
 
-#: modules/help.inc:21
-msgid "File sources"
-msgstr ""
-
-#: modules/help.inc:21
-msgid "Autocomplete reference textfield"
-msgstr ""
-
-#: modules/help.inc:22
-msgid "Set !values to !unlimited."
-msgstr ""
-
-#: modules/help.inc:22
-msgid "Number of values"
-msgstr ""
-
-#: modules/help.inc:22
-msgid "Unlimited"
-msgstr ""
-
-#: modules/help.inc:24
-msgid "Once Wysiwyg ImageField is configured in your desired Content types, enable the Wysiwyg plugin on your desired Wysiwyg profile and you are ready to go."
-msgstr ""
-
-#: modules/help.inc:25
-msgid "* Requires !filefield_sources and !views to provide Image Library functionality."
-msgstr ""
-
-#: modules/help.inc:25
-msgid "FileField Sources module"
-msgstr ""
-
-#: modules/help.inc:25
-msgid "Views module"
-msgstr ""
-
-#: modules/help.inc:27
-msgid "Frequently asked questions"
-msgstr ""
-
-#: modules/help.inc:29
-msgid "Where did my ImageField go?"
-msgstr ""
-
-#: modules/help.inc:31
-msgid "To make the process of adding inline images as streamlined as possible, Wysiwyg ImageField removes the ImageField widget from the user interface, making in visible only when needed."
-msgstr ""
-
-#: modules/help.inc:32
-msgid "It is recommended that if you require a ImageField accessible outside of the Wysiwyg ImageField experience that you create an ImageField for the sole purpose of using it with ImageField instead of using your existing ImageField."
-msgstr ""
-
-#: modules/help.inc:35
-msgid "How can I add a search to the 'Reference existing files' tab?"
-msgstr ""
-
-#: modules/help.inc:37
-msgid "If you have both the FileField Sources and Views modules installed, the !existing_files section will be displayed as a Views table. This View can be modified by the administrator (or approved roles) to add or remove columns, filters and a number of options."
-msgstr ""
-
-#: modules/help.inc:37
-msgid "Reference existing files"
-msgstr ""
-
-#: modules/help.inc:38
-msgid "By adding an Exposed filter, you are essentially adding a search engine to the existing file list."
-msgstr ""
-
-#: modules/help.inc:39
-msgid "The View can be modified at:"
-msgstr ""
-
-#: modules/help.inc:43
-msgid "How can I see all the files uploaded to the Wysiwyg ImageField widget?"
-msgstr ""
-
-#: modules/help.inc:45
-msgid "Currently this is not available, for the sole purpose of keeping the system as simple as possible."
-msgstr ""
-
-#: modules/help.inc:46
-msgid "Ideas have been put forward and there will be a solution for this in a future release."
+#: modules/wif2wf/wif2wf.info:0
+msgid "Wysiwyg ImageField 1.x to Wysiwyg Fields migration tool"
 msgstr ""
 
 #: scripts/wysiwyg_fields.js:0;0;0

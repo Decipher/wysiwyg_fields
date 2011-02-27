@@ -1,8 +1,6 @@
-// $Id$
-
 The Wysiwyg Fields module is bridge between CCK Fields and the Wysiwyg module,
-allowing any CCK field to be turned into a Wysiwyg button for a convenient
-inline solution.
+allowing most (if not all) CCK fields to be turned into a Wysiwyg button for a
+convenient inline solution.
 
 Wysiwyg Fields is the successor to the Wysiwyg ImageField module.
 
@@ -62,6 +60,7 @@ Recommended modules
 
 * Custom Formatters module.
 * jQuery Update module (in conjunction with jQuery UI 1.7).
+* Node Relationships.
 
 
 Configuration
@@ -73,7 +72,7 @@ Wysiwyg Fields settings can be found with the standard CCK field settings:
 
 - Expand the 'Wysiwyg Fields settings' fieldset.
 - Check the 'Attach to Wysiwyg?' checkbox.
-- Choose an icon for the Wysiwyg Field.
+- Choose or upload icon for the Wysiwyg Field.
 - Select at least one (1) formatter.
 - (optional) Expand and configure the 'Advanced settings'.
 

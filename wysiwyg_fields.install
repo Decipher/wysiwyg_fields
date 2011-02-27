@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Install, update and uninstall functions for the FileField Paths module.
@@ -22,6 +21,28 @@ function wysiwyg_fields_install() {
       db_query("INSERT INTO {filters} (format, module, delta, weight) VALUES (%d, '%s', %d, %d)", $id, 'wysiwyg_fields', 0, 10);
     }
   }
+}
+
+/**
+ * Implements hook_requirements().
+ */
+function wysiwyg_fields_requirements($phase) {
+  $requirements = array();
+  // Ensure translations don't break at install time
+  $t = get_t();
+
+  // Check for jQuery UI theme.
+  $jquery_ui_theme = file_exists(JQUERY_UI_PATH . '/themes/base/ui.all.css') || file_exists(JQUERY_UI_PATH . '/themes/default/ui.all.css');
+  $requirements['jquery_ui_theme'] = array(
+    'description' => $jquery_ui_theme ? '' : $t('No jQuery UI theme found, please download the appropriate files from: !url', array('!url' => l('http://blog.jqueryui.com/2010/02/jquery-ui-download-builderthemeroller-status/', 'http://blog.jqueryui.com/2010/02/jquery-ui-download-builderthemeroller-status/'))),
+    'severity' => $jquery_ui_theme ? REQUIREMENT_OK :  REQUIREMENT_ERROR,
+  );
+  if ($phase == 'runtime') {
+    $requirements['jquery_ui_theme']['title'] = $t('jQuery UI theme');
+    $requirements['jquery_ui_theme']['value'] = $jquery_ui_theme ? $t('Exists') : $t('Missing');
+  }
+
+  return $requirements;
 }
 
 /**

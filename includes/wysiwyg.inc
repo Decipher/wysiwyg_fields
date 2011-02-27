@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Wysiwyg module integration.
@@ -22,6 +21,33 @@ function wysiwyg_wysiwyg_fields_init_alter($data) {
 }
 
 /**
+ * Implements hook_wysiwyg_fields_menu_alter() on behalf of wysiwyg.module.
+ */
+function wysiwyg_wysiwyg_fields_menu_alter(&$items) {
+  $items[drupal_get_path('module', 'wysiwyg_fields') . '/plugins'] = array(
+    'title' => 'Wysiwyg Fields dynamic Wysiwyg plugin callback',
+    'page callback' => 'wysiwyg_fields_wysiwyg_plugin_callback',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+}
+
+/**
+ * Implements hook_wysiwyg_fields_theme_alter() on behalf of wysiwyg.module.
+ */
+function wysiwyg_wysiwyg_fields_theme_alter(&$items) {
+  $path = drupal_get_path('module', 'wysiwyg_fields') . '/templates';
+
+  $items['wysiwyg_fields_wysiwyg_plugin_js'] = array(
+    'arguments' => array(
+      'field' => NULL,
+    ),
+    'template' => 'wysiwyg.plugin_js',
+    'path' => $path,
+  );
+}
+
+/**
  * Implements hook_wysiwyg_include_directory().
  */
 function wysiwyg_fields_wysiwyg_include_directory($type) {
@@ -32,15 +58,18 @@ function wysiwyg_fields_wysiwyg_include_directory($type) {
 }
 
 /**
- * Implements hook_wysiwyg_fields_menu_alter() on behalf of wysiwyg.module.
+ * Implements hook_wysiwyg_fields_add_js() on behalf of wysiwyg.module.
  */
-function wysiwyg_wysiwyg_fields_menu_alter(&$items) {
-  $items[drupal_get_path('module', 'wysiwyg_fields') . '/plugins'] = array(
-    'title' => 'Wysiwyg Fields dynamic Wysiwyg plugin callback',
-    'page callback' => 'wysiwyg_fields_wysiwyg_plugin_callback',
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK,
-  );
+function wysiwyg_wysiwyg_fields_add_js($type) {
+  switch ($type) {
+    case 'node_form':
+      foreach (wysiwyg_profile_load_all() as $profile) {
+        if (isset($profile->editor) && file_exists($js = drupal_get_path('module', 'wysiwyg_fields') . "/scripts/wysiwyg.{$profile->editor}.js")) {
+          drupal_add_js($js);
+        }
+      }
+      break;
+  }
 }
 
 /**

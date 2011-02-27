@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Wysiwyg module plugin.
