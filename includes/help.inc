@@ -24,6 +24,7 @@ function wysiwyg_fields_help($path, $arg) {
   switch ($path) {
     // Main module help for the Wysiwyg ImageField module
     case 'admin/help#wysiwyg_fields':
+      // @TODO - Make this translatable.
       return theme('wysiwyg_fields_help__admin_help');
   }
 }

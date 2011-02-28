@@ -101,7 +101,7 @@ function filter_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NULL
 /**
  * Implements hook_wysiwyg_fields_form_alter_alter() on behalf of filter.module.
  */
-function filter_wysiwyg_fields_form_alter_alter($form, $form_state, $form_id) {
+function filter_wysiwyg_fields_form_alter_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'filter_admin_format_form') {
     $form['filters']['wysiwyg_fields/0']['#default_value'] = TRUE;
     $form['filters']['wysiwyg_fields/0']['#disabled'] = TRUE;

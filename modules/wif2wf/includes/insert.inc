@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Insert module integration.

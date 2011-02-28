@@ -111,7 +111,7 @@ function wysiwyg_fields_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a
 /**
  * Implements hook_wysiwyg_fields_form_alter_alter().
  */
-function wysiwyg_fields_wysiwyg_fields_form_alter_alter($form, $form_state, $form_id) {
+function wysiwyg_fields_wysiwyg_fields_form_alter_alter(&$form, &$form_state, $form_id) {
   if (isset($form['type']['#value']) && $form_id == "{$form['type']['#value']}_node_form") {
     // Store Content Type in $_SESSION['wysiwyg_fields'] to provide context.
     $_SESSION['wysiwyg_fields'] = $form['type']['#value'];
@@ -223,7 +223,7 @@ function wysiwyg_fields_element_validate($element, &$form_state) {
   if (!empty($form_state['values'][$element['#field_name']])) {
     foreach ($form_state['values'][$element['#field_name']] as $delta => &$field) {
       if (is_array($field) && empty($field['wysiwyg_fields']['wysiwyg_fields_formatters']) && is_array($form_state['post'][$element['#field_name']][$delta])) {
-        array_walk_recursive($form_state['post'][$element['#field_name']][$delta], '_wysiwyg_fields_element_validate', &$field['wysiwyg_fields']['wysiwyg_fields_formatters']);
+        array_walk_recursive($form_state['post'][$element['#field_name']][$delta], '_wysiwyg_fields_element_validate', array(&$field['wysiwyg_fields']['wysiwyg_fields_formatters']));
       }
     }
   }
@@ -234,7 +234,7 @@ function wysiwyg_fields_element_validate($element, &$form_state) {
  */
 function _wysiwyg_fields_element_validate($item, $key, $formatter) {
   if ($key == 'wysiwyg_fields_formatters') {
-    $formatter = $item;
+    $formatter[0] = $item;
   }
 }
 

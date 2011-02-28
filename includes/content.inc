@@ -181,7 +181,7 @@ function theme_wysiwyg_fields_widget_settings_alter($element) {
 /**
  * Implements hook_wysiwyg_fields_form_alter_alter() on behalf of content.module.
  */
-function content_wysiwyg_fields_form_alter_alter($form, $form_state, $form_id) {
+function content_wysiwyg_fields_form_alter_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'content_field_edit_form') {
     $form['#attributes'] = isset($form['#attributes']) ? $form['#attributes'] : array();
     $form['#attributes']['enctype'] = 'multipart/form-data';
