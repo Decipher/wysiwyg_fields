@@ -288,8 +288,9 @@ function wysiwyg_fields_icons($checksum = NULL, $reset = FALSE) {
     $directories = module_invoke_all('wysiwyg_fields_icons');
     foreach ($directories as $directory) {
       if (is_dir($directory)) {
-        foreach (scandir($directory) as $file) {
-          if (!is_dir($file) && count(file_validate_is_image($file = (object) array('filepath' => "{$directory}/{$file}"))) == 0) {
+        foreach (array_diff(scandir($directory), array('.', '..')) as $file) {
+          $file = (object) array('filepath' => "{$directory}/{$file}");
+          if (!is_dir($file->filepath) && count(file_validate_is_image($file)) == 0) {
             // User MD5 checksum to prevent duplicates.
             $icons[md5_file($file->filepath)] = $file->filepath;
           }
