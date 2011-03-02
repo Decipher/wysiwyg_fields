@@ -222,8 +222,17 @@ function wysiwyg_fields_elements_process($form_element) {
 function wysiwyg_fields_element_validate($element, &$form_state) {
   if (!empty($form_state['values'][$element['#field_name']])) {
     foreach ($form_state['values'][$element['#field_name']] as $delta => &$field) {
-      if (is_array($field) && empty($field['wysiwyg_fields']['wysiwyg_fields_formatters']) && is_array($form_state['post'][$element['#field_name']][$delta])) {
-        array_walk_recursive($form_state['post'][$element['#field_name']][$delta], '_wysiwyg_fields_element_validate', array(&$field['wysiwyg_fields']['wysiwyg_fields_formatters']));
+      if (is_array($field) && empty($field['wysiwyg_fields']['wysiwyg_fields_formatters'])) {
+        // Some fields have a single field that the widget will later split into
+        // deltas, we need to make sure that the Wyswyg Fields items are still
+        // available to the individual deltas.
+        $post = (!isset($form_state['post'][$element['#field_name']][$delta]) && isset($form_state['post'][$element['#field_name']]['wysiwyg_fields']))
+          ? $form_state['post'][$element['#field_name']]
+          : $form_state['post'][$element['#field_name']][$delta];
+
+        if (is_array($post)) {
+          array_walk_recursive($post, '_wysiwyg_fields_element_validate', array(&$field['wysiwyg_fields']['wysiwyg_fields_formatters']));
+        }
       }
     }
   }
@@ -367,9 +376,9 @@ function wysiwyg_fields_ahah_insert() {
 
   $items = array();
   $deltas = array();
-  foreach ($_POST[arg(3)] as $delta => $item) {
-    if ($item['wysiwyg_fields_select'] == TRUE) {
-      $items[$delta] = $form_state['values'][arg(3)][$delta];
+  foreach ($form_state['values'][arg(3)] as $delta => $item) {
+    if (is_array($item) && $item['wysiwyg_fields_select'] == TRUE) {
+      $items[$delta] = $item;
       $deltas[] = $delta;
     }
   }
