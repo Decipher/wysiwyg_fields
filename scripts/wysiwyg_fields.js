@@ -9,13 +9,14 @@
      * Initialize Wysiwyg Fields plugin.
      */
     init: function(id) {
-      if ($.isFunction(this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].init)) {
-        node = this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].init(id);
+      Drupal.settings.wysiwygFields.activeId = Drupal.wysiwyg.activeId;
+      if ($.isFunction(this.wysiwyg[Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].editor].init)) {
+        node = this.wysiwyg[Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].editor].init(id);
       }
 
-      this.wrapperElement = (typeof this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wrapperElement == 'undefined')
+      this.wrapperElement = (typeof this.wysiwyg[Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].editor].wrapperElement == 'undefined')
         ? this.wrapperElementDefault
-        : this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wrapperElement;
+        : this.wysiwyg[Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].editor].wrapperElement;
 
       if (typeof Drupal.settings.wysiwygFields.fields[id].init == "undefined") {
         Drupal.settings.wysiwygFields.fields[id].init = true;
@@ -30,7 +31,7 @@
           },
           height: 'auto',
           modal: true,
-          title: Drupal.settings.wysiwyg.plugins[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].format].drupal['wysiwyg_fields_' + id].title,
+          title: Drupal.settings.wysiwyg.plugins[Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].format].drupal['wysiwyg_fields_' + id].title,
           width: '80%'
         });
         $('#wysiwyg_fields-' + id + '-wrapper').bind('dialogclose', function(event, ui) {
@@ -67,8 +68,8 @@
 
       // Get TextNode if node is empty.
       if (node == null) {
-        if ($.isFunction(this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygGetTextNode)) {
-          node = this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygGetTextNode();
+        if ($.isFunction(this.wysiwyg[Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].editor].wysiwygGetTextNode)) {
+          node = this.wysiwyg[Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].editor].wysiwygGetTextNode();
         }
       }
 
@@ -76,8 +77,8 @@
       if ($(node).is(this.wrapperElement + '.wysiwyg_fields-' + id)) {
         // Select Wysiwyg Fields wrapper.
         // Invoke appropriate function based on active Wysiwyg editor.
-        if ($.isFunction(this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygIsNode)) {
-          this.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].wysiwygIsNode(node);
+        if ($.isFunction(this.wysiwyg[Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].editor].wysiwygIsNode)) {
+          this.wysiwyg[Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].editor].wysiwygIsNode(node);
         }
 
         // Store active token in settings.
@@ -112,8 +113,8 @@
         Drupal.settings.wysiwygFields.timer = setTimeout(
           function() {
             // Invoke appropriate function based on active Wysiwyg editor.
-            if ($.isFunction(Drupal.wysiwygFields.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].divToWysiwygField)) {
-              Drupal.wysiwygFields.wysiwyg[Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].editor].divToWysiwygField();
+            if ($.isFunction(Drupal.wysiwygFields.wysiwyg[Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].editor].divToWysiwygField)) {
+              Drupal.wysiwygFields.wysiwyg[Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].editor].divToWysiwygField();
             }
           },
           100
@@ -149,6 +150,8 @@
      *
      */
     dialogShow: function(id, op) {
+      Drupal.settings.wysiwygFields.activeId = Drupal.wysiwyg.activeId;
+
       // If there is an active field, render update dialog.
       if (op == undefined && typeof Drupal.settings.wysiwygFields.fields[id].active !== "undefined") {
         op = 'Update';
@@ -291,10 +294,10 @@
      *
      */
     dialogFix: function(id) {
-      if ($('#wysiwyg_fields-' + id + '-dialog').parent() !== $('#' + Drupal.wysiwyg.activeId).parent()) {
-        $('#wysiwyg_fields-' + id + '-dialog').prependTo($('#' + Drupal.wysiwyg.activeId).parent());
-        $('.ui-widget-overlay, .ui-dialog-overlay').prependTo($('#' + Drupal.wysiwyg.activeId).parent()).css('position', 'fixed');
-        $('#' + Drupal.wysiwyg.activeId).parent().css({ position: 'relative' });
+      if ($('#wysiwyg_fields-' + id + '-dialog').parent() !== $('#' + Drupal.settings.wysiwygFields.activeId).parent()) {
+        $('#wysiwyg_fields-' + id + '-dialog').prependTo($('#' + Drupal.settings.wysiwygFields.activeId).parent());
+        $('.ui-widget-overlay, .ui-dialog-overlay').prependTo($('#' + Drupal.settings.wysiwygFields.activeId).parent()).css('position', 'fixed');
+        $('#' + Drupal.settings.wysiwygFields.activeId).parent().css({ position: 'relative' });
         $('#wysiwyg_fields-' + id + '-dialog').css({ left: '10%', top: '20%' });
         $('#wysiwyg_fields-' + id + '-wrapper').css({ height: 'auto', padding: 0, width: '100%' });
       }

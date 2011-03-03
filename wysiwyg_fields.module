@@ -454,7 +454,7 @@ function wysiwyg_fields_ahah_insert() {
         Drupal.wysiwygFields.dialogClose('" . arg(3) . "');
         content = {$element};
         content = content.replace('wrapper_element', Drupal.wysiwygFields.wrapperElement, 'g');
-        Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].insert(content);
+        Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].insert(content);
         Drupal.settings.wysiwygFields.fields['" . arg(3) . "'].delta = {$delta};
         {$add_more}
       </script>";

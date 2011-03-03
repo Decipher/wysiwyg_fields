@@ -13,8 +13,8 @@
      *
      */
     //init: function(id) {
-    //  if (typeof CKEDITOR.instances[Drupal.wysiwyg.activeId] !== "undefined" && typeof CKEDITOR.instances[Drupal.wysiwyg.activeId].document !== "undefined") {
-    //    $(CKEDITOR.instances[Drupal.wysiwyg.activeId].document.$).bind('mouseup keyup', function() {
+    //  if (typeof CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId] !== "undefined" && typeof CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId].document !== "undefined") {
+    //    $(CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId].document.$).bind('mouseup keyup', function() {
     //      Drupal.wysiwygFields.wysiwyg.ckeditor.isNode(id);
     //    });
     //  }
@@ -32,16 +32,16 @@
      * @see http://drupal.org/node/1060552
      */
     //isNode: function(id) {
-    //  var node = CKEDITOR.instances[Drupal.wysiwyg.activeId].getSelection().getSelectedElement();
+    //  var node = CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId].getSelection().getSelectedElement();
     //  var state = Drupal.wysiwygFields.wysiwygIsNode(id, node ? node.$ : null) ? CKEDITOR.TRISTATE_ON : CKEDITOR.TRISTATE_OFF;
-    //  CKEDITOR.instances[Drupal.wysiwyg.activeId].getCommand('wysiwyg_fields_' + id).setState(state);
+    //  CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId].getCommand('wysiwyg_fields_' + id).setState(state);
     //},
 
     /**
      * Returns Text node.
      */
     wysiwygGetTextNode: function() {
-      return $(CKEDITOR.instances[Drupal.wysiwyg.activeId].getSelection().getStartElement().$).get(0).firstChild;
+      return $(CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId].getSelection().getStartElement().$).get(0).firstChild;
     },
 
     /**
@@ -50,7 +50,7 @@
      * @TODO - Element path no longer works?
      */
     wysiwygIsNode: function(element) {
-      editor = CKEDITOR.instances[Drupal.wysiwyg.activeId];
+      editor = CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId];
 
       // Create the range for the element.
       range = editor.document.$.createRange();
@@ -68,8 +68,8 @@
      */
     divToWysiwygField: function() {
       delete Drupal.settings.wysiwygFields.timer;
-      if (typeof CKEDITOR.instances[Drupal.wysiwyg.activeId].document !== "undefined") {
-        $('wysiwyg_field.wysiwyg_fields-placeholder', CKEDITOR.instances[Drupal.wysiwyg.activeId].document.$.body).each(function() {
+      if (typeof CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId].document !== "undefined") {
+        $('wysiwyg_field.wysiwyg_fields-placeholder', CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId].document.$.body).each(function() {
           $(this).removeClass('wysiwyg_fields-placeholder');
           replacement = "<wysiwyg_field id='" + $(this).attr('id') + "' class='" + $(this).attr('class') + "'>" + Drupal.settings.wysiwygFields.replacements['[' + $(this).attr('id') + ']'] + "</wysiwyg_field>";
           Drupal.wysiwygFields.wysiwyg.ckeditor.wysiwygIsNode(this);
@@ -81,7 +81,8 @@
             now = new Date();
           }
 
-          Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].insert(replacement);
+          // @TODO - This breaks WebKit support.
+          Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].insert(replacement);
         });
       }
 
