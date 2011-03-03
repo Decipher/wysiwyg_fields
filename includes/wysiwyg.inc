@@ -23,7 +23,7 @@ function wysiwyg_wysiwyg_fields_init_alter($data) {
 /**
  * Implements hook_wysiwyg_fields_menu_alter() on behalf of wysiwyg.module.
  */
-function wysiwyg_wysiwyg_fields_menu_alter(&$items) {
+function wysiwyg_wysiwyg_fields_menu_alter($items) {
   $items[drupal_get_path('module', 'wysiwyg_fields') . '/plugins'] = array(
     'title' => 'Wysiwyg Fields dynamic Wysiwyg plugin callback',
     'page callback' => 'wysiwyg_fields_wysiwyg_plugin_callback',
@@ -35,7 +35,7 @@ function wysiwyg_wysiwyg_fields_menu_alter(&$items) {
 /**
  * Implements hook_wysiwyg_fields_theme_alter() on behalf of wysiwyg.module.
  */
-function wysiwyg_wysiwyg_fields_theme_alter(&$items) {
+function wysiwyg_wysiwyg_fields_theme_alter($items) {
   $path = drupal_get_path('module', 'wysiwyg_fields') . '/templates';
 
   $items['wysiwyg_fields_wysiwyg_plugin_js'] = array(

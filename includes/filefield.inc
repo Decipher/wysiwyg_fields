@@ -7,7 +7,7 @@
 /**
  * Implements hook_wysiwyg_fields_elements_alter() on behalf of filefield.module.
  */
-function filefield_wysiwyg_fields_elements_alter(&$elements) {
+function filefield_wysiwyg_fields_elements_alter($elements) {
   foreach (module_invoke_all('widget_info') as $widget_type => $widget) {
     if (in_array('filefield', $widget['field types'])) {
       $elements[$widget_type]['#after_build'] = array('_filefield_wysiwyg_fields_elements_alter_after_build');

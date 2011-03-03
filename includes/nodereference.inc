@@ -10,7 +10,7 @@
  *
  * Flush the filter cache of all nodes referencing this node.
  */
-function nodereference_wysiwyg_fields_nodeapi_alter(&$node, $op, $a3 = NULL, $a4 = NULL) {
+function nodereference_wysiwyg_fields_nodeapi_alter($node, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
     case 'update':
       foreach (content_fields() as $field) {
