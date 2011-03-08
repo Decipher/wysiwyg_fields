@@ -231,6 +231,9 @@ function wysiwyg_fields_element_validate($element, &$form_state) {
           : $form_state['post'][$element['#field_name']][$delta];
 
         if (is_array($post)) {
+          if (isset($post['wysiwyg_fields_select']) && !isset($field['wysiwyg_fields_select'])) {
+            $field['wysiwyg_fields_select'] = $post['wysiwyg_fields_select'];
+          }
           array_walk_recursive($post, '_wysiwyg_fields_element_validate', array(&$field['wysiwyg_fields']['wysiwyg_fields_formatters']));
         }
       }

@@ -105,6 +105,7 @@ Known issues
 - Recursive Node references = infinite loop.
 - Locale can't read dynamic JS files.
 - Error message on non-multi insert doesn't work properly.
+- Formatters that use drupal_add_js() or drupal_add_css() don't don't render correctly in the Wysiwyg, nor in Node view when with filter caching.
 - jQuery 1.6:
   - Overflow is hidden, should scroll or Dialog should grow.
 - Firefox issues:

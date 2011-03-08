@@ -22,7 +22,7 @@ function hook_wysiwyg_fields_add_js($type) {
 /**
  * Implements hook_wysiwyg_fields_elements_alter().
  */
-function hook_wysiwyg_fields_elements_alter(&$elements) {
+function hook_wysiwyg_fields_elements_alter($elements) {
   $elements['date_select'] = array(
     '#process' => array('_date_wysiwyg_fields_element_alter_process'),
   );
