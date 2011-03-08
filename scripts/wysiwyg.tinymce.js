@@ -43,7 +43,7 @@
           $(this).removeClass('wysiwyg_fields-placeholder');
           replacement = "<span id='" + $(this).attr('id') + "' class='" + $(this).attr('class') + "'>" + Drupal.settings.wysiwygFields.replacements['[' + $(this).attr('id') + ']'] + "</span>";
           Drupal.wysiwygFields.wysiwyg.tinymce.wysiwygIsNode(this);
-          Drupal.wysiwyg.instances[Drupal.wysiwyg.activeId].insert(replacement);
+          Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].insert(replacement);
         });
       }
 

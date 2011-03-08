@@ -60,6 +60,15 @@
     },
 
     /**
+     *
+     */
+    wysiwygInvoke: function(id, data, settings, instanceId) {
+      Drupal.wysiwyg.activeId = instanceId;
+      Drupal.settings.wysiwygFields.activeId = instanceId;
+      this.dialogShow(id);
+    },
+
+    /**
      * @TODO - wysiwygIsNode only fires when the 'node' object changes, so it
      *   will unselect the DIV on a second click of the element.
      */
@@ -294,10 +303,11 @@
      *
      */
     dialogFix: function(id) {
-      if ($('#wysiwyg_fields-' + id + '-dialog').parent() !== $('#' + Drupal.settings.wysiwygFields.activeId).parent()) {
-        $('#wysiwyg_fields-' + id + '-dialog').prependTo($('#' + Drupal.settings.wysiwygFields.activeId).parent());
-        $('.ui-widget-overlay, .ui-dialog-overlay').prependTo($('#' + Drupal.settings.wysiwygFields.activeId).parent()).css('position', 'fixed');
-        $('#' + Drupal.settings.wysiwygFields.activeId).parent().css({ position: 'relative' });
+      var parent = $('#' + Drupal.settings.wysiwygFields.activeId).parents('.form-item:first');
+      if ($('#wysiwyg_fields-' + id + '-dialog').parent() !== parent) {
+        $('#wysiwyg_fields-' + id + '-dialog').prependTo(parent);
+        $('.ui-widget-overlay, .ui-dialog-overlay').prependTo(parent).css('position', 'fixed');
+        parent.css({ position: 'relative' });
         $('#wysiwyg_fields-' + id + '-dialog').css({ left: '10%', top: '20%' });
         $('#wysiwyg_fields-' + id + '-wrapper').css({ height: 'auto', padding: 0, width: '100%' });
       }

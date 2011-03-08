@@ -18,7 +18,7 @@
      * Execute the button.
      */
     invoke: function(data, settings, instanceId) {
-      Drupal.wysiwygFields.dialogShow('<?php print $field; ?>');
+      Drupal.wysiwygFields.wysiwygInvoke('<?php print $field; ?>', data, settings, instanceId);
     },
 
     /**

@@ -1,6 +1,7 @@
 Wysiwyg Fields 6.x-1.x-dev, xxxx-xx-xx (Development release)
 ----------------------------------
 
+- #1081294: Fixed issue with Textareas and Dialog window positioning.
 - #1075704: Fixed Icon is_dir() open_basedir restrictions issue.
 - #1074408: Fixed issue with Pass-by-reference.
 - #1074396: Fixed issue with Textareas in Wysiwyg Fields and Drupal.wysiwyg.activeId.
