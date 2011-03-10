@@ -44,6 +44,14 @@ function wysiwyg_fields_wysiwyg_fields_plugin() {
             db_query("UPDATE {wysiwyg} SET settings = '%s' WHERE format = %d", serialize($profile->settings), $profile->format);
           }
         }
+
+        // Prevent dynamic JavaScript files from being parsed through locale.
+        $parsed = variable_get('javascript_parsed', array());
+        $js = drupal_get_path('module', 'wysiwyg_fields') . "/plugins/wysiwyg_fields_{$field['field_name']}/wysiwyg_fields_{$field['field_name']}.js";
+        if (!in_array($js, $parsed)) {
+          $parsed[] = $js;
+        }
+        variable_set('javascript_parsed', $parsed);
       }
     }
     unset($_SESSION['wysiwyg_fields']);

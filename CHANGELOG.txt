@@ -7,6 +7,7 @@ Wysiwyg Fields 6.x-1.x-dev, xxxx-xx-xx (Development release)
 - #1074408: Fixed issue with Pass-by-reference.
 - #1074396: Fixed issue with Textareas in Wysiwyg Fields and Drupal.wysiwyg.activeId.
 - Added implementation of hook_requirements().
+- Fixed issue with locale and dynamically generated JavaScript files.
 - Fixed issue with inserting multiple Node reference fields.
 - Improved icon lookup functionality.
 - Improved support for 3rd party fields.
