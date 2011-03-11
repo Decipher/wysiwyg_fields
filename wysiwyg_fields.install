@@ -5,49 +5,48 @@
  */
 
 /**
- * Implements hook_install().
- */
-function wysiwyg_fields_install() {
-  // Enable Wysiwyg Fields filter on all Input formats.
-  foreach (filter_formats() as $id => $name) {
-    $flag = FALSE;
-
-    $results = db_query("SELECT * FROM {filters} WHERE format = %d AND module = '%s' AND delta = %d", $id, 'wysiwyg_fields', 0);
-    while ($result = db_fetch_object($results)) {
-      $flag = TRUE;
-    }
-
-    if ($flag == FALSE) {
-      db_query("INSERT INTO {filters} (format, module, delta, weight) VALUES (%d, '%s', %d, %d)", $id, 'wysiwyg_fields', 0, 10);
-    }
-  }
-}
-
-/**
  * Implements hook_requirements().
  */
-function wysiwyg_fields_requirements($phase) {
-  $requirements = array();
-  // Ensure translations don't break at install time
-  $t = get_t();
-
-  // Check for jQuery UI theme.
-  $jquery_ui_theme = file_exists(JQUERY_UI_PATH . '/themes/base/ui.all.css') || file_exists(JQUERY_UI_PATH . '/themes/default/ui.all.css');
-  $requirements['jquery_ui_theme'] = array(
-    'description' => $jquery_ui_theme ? '' : $t('No jQuery UI theme found, please download the appropriate files from: !url', array('!url' => l('http://blog.jqueryui.com/2010/02/jquery-ui-download-builderthemeroller-status/', 'http://blog.jqueryui.com/2010/02/jquery-ui-download-builderthemeroller-status/'))),
-    'severity' => $jquery_ui_theme ? REQUIREMENT_OK :  REQUIREMENT_ERROR,
-  );
-  if ($phase == 'runtime') {
-    $requirements['jquery_ui_theme']['title'] = $t('jQuery UI theme');
-    $requirements['jquery_ui_theme']['value'] = $jquery_ui_theme ? $t('Exists') : $t('Missing');
-  }
-
-  return $requirements;
-}
+// @TODO - Fix - Triggers incorrectly before jQuery UI is installed. Remove?
+//function wysiwyg_fields_requirements($phase) {
+//  $requirements = array();
+//  // Ensure translations don't break at install time
+//  $t = get_t();
+//
+//  // Check for jQuery UI theme.
+//  $jquery_ui_theme = file_exists(drupal_get_path('module', 'jquery_ui') . '/themes/base/ui.all.css') || file_exists(drupal_get_path('module', 'jquery_ui') . '/themes/default/ui.all.css');
+//  $requirements['jquery_ui_theme'] = array(
+//    'description' => $jquery_ui_theme ? '' : $t('No jQuery UI theme found, please download the appropriate files from: !url', array('!url' => l('http://blog.jqueryui.com/2010/02/jquery-ui-download-builderthemeroller-status/', 'http://blog.jqueryui.com/2010/02/jquery-ui-download-builderthemeroller-status/'))),
+//    'severity' => $jquery_ui_theme ? REQUIREMENT_OK :  REQUIREMENT_ERROR,
+//  );
+//  if ($phase == 'runtime') {
+//    $requirements['jquery_ui_theme']['title'] = $t('jQuery UI theme');
+//    $requirements['jquery_ui_theme']['value'] = $jquery_ui_theme ? $t('Exists') : $t('Missing');
+//  }
+//
+//  return $requirements;
+//}
 
 /**
  * Implements hook_enable().
  */
 function wysiwyg_fields_enable() {
   variable_set('wysiwyg_fields_enable', TRUE);
+
+  // Enable Wysiwyg Fields filter on all Input formats.
+  // Can't use filter_formats() as it fails to return all values when called via
+  // Drush.
+  $filters = db_query("SELECT format FROM {filters}");
+  while ($filter = db_fetch_object($filters)) {
+    $flag = FALSE;
+
+    $results = db_query("SELECT * FROM {filters} WHERE format = %d AND module = '%s' AND delta = %d", $filter->format, 'wysiwyg_fields', 0);
+    while ($result = db_fetch_object($results)) {
+      $flag = TRUE;
+    }
+
+    if ($flag == FALSE) {
+      db_query("INSERT INTO {filters} (format, module, delta, weight) VALUES (%d, '%s', %d, %d)", $filter->format, 'wysiwyg_fields', 0, 10);
+    }
+  }
 }

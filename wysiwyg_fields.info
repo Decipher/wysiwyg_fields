@@ -1,6 +1,7 @@
 name = "Wysiwyg Fields"
 description = "CCK Field support for the WYSIWYG module"
 package = "CCK"
+dependencies[] = "content"
 dependencies[] = "filter"
 dependencies[] = "jquery_ui"
 dependencies[] = "wysiwyg"
