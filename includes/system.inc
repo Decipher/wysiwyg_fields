@@ -5,6 +5,13 @@
  */
 
 /**
+ * Implements hook_init().
+ */
+function wysiwyg_fields_init() {
+  drupal_alter('wysiwyg_fields_init', $data = NULL);
+}
+
+/**
  * Implements hook_menu().
  */
 function wysiwyg_fields_menu() {

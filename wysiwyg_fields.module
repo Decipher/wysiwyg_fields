@@ -5,16 +5,12 @@
  */
 
 /**
- * Implements hook_init().
+ * Implement hooks.
  */
-function wysiwyg_fields_init() {
-  foreach (module_list() as $module) {
-    if (file_exists($file = dirname(__FILE__) . "/includes/{$module}.inc")) {
-      require_once $file;
-    }
+foreach (module_list() as $module) {
+  if (file_exists($file = dirname(__FILE__) . "/includes/{$module}.inc")) {
+    require_once $file;
   }
-
-  drupal_alter('wysiwyg_fields_init', $data = NULL);
 }
 
 /**
