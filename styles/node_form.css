@@ -2,6 +2,8 @@
  * @file
  */
 
+/* @TODO - Cross browser compatability */
+.wysiwyg_fields-form > div,
 .wysiwyg_fields-widget {
   display: none;
 }
