@@ -68,31 +68,38 @@
      */
     divToWysiwygField: function() {
       delete Drupal.settings.wysiwygFields.timer;
-      $.each(CKEDITOR.instances, function(instance) {
-        if (typeof CKEDITOR.instances[instance].document !== "undefined") {
-          // @TODO - Source code plugin breaks here.
-          $('wysiwyg_field.wysiwyg_fields-placeholder', CKEDITOR.instances[instance].document.$.body).each(function() {
-            $(this).removeClass('wysiwyg_fields-placeholder');
-            replacement = "<wysiwyg_field id='" + $(this).attr('id') + "' class='" + $(this).attr('class') + "'>" + Drupal.settings.wysiwygFields.replacements['[' + $(this).attr('id') + ']'] + "</wysiwyg_field>";
-            Drupal.wysiwygFields.wysiwyg.ckeditor.wysiwygIsNode(this);
+      if (typeof CKEDITOR !== "undefined") {
+        $.each(CKEDITOR.instances, function(instance) {
+          if (typeof CKEDITOR.instances[instance].document !== "undefined") {
+            // @TODO - Source code plugin breaks here.
+            $('wysiwyg_field.wysiwyg_fields-placeholder', CKEDITOR.instances[instance].document.$.body).each(function() {
+              $(this).removeClass('wysiwyg_fields-placeholder');
+              replacement = "<wysiwyg_field id='" + $(this).attr('id') + "' class='" + $(this).attr('class') + "'>" + Drupal.settings.wysiwygFields.replacements['[' + $(this).attr('id') + ']'] + "</wysiwyg_field>";
+              Drupal.wysiwygFields.wysiwyg.ckeditor.wysiwygIsNode(this);
 
-            // This is required to slow down this function so that the insert
-            // doesn't get fired to early. It is hacky and needs fixing.
-            timestamp = now = new Date();
-            while (timestamp.getMilliseconds == now.getMilliseconds()) {
-              now = new Date();
-            }
+              // This is required to slow down this function so that the insert
+              // doesn't get fired to early. It is hacky and needs fixing.
+              timestamp = now = new Date();
+              while (timestamp.getMilliseconds == now.getMilliseconds()) {
+                now = new Date();
+              }
 
-            // @TODO - This breaks WebKit support.
-            Drupal.wysiwyg.instances[instance].insert(replacement);
-          });
-        }
+              // @TODO - This breaks WebKit support.
+              Drupal.wysiwyg.instances[instance].insert(replacement);
+            });
+          }
 
-        else {
-          // Document not ready, reset timer.
-          Drupal.wysiwygFields._wysiwygAttach();
-        }
-      });
+          else {
+            // Document not ready, reset timer.
+            Drupal.wysiwygFields._wysiwygAttach();
+          }
+        });
+      }
+
+      else {
+        // API not ready, reset timer.
+        Drupal.wysiwygFields._wysiwygAttach();
+      }
     }
   }
 })(jQuery);

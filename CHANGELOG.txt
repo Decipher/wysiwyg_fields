@@ -2,6 +2,7 @@ Wysiwyg Fields 6.x-1.x-dev, xxxx-xx-xx (Development release)
 ----------------------------------
 
 - #1090746: Added support for Fullscreen mode.
+- Improved support for multiple Wysiwyg instances on a single node form.
 
 
 Wysiwyg Fields 6.x-1.x-alpha2, 2011-03-15
