@@ -37,17 +37,26 @@
      */
     divToWysiwygField: function() {
       delete Drupal.settings.wysiwygFields.timer;
-      if (typeof FCKeditorAPI.Instances[Drupal.settings.wysiwygFields.activeId].EditorDocument !== "undefined") {
-        $('wysiwyg_field.wysiwyg_fields-placeholder', FCKeditorAPI.Instances[Drupal.settings.wysiwygFields.activeId].EditorDocument.body).each(function() {
-          $(this).removeClass('wysiwyg_fields-placeholder');
-          replacement = "<wysiwyg_field id='" + $(this).attr('id') + "' class='" + $(this).attr('class') + "'>" + Drupal.settings.wysiwygFields.replacements['[' + $(this).attr('id') + ']'] + "</wysiwyg_field>";
-          Drupal.wysiwygFields.wysiwyg.fckeditor.wysiwygIsNode(this);
-          Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].insert(replacement);
+      if (typeof FCKeditorAPI !== "undefined") {
+        $.each(FCKeditorAPI.Instances, function(instance) {
+          if (typeof FCKeditorAPI.Instances[instance].EditorDocument !== "undefined") {
+            $('wysiwyg_field.wysiwyg_fields-placeholder', FCKeditorAPI.Instances[instance].EditorDocument.body).each(function() {
+              $(this).removeClass('wysiwyg_fields-placeholder');
+              replacement = "<wysiwyg_field id='" + $(this).attr('id') + "' class='" + $(this).attr('class') + "'>" + Drupal.settings.wysiwygFields.replacements['[' + $(this).attr('id') + ']'] + "</wysiwyg_field>";
+              Drupal.wysiwygFields.wysiwyg.fckeditor.wysiwygIsNode(this);
+              Drupal.wysiwyg.instances[instance].insert(replacement);
+            });
+          }
+
+          else {
+            // Document not ready, reset timer.
+            Drupal.wysiwygFields._wysiwygAttach();
+          }
         });
       }
 
       else {
-        // Document not ready, reset timer.
+        // API not ready, reset timer.
         Drupal.wysiwygFields._wysiwygAttach();
       }
     }

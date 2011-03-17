@@ -1,6 +1,13 @@
 Wysiwyg Fields 6.x-1.x-dev, xxxx-xx-xx (Development release)
 ----------------------------------
 
+- Improved support for multiple Wysiwyg instances on a single node form.
+
+
+Wysiwyg Fields 6.x-1.x-alpha2, 2011-03-15
+----------------------------------
+
+- #1092834: Fixed issue with hook_nodeapi() not being invoked when using Persistent URLs.
 - #1085942: Fixed issue with Filter not being enabled when installing via Drush.
 - #1085466: Fixed issue with plugins being defined when field doesn't exist.
 - #1081294: Fixed issue with Textareas and Dialog window positioning.
