@@ -34,6 +34,7 @@
 
 .ui-dialog .ui-dialog-content {
   padding: 1.5em 1.7em !important;
+  height: auto !important;
   width: auto !important;
 }
 

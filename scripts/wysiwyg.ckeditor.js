@@ -70,7 +70,7 @@
       delete Drupal.settings.wysiwygFields.timer;
       if (typeof CKEDITOR !== "undefined") {
         $.each(CKEDITOR.instances, function(instance) {
-          if (typeof CKEDITOR.instances[instance].document !== "undefined") {
+          if (CKEDITOR.instances[instance].mode == 'wysiwyg' && typeof CKEDITOR.instances[instance].document !== "undefined") {
             // @TODO - Source code plugin breaks here.
             $('wysiwyg_field.wysiwyg_fields-placeholder', CKEDITOR.instances[instance].document.$.body).each(function() {
               $(this).removeClass('wysiwyg_fields-placeholder');

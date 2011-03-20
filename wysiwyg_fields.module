@@ -171,9 +171,11 @@ function wysiwyg_fields_elements_process($form_element) {
       case 0:
         $wrapper = "{$form_element['#id']}-wysiwyg-fields-ahah-wrapper";
         break;
+
       case 1:
         $wrapper = str_replace('_', '-', $field['field_name']) . '-items';
         break;
+
       default:
         $wrapper = "{$field['field_name']}_values";
     }
@@ -250,36 +252,47 @@ function _wysiwyg_fields_element_validate($item, $key, $formatter) {
  *
  */
 function wysiwyg_fields_form_alter_after_build($form_element, &$form_state) {
+  $flag = FALSE;
   if (isset($form_element['#field_info'])) {
     foreach ($form_element['#field_info'] as $field) {
       if (isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status']) {
-        // Modify field element.
-        $form_element[$field['field_name']]['#prefix'] = "<div id='wysiwyg_fields-{$field['field_name']}-wrapper'>{$form_element[$field['field_name']]['#prefix']}";
-        $form_element[$field['field_name']]['#suffix'] = "{$form_element[$field['field_name']]['#suffix']}</div>";
+        $flag = TRUE;
 
-        // Add javascript.
-        jquery_ui_add(array('ui.core', 'ui.dialog'));
-        drupal_add_js(drupal_get_path('module', 'wysiwyg_fields') . '/scripts/wysiwyg_fields.js');
-        module_invoke_all('wysiwyg_fields_add_js', 'node_form');
-
-        // Add Style sheets.
-        drupal_add_css(drupal_get_path('module', 'wysiwyg_fields') . '/styles/node_form.css');
-
-        // jQuery 1.7 theme.
-        if (file_exists($css = JQUERY_UI_PATH . '/themes/base/ui.all.css')) {
-          // @TODO - Change if #388384 ever gets resolved.
-          drupal_add_css($css);
-        }
-
-        // jQuery 1.6 theme.
-        elseif (file_exists($css = JQUERY_UI_PATH . '/themes/default/ui.all.css')) {
-          drupal_add_css($css);
+        if (isset($form_element[$field['field_name']])) {
+          // Modify field element.
+          wysiwyg_field_after_build_wrapper($form_element[$field['field_name']], $field['field_name']);
         }
       }
     }
   }
 
+  if ($flag) {
+    // Add javascript.
+    jquery_ui_add(array('ui.core', 'ui.dialog'));
+    drupal_add_js(drupal_get_path('module', 'wysiwyg_fields') . '/scripts/wysiwyg_fields.js');
+    module_invoke_all('wysiwyg_fields_add_js', 'node_form');
+
+    // Add Style sheets.
+    drupal_add_css(drupal_get_path('module', 'wysiwyg_fields') . '/styles/node_form.css');
+
+    // jQuery 1.7 theme.
+    if (file_exists($css = JQUERY_UI_PATH . '/themes/base/ui.all.css')) {
+      // @TODO - Change if #388384 ever gets resolved.
+      drupal_add_css($css);
+    }
+
+    // jQuery 1.6 theme.
+    elseif (file_exists($css = JQUERY_UI_PATH . '/themes/default/ui.all.css')) {
+      drupal_add_css($css);
+    }
+  }
+
   return $form_element;
+}
+
+function wysiwyg_field_after_build_wrapper(&$form_element, $field_name) {
+  $form_element['#prefix'] = "<div id='wysiwyg_fields-{$field_name}-wrapper'>{$form_element['#prefix']}";
+  $form_element['#suffix'] = "{$form_element['#suffix']}</div>";
 }
 
 /**
