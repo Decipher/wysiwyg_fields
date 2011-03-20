@@ -2,6 +2,7 @@ Wysiwyg Fields 6.x-1.x-dev, xxxx-xx-xx (Development release)
 ----------------------------------
 
 - #1096948: Fixed issue when Wysiwyg Field is in a Fieldgroup.
+- #1085948: Fixed issue with View Source plugin.
 - Improved support for multiple Wysiwyg instances on a single node form.
 
 
