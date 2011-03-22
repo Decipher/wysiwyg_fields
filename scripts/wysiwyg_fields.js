@@ -101,12 +101,15 @@
      * Convert tokens to the appropriate rendered preview.
      */
     wysiwygAttach: function(id, content, settings, instanceId) {
-      var regex = new RegExp('(\\[wysiwyg_fields-' + id + '-([\\d_])+-(.*?)\\])', 'g');
+      wrapperElement = Drupal.wysiwygFields.wrapperElement;
+
+      var regex = new RegExp('\\[wysiwyg_field(?=[^>]*wf_field=["\']' + id + '["\']).*?\\]', 'g');
       if ((matches = content.match(regex))) {
         $.each($(matches), function(i, elem) {
-          elemId = elem.substr(1, elem.length - 2);
-          wrapperElement = Drupal.wysiwygFields.wrapperElement;
-          replacement = '<' + wrapperElement + ' id="' + elemId + '" class="wysiwyg_fields wysiwyg_fields-placeholder wysiwyg_fields-' + id + '">&nbsp;</' + wrapperElement + '>';
+          var regex = new RegExp('\\[wysiwyg_field(.*?)\\]');
+          var attributes = elem.match(regex);
+
+          replacement = '<' + wrapperElement + attributes[1] + '><div class="wysiwyg_fields-placeholder">&nbsp;</div></' + wrapperElement + '>';
           content = content.replace(elem, replacement);
         });
       }
@@ -137,16 +140,17 @@
     wysiwygDetach: function(id, content, settings, instanceId) {
       if (content.indexOf('wysiwyg_fields-placeholder') == -1) {
         wrapperElement = this.wrapperElement;
-        var regex = new RegExp('<' + wrapperElement + '.*?wysiwyg_fields-' + id + '.*?>[\\n\\s\\S]*?</' + wrapperElement + '>', 'g');
+        var regex = new RegExp('<' + wrapperElement + '(?=[^>]*wf_field=["\']' + id + '["\']).*?>[\\n\\s\\S]*?</' + wrapperElement + '>', 'g');
         if ((matches = content.match(regex))) {
           $.each($(matches), function(i, elem) {
-            var regex = new RegExp('<' + wrapperElement + '.*?>([\\n\\s\\S]*?)</' + wrapperElement + '>');
+            var regex = new RegExp('<' + wrapperElement + '(.*?)>([\\n\\s\\S]*?)</' + wrapperElement + '>');
             var item = elem.match(regex);
-            var token = '[' + $(elem).attr('id') + ']';
+            var token = '[wysiwyg_field' + item[1] + ']';
 
             // Store replacement in Drupal.settings for wysiwygAttach.
-            Drupal.settings.wysiwygFields.replacements = Drupal.settings.wysiwygFields.replacements || {};
-            Drupal.settings.wysiwygFields.replacements[token] = item[1];
+            Drupal.settings.wysiwygFields.fields[id].replacements = Drupal.settings.wysiwygFields.fields[id].replacements || {};
+            Drupal.settings.wysiwygFields.fields[id].replacements[$(elem).attr('wf_deltas')] = Drupal.settings.wysiwygFields.fields[id].replacements[$(elem).attr('wf_deltas')] || {};
+            Drupal.settings.wysiwygFields.fields[id].replacements[$(elem).attr('wf_deltas')][$(elem).attr('wf_formatter')] = item[2];
 
             content = content.replace(elem, token);
           });

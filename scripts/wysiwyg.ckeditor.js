@@ -71,11 +71,9 @@
       if (typeof CKEDITOR !== "undefined") {
         $.each(CKEDITOR.instances, function(instance) {
           if (CKEDITOR.instances[instance].mode == 'wysiwyg' && typeof CKEDITOR.instances[instance].document !== "undefined") {
-            // @TODO - Source code plugin breaks here.
-            $('wysiwyg_field.wysiwyg_fields-placeholder', CKEDITOR.instances[instance].document.$.body).each(function() {
-              $(this).removeClass('wysiwyg_fields-placeholder');
-              replacement = "<wysiwyg_field id='" + $(this).attr('id') + "' class='" + $(this).attr('class') + "'>" + Drupal.settings.wysiwygFields.replacements['[' + $(this).attr('id') + ']'] + "</wysiwyg_field>";
-              Drupal.wysiwygFields.wysiwyg.ckeditor.wysiwygIsNode(this);
+            $('.wysiwyg_fields-placeholder', CKEDITOR.instances[instance].document.$.body).each(function() {
+              replacement = Drupal.settings.wysiwygFields.fields[$(this).parent().attr('wf_field')].replacements[$(this).parent().attr('wf_deltas')][$(this).parent().attr('wf_formatter')];
+              Drupal.wysiwygFields.wysiwyg.ckeditor.wysiwygIsNode($(this).parent().get(0));
 
               // This is required to slow down this function so that the insert
               // doesn't get fired to early. It is hacky and needs fixing.

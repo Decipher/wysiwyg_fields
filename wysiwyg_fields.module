@@ -65,11 +65,6 @@ function wysiwyg_fields_wysiwyg_fields_nodeapi_alter($node, $op, $a3 = NULL, $a4
         $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
       }
 
-      $replacements = array();
-      foreach ($tokens as $token) {
-        $replacements[$token[0]] = _wysiwyg_fields_filter_process($node, $token[0]);
-      }
-
       $fields = array();
       foreach (content_fields(NULL, $node->type) as $field) {
         // Get first empty delta.
@@ -90,12 +85,17 @@ function wysiwyg_fields_wysiwyg_fields_nodeapi_alter($node, $op, $a3 = NULL, $a4
         );
       }
 
+      // @TODO - Rewrite for new token storage system.
+      $replacements = array();
+      foreach ($tokens as $token) {
+        $replacements[$token[0]] = _wysiwyg_fields_filter_process($node, $token[0]);
+      }
+
       // Convert settings to JavaScript for Wysiwyg plugin.
       drupal_add_js(
         array(
           'wysiwygFields' => array(
             'fields' => $fields,
-            'replacements' => $replacements
           )
         ),
         'setting'
@@ -428,7 +428,6 @@ function wysiwyg_fields_ahah_insert() {
   else {
     list($formatter_module, $formatter_name) = explode('_formatter_', $items[current(array_keys($items))]['wysiwyg_fields']['wysiwyg_fields_formatters']);
     $formatter = _content_get_formatter($formatter_name, $field['module']);
-    $id = 'wysiwyg_fields-' . arg(3) . '-' . implode('_', $deltas) . "-{$items[current(array_keys($items))]['wysiwyg_fields']['wysiwyg_fields_formatters']}";
 
     if ($formatter->multiple == CONTENT_HANDLE_CORE) {
       $element = '';
@@ -441,7 +440,7 @@ function wysiwyg_fields_ahah_insert() {
       $element = _wysiwyg_fields_ahah_get_element($field, $items, array($formatter_module, $formatter_name));
       $element = theme($element['#theme'], $element);
     }
-    $element = drupal_to_js("<wrapper_element id='{$id}' class='wysiwyg_fields wysiwyg_fields-" . arg(3) . "'>" . $element . "</wrapper_element>");
+    $element = drupal_to_js("<wrapper_element wf_field='{$field['field_name']}' wf_deltas='" . implode(',', $deltas) . "' wf_formatter='{$formatter_module}_formatter_$formatter_name'>" . $element . "</wrapper_element>");
 
     // Get first empty delta.
     $delta = NULL;
