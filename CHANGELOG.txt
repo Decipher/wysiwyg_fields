@@ -4,6 +4,8 @@ Wysiwyg Fields 6.x-1.x-dev, xxxx-xx-xx (Development release)
 - #1096948: Fixed issue when Wysiwyg Field is in a Fieldgroup.
 - #1090746: Added support for Fullscreen mode.
 - #1085948: Fixed issue with View Source plugin.
+- Added Field bypass hook.
+- Added Wyswiwyg plugins hook.
 - Improved support for multiple Wysiwyg instances on a single node form.
 
 

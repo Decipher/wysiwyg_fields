@@ -5,7 +5,7 @@
  */
 
 /**
- * Implement hooks.
+ * Include additional files.
  */
 foreach (module_list() as $module) {
   if (file_exists($file = dirname(__FILE__) . "/includes/{$module}.inc")) {
@@ -121,8 +121,7 @@ function wysiwyg_fields_wysiwyg_fields_form_alter_alter($form, $form_state, $for
  */
 function wysiwyg_fields_elements_process($form_element) {
   $field = content_fields($form_element['#field_name'], $form_element['#type_name']);
-
-  if ($form_element['#type'] == $field['widget']['type'] && isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status'] == TRUE) {
+  if (!in_array(TRUE, module_invoke_all('wysiwyg_fields_field_bypass', $field)) && $form_element['#type'] == $field['widget']['type'] && isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status'] == TRUE) {
     $form_element['#element_validate'][] = 'wysiwyg_fields_element_validate';
 
     // AHAH Wrapper.
