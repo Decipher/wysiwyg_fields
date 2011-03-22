@@ -5,6 +5,22 @@
  */
 
 /**
+ * Implements hook_wysiwyg_fields_wysiwyg_plugins() on behalf of content.module.
+ */
+function content_wysiwyg_fields_wysiwyg_plugins($content_type) {
+  $plugins = array();
+  foreach (content_fields() as $field) {
+    if (!in_array(TRUE, module_invoke_all('wysiwyg_fields_field_bypass', $field)) && !is_null(content_fields($field['field_name'], $content_type)) && isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status']) {
+      $plugins[$field['field_name']] = array(
+        'label' => $field['widget']['label'],
+        'icon' => $field['widget']['wysiwyg_fields_icon'],
+      );
+    }
+  }
+  return $plugins;
+}
+
+/**
  * Implements hook_wysiwyg_fields_theme_alter() on behalf of content.module.
  */
 function content_wysiwyg_fields_theme_alter($items) {
@@ -20,7 +36,10 @@ function content_wysiwyg_fields_theme_alter($items) {
  * Implements hook_widget_settings_alter().
  */
 function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
-  if (!in_array(TRUE, module_invoke_all('wysiwyg_fields_widget_bypass', $widget))) {
+  $content_type = str_replace('-', '_', arg(3));
+  $field_name = arg(5);
+  $field = content_fields($field_name, $content_type);
+  if (!in_array(TRUE, module_invoke_all('wysiwyg_fields_field_bypass', $field))) {
     switch ($op) {
       case 'form':
         drupal_add_css(drupal_get_path('module', 'wysiwyg_fields') . '/styles/settings_form.css');
@@ -153,8 +172,10 @@ function _wysiwyg_fields_formatters() {
   $field_types = _content_field_types();
 
   $formatters = array();
-  foreach ($field_types[$field['type']]['formatters'] as $id => $formatter) {
-    $formatters[$id] = $formatter['label'];
+  if (is_array($field_types[$field['type']]['formatters'])) {
+    foreach ($field_types[$field['type']]['formatters'] as $id => $formatter) {
+      $formatters[$id] = $formatter['label'];
+    }
   }
 
   return $formatters;
