@@ -255,6 +255,7 @@ function wysiwyg_fields_form_alter_after_build($form_element, &$form_state) {
   if (isset($form_element['#field_info'])) {
     foreach ($form_element['#field_info'] as $field) {
       if (isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status']) {
+        drupal_add_js(drupal_get_path('module', 'wysiwyg_fields') . "/plugins/wysiwyg_fields_{$field['field_name']}/wysiwyg_fields_{$field['field_name']}.js", 'module', 'header', FALSE, TRUE, FALSE);
         $flag = TRUE;
 
         if (isset($form_element[$field['field_name']])) {
