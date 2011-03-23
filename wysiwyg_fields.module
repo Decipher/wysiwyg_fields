@@ -65,6 +65,11 @@ function wysiwyg_fields_wysiwyg_fields_nodeapi_alter($node, $op, $a3 = NULL, $a4
         $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
       }
 
+      $replacements = array();
+      foreach ($tokens as $key => $token) {
+        $replacements[$token['wf_field']][$token['wf_deltas']][$token['wf_formatter']] = "<wysiwyg_field wf_field='{$token['wf_field']}' wf_deltas='{$token['wf_deltas']}' wf_formatter='{$token['wf_formatter']}' >" . _wysiwyg_fields_filter_process($node, $key) . '</wysiwyg_field>';
+      }
+
       $fields = array();
       foreach (content_fields(NULL, $node->type) as $field) {
         // Get first empty delta.
@@ -82,13 +87,8 @@ function wysiwyg_fields_wysiwyg_fields_nodeapi_alter($node, $op, $a3 = NULL, $a4
         $fields[$field['field_name']] = array(
           'multiple' => $field['multiple'],
           'delta' => !is_null($delta) ? $delta : count($node->{$field['field_name']}),
+          'replacements' => $replacements[$field['field_name']],
         );
-      }
-
-      // @TODO - Rewrite for new token storage system.
-      $replacements = array();
-      foreach ($tokens as $token) {
-        $replacements[$token[0]] = _wysiwyg_fields_filter_process($node, $token[0]);
       }
 
       // Convert settings to JavaScript for Wysiwyg plugin.

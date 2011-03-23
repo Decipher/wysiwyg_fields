@@ -341,10 +341,10 @@ function _content_wysiwyg_fields_get_fields($node) {
 
   $fields = array();
   foreach ($tokens as $token) {
-    $fields[$token[1]] = is_array($fields[$token[1]]) ? $fields[$token[1]] : array();
-    $token[2] = explode('_', $token[2]);
-    foreach ($token[2] as $delta) {
-      $fields[$token[1]][$delta] = TRUE;
+    $fields[$token['wf_field']] = is_array($fields[$token['wf_field']]) ? $fields[$token['wf_field']] : array();
+    $token['wf_deltas'] = explode('_', $token['wf_deltas']);
+    foreach ($token['wf_deltas'] as $delta) {
+      $fields[$token['wf_field']][$delta] = TRUE;
     }
   }
 

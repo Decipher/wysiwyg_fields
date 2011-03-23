@@ -31,19 +31,19 @@ function _wysiwyg_fields_filter_process($node, $text) {
   $fields = array();
   $tokens = _wysiwyg_fields_text_to_tokens($text);
 
-  foreach ($tokens as $token) {
-    $fields[$token[1]] = isset($fields[$token[1]]) ? $fields[$token[1]] : content_fields($token[1], $node->type);
+  foreach ($tokens as $key => $token) {
+    $fields[$token['wf_field']] = isset($fields[$token['wf_field']]) ? $fields[$token['wf_field']] : content_fields($token['wf_field'], $node->type);
 
-    $field = $fields[$token[1]];
-    $token[2] = explode('_', $token[2]);
+    $field = $fields[$token['wf_field']];
+    $token['wf_deltas'] = explode('_', $token['wf_deltas']);
     $items = array();
-    foreach ($token[2] as $delta) {
-      if (isset($node->{$token[1]}[$delta])) {
-        $items[] = $node->{$token[1]}[$delta];
+    foreach ($token['wf_deltas'] as $delta) {
+      if (isset($node->{$token['wf_field']}[$delta])) {
+        $items[] = $node->{$token['wf_field']}[$delta];
       }
     }
 
-    list($field_type, $formatter_name) = explode('_formatter_', $token[3]);
+    list($field_type, $formatter_name) = explode('_formatter_', $token['wf_formatter']);
     $formatter = _content_get_formatter($formatter_name, $field_type);
 
     // @TODO - Merge logic with AHAH version.
@@ -53,12 +53,12 @@ function _wysiwyg_fields_filter_process($node, $text) {
         $item = _wysiwyg_fields_ahah_get_element($field, $item, array($field_type, $formatter_name));
         $element .= theme($item['#theme'], $item);
       }
-      $text = str_replace($token[0], $element, $text);
+      $text = str_replace($key, $element, $text);
     }
 
     else {
       $element = _wysiwyg_fields_ahah_get_element($field, $items, array($field_type, $formatter_name));
-      $text = str_replace($token[0], theme($element['#theme'], $element), $text);
+      $text = str_replace($key, theme($element['#theme'], $element), $text);
     }
   }
 
@@ -69,12 +69,16 @@ function _wysiwyg_fields_filter_process($node, $text) {
  *
  */
 function _wysiwyg_fields_text_to_tokens($text) {
-  preg_match_all('/\[wysiwyg_fields-(.*?)-([\d_]+)-(.*?)\]/', $text, $matches, PREG_SET_ORDER);
+  preg_match_all('/\[wysiwyg_field(.*?)\]/', $text, $matches, PREG_SET_ORDER);
 
   // Use token as array key to ensure no unnecessary processing.
   $tokens = array();
   foreach ($matches as $match) {
-    $tokens[$match[0]] = $match;
+    preg_match_all('/(\w*?)\=["\'](\w*?)["\']/', $match[1], $attributes, PREG_SET_ORDER);
+    $tokens[$match[0]] = array();
+    foreach ($attributes as $attribute) {
+      $tokens[$match[0]][$attribute[1]] = $attribute[2];
+    }
   }
 
   return $tokens;
