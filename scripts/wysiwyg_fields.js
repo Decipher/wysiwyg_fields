@@ -101,11 +101,12 @@
      * Convert tokens to the appropriate rendered preview.
      */
     wysiwygAttach: function(id, content, settings, instanceId) {
+      wrapperElement = Drupal.wysiwygFields.wrapperElement;
+
       var regex = new RegExp('(\\[wysiwyg_fields-' + id + '-([\\d_])+-(.*?)\\])', 'g');
       if ((matches = content.match(regex))) {
         $.each($(matches), function(i, elem) {
           elemId = elem.substr(1, elem.length - 2);
-          wrapperElement = Drupal.wysiwygFields.wrapperElement;
           replacement = '<' + wrapperElement + ' id="' + elemId + '" class="wysiwyg_fields wysiwyg_fields-placeholder wysiwyg_fields-' + id + '">&nbsp;</' + wrapperElement + '>';
           content = content.replace(elem, replacement);
         });

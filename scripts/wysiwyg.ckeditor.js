@@ -71,7 +71,6 @@
       if (typeof CKEDITOR !== "undefined") {
         $.each(CKEDITOR.instances, function(instance) {
           if (CKEDITOR.instances[instance].mode == 'wysiwyg' && typeof CKEDITOR.instances[instance].document !== "undefined") {
-            // @TODO - Source code plugin breaks here.
             $('wysiwyg_field.wysiwyg_fields-placeholder', CKEDITOR.instances[instance].document.$.body).each(function() {
               $(this).removeClass('wysiwyg_fields-placeholder');
               replacement = "<wysiwyg_field id='" + $(this).attr('id') + "' class='" + $(this).attr('class') + "'>" + Drupal.settings.wysiwygFields.replacements['[' + $(this).attr('id') + ']'] + "</wysiwyg_field>";
