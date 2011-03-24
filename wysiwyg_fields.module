@@ -430,7 +430,7 @@ function wysiwyg_fields_ahah_insert() {
     $formatter = _content_get_formatter($formatter_name, $field['module']);
     $id = 'wysiwyg_fields-' . arg(3) . '-' . implode('_', $deltas) . "-{$items[current(array_keys($items))]['wysiwyg_fields']['wysiwyg_fields_formatters']}";
 
-    if ($formatter->multiple == CONTENT_HANDLE_CORE) {
+    if ($formatter['multiple values'] == CONTENT_HANDLE_CORE) {
       $element = '';
       foreach ($items as $item) {
         $item = _wysiwyg_fields_ahah_get_element($field, $item, array($formatter_module, $formatter_name));
@@ -508,7 +508,7 @@ function _wysiwyg_fields_ahah_get_element($field, $items, $formatter) {
       '#field_name' => $field['field_name'],
       '#weight' => 0, // @TODO - Fix this
       '#theme' => "{$formatter[0]}_formatter_{$formatter[1]}",
-      '#item' => $items[0]['#item'],
+      '#item' => $items[current(array_keys($items))]['#item'],
       '#title' => '', // @TODO - Fix this
       '#description' => '', // @TODO - Fix this
     ),

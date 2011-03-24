@@ -6,6 +6,7 @@ Wysiwyg Fields 6.x-1.x-dev, xxxx-xx-xx (Development release)
 - #1085948: Fixed issue with View Source plugin.
 - Added Field bypass hook.
 - Added Wyswiwyg plugins hook.
+- Fixed issue with inserting multiple fields via a non-multi formatter.
 - Improved support for multiple Wysiwyg instances on a single node form.
 
 
