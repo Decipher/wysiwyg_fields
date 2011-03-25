@@ -255,6 +255,7 @@ function wysiwyg_fields_form_alter_after_build($form_element, &$form_state) {
   if (isset($form_element['#field_info'])) {
     foreach ($form_element['#field_info'] as $field) {
       if (isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status']) {
+        drupal_add_js(drupal_get_path('module', 'wysiwyg_fields') . "/plugins/wysiwyg_fields_{$field['field_name']}/wysiwyg_fields_{$field['field_name']}.js", 'module', 'header', FALSE, TRUE, FALSE);
         $flag = TRUE;
 
         if (isset($form_element[$field['field_name']])) {
@@ -428,7 +429,7 @@ function wysiwyg_fields_ahah_insert() {
     list($formatter_module, $formatter_name) = explode('_formatter_', $items[current(array_keys($items))]['wysiwyg_fields']['wysiwyg_fields_formatters']);
     $formatter = _content_get_formatter($formatter_name, $field['module']);
 
-    if ($formatter->multiple == CONTENT_HANDLE_CORE) {
+    if ($formatter['multiple values'] == CONTENT_HANDLE_CORE) {
       $element = '';
       foreach ($items as $item) {
         $item = _wysiwyg_fields_ahah_get_element($field, $item, array($formatter_module, $formatter_name));
@@ -506,7 +507,7 @@ function _wysiwyg_fields_ahah_get_element($field, $items, $formatter) {
       '#field_name' => $field['field_name'],
       '#weight' => 0, // @TODO - Fix this
       '#theme' => "{$formatter[0]}_formatter_{$formatter[1]}",
-      '#item' => $items[0]['#item'],
+      '#item' => $items[current(array_keys($items))]['#item'],
       '#title' => '', // @TODO - Fix this
       '#description' => '', // @TODO - Fix this
     ),

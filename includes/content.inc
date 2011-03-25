@@ -249,7 +249,8 @@ function _content_wysiwyg_fields_form_alter_alter_submit($form, &$form_state) {
 function content_wysiwyg_fields_nodeapi_alter($node, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
     case 'presave':
-      // Re-assign deltas to mach CCKs changes.
+      // @TODO - Handle multi-field tokens.
+      // Re-assign deltas to match CCKs changes.
       list($fields, $textfields) = _content_wysiwyg_fields_get_fields($node);
       foreach ($fields as $id => $items) {
         ksort($items);
