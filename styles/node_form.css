@@ -8,7 +8,7 @@
   display: none;
 }
 
-.ui-dialog .wysiwyg_fields-icon-expand {
+.wysiwyg_fields-dialog .wysiwyg_fields-icon-expand {
   height: 18px;
   left: 0.3em;
   margin: -10px 0 0;
@@ -18,41 +18,41 @@
   width: 19px;
 }
 
-.ui-dialog .wysiwyg_fields-icon-expand:hover,
-.ui-dialog .wysiwyg_fields-icon-expand:focus {
+.wysiwyg_fields-dialog .wysiwyg_fields-icon-expand:hover,
+.wysiwyg_fields-dialog .wysiwyg_fields-icon-expand:focus {
   padding: 0;
 }
 
-.ui-dialog .wysiwyg_fields-icon-expand span {
+.wysiwyg_fields-dialog .wysiwyg_fields-icon-expand span {
   display: block;
   margin: 1px;
 }
 
-.ui-dialog .ui-dialog-titlebar .ui-dialog-title {
+.wysiwyg_fields-dialog .ui-dialog-titlebar .ui-dialog-title {
   margin-left: 16px;
 }
 
-.ui-dialog .ui-dialog-content {
+.wysiwyg_fields-dialog .ui-dialog-content {
   padding: 1.5em 1.7em !important;
   height: auto !important;
   width: auto !important;
 }
 
-.ui-dialog .content-multiple-table td.content-multiple-drag {
+.wysiwyg_fields-dialog .content-multiple-table td.content-multiple-drag {
   min-width: 45px;
   width: 45px;
 }
 
 
 /* jQuery UI 1.6 fixes. */
-.ui-icon {
+.wysiwyg_fields-dialog .ui-icon {
   background-repeat: no-repeat;
   display: block;
   overflow: hidden;
   text-indent: -99999px;
 }
 
-.ui-dialog-buttonpane {
+.wysiwyg_fields-dialog .ui-dialog-buttonpane {
   position: relative !important;
 }
 

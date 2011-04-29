@@ -10,11 +10,13 @@
 function content_wysiwyg_fields_wysiwyg_plugins($content_type) {
   $plugins = array();
   foreach (content_fields() as $field) {
-    if (!in_array(TRUE, module_invoke_all('wysiwyg_fields_field_bypass', $field)) && !is_null(content_fields($field['field_name'], $content_type)) && isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status']) {
-      $plugins[$field['field_name']] = array(
-        'label' => $field['widget']['label'],
-        'icon' => $field['widget']['wysiwyg_fields_icon'],
-      );
+    if ($field = content_fields($field['field_name'], $content_type)) {
+      if (!in_array(TRUE, module_invoke_all('wysiwyg_fields_field_bypass', $field)) && !is_null(content_fields($field['field_name'], $content_type)) && isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status']) {
+        $plugins[$field['field_name']] = array(
+          'label' => $field['widget']['label'],
+          'icon' => $field['widget']['wysiwyg_fields_icon'],
+        );
+      }
     }
   }
   return $plugins;
