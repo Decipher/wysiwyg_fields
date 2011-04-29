@@ -5,18 +5,16 @@
  */
 
 /**
- * Implements hook_wysiwyg_fields_wysiwyg_plugins() on behalf of content.module.
+ * Implements hook_wysiwyg_fields_wysiwyg_plugins() on behalf of field_ui.module.
  */
-function content_wysiwyg_fields_wysiwyg_plugins($content_type) {
+function field_ui_wysiwyg_fields_wysiwyg_plugins($info) {
   $plugins = array();
-  foreach (content_fields() as $field) {
-    if ($field = content_fields($field['field_name'], $content_type)) {
-      if (!in_array(TRUE, module_invoke_all('wysiwyg_fields_field_bypass', $field)) && !is_null(content_fields($field['field_name'], $content_type)) && isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status']) {
-        $plugins[$field['field_name']] = array(
-          'label' => $field['widget']['label'],
-          'icon' => $field['widget']['wysiwyg_fields_icon'],
-        );
-      }
+  foreach (field_info_instances($info['#entity_type'], $info['#bundle']) as $field) {
+    if (/*!in_array(TRUE, module_invoke_all('wysiwyg_fields_field_bypass', $field)) && !is_null(content_fields($field['field_name'], $content_type)) && */isset($field['settings']['wysiwyg_fields']) && $field['settings']['wysiwyg_fields']['wysiwyg_fields_status']) {
+      $plugins[$field['field_name']] = array(
+        'label' => $field['label'],
+        'icon' => $field['settings']['wysiwyg_fields']['wysiwyg_fields_icon'],
+      );
     }
   }
   return $plugins;
@@ -25,111 +23,100 @@ function content_wysiwyg_fields_wysiwyg_plugins($content_type) {
 /**
  * Implements hook_wysiwyg_fields_theme_alter() on behalf of content.module.
  */
-function content_wysiwyg_fields_theme_alter($items) {
-  $items['wysiwyg_fields_widget_settings_alter'] = array(
-    'arguments' => array(
-      'element' => array(),
-    ),
-    'file' => 'modules/content.inc',
-  );
-}
+//function content_wysiwyg_fields_theme_alter($items) {
+//  $items['wysiwyg_fields_widget_settings_alter'] = array(
+//    'arguments' => array(
+//      'element' => array(),
+//    ),
+//    'file' => 'modules/content.inc',
+//  );
+//}
 
 /**
- * Implements hook_widget_settings_alter().
+ * Implements hook_wysiwyg_fields_form_alter_alter() on behalf of field.module.
  */
-function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
-  $content_type = str_replace('-', '_', arg(3));
-  $field_name = arg(5);
-  $field = content_fields($field_name, $content_type);
-  if (!in_array(TRUE, module_invoke_all('wysiwyg_fields_field_bypass', $field))) {
-    switch ($op) {
-      case 'form':
-        drupal_add_css(drupal_get_path('module', 'wysiwyg_fields') . '/styles/settings_form.css');
+function field_ui_wysiwyg_fields_form_alter_alter(&$form, $form_state, $form_id) {
+  if ($form_id == 'field_ui_field_edit_form') {
+    if (!in_array(TRUE, module_invoke_all('wysiwyg_fields_field_bypass', $form['#field']))) {
+      drupal_add_css(drupal_get_path('module', 'wysiwyg_fields') . '/styles/settings_form.css');
+      $settings = isset($form['#instance']['settings']['wysiwyg_fields']) ? $form['#instance']['settings']['wysiwyg_fields'] : array();
 
-        $settings['wysiwyg_fields'] = array(
-          '#title' => t('Wysiwyg Fields settings'),
-          '#type' => 'fieldset',
-          '#weight' => 10,
-          '#collapsible' => TRUE,
-          '#collapsed' => TRUE,
-          '#theme' => 'wysiwyg_fields_widget_settings_alter',
-        );
+      $form['instance']['settings']['wysiwyg_fields'] = array(
+        '#title' => t('Wysiwyg Fields settings'),
+        '#type' => 'fieldset',
+        '#weight' => 20,
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        //'#theme' => 'wysiwyg_fields_widget_settings_alter',
+      );
 
-        $settings['wysiwyg_fields']['wysiwyg_fields_status'] = array(
-          '#title' => t('Attach to Wysiwyg?'),
-          '#type' => 'checkbox',
-          '#default_value' => isset($widget['wysiwyg_fields_status'])
-            ? $widget['wysiwyg_fields_status']
-            : 0
-          ,
-        );
+      $form['instance']['settings']['wysiwyg_fields']['wysiwyg_fields_status'] = array(
+        '#title' => t('Attach to Wysiwyg?'),
+        '#type' => 'checkbox',
+        '#default_value' => isset($settings['wysiwyg_fields_status'])
+          ? $settings['wysiwyg_fields_status']
+          : 0
+        ,
+      );
 
-        $settings['wysiwyg_fields']['wysiwyg_fields_icon'] = array(
-          '#title' => t('Icon'),
-          '#type' => 'radios',
-          '#options' => array_merge(
-            array('upload' => t('Upload')),
-            _wysiwyg_fields_widget_settings_alter_icons()
-          ),
-          '#default_value' => isset($widget['wysiwyg_fields_icon'])
-            ? $widget['wysiwyg_fields_icon']
-            : current(array_keys(_wysiwyg_fields_widget_settings_alter_icons()))
-          ,
-          '#attributes' => array(
-            'class' => 'container-inline wysiwyg_fields_icons',
-          ),
-        );
+      $form['instance']['settings']['wysiwyg_fields']['wysiwyg_fields_icon'] = array(
+        '#title' => t('Icon'),
+        '#type' => 'radios',
+        '#options' => array_merge(
+          array('upload' => t('Upload')),
+          _wysiwyg_fields_widget_settings_alter_icons()
+        ),
+        '#default_value' => isset($settings['wysiwyg_fields_icon'])
+          ? $settings['wysiwyg_fields_icon']
+          : current(array_keys(_wysiwyg_fields_widget_settings_alter_icons()))
+        ,
+        //'#attributes' => array(
+        //  'class' => 'container-inline wysiwyg_fields_icons',
+        //),
+      );
 
-        $settings['wysiwyg_fields']['wysiwyg_fields_upload'] = array(
-          '#title' => t('Upload'),
-          '#type' => 'file',
-          '#element_validate' => array('_wysiwyg_fields_widget_settings_alter_upload_validate'),
-        );
+      $form['instance']['settings']['wysiwyg_fields']['wysiwyg_fields_upload'] = array(
+        '#title' => t('Upload'),
+        '#type' => 'file',
+        '#element_validate' => array('_wysiwyg_fields_widget_settings_alter_upload_validate'),
+      );
 
-        $settings['wysiwyg_fields']['wysiwyg_fields_formatters'] = array(
-          '#title' => t('Formatters'),
-          '#type' => 'select',
-          '#options' => _wysiwyg_fields_formatters(),
-          '#default_value' => isset($widget['wysiwyg_fields_formatters'])
-            ? $widget['wysiwyg_fields_formatters']
-            : array()
-          ,
-          '#multiple' => TRUE,
-          '#element_validate' => array('_wysiwyg_fields_widget_settings_alter_formatters_validate'),
-        );
+      //$form['instance']['settings']['wysiwyg_fields']['wysiwyg_fields']['wysiwyg_fields_formatters'] = array(
+      //  '#title' => t('Formatters'),
+      //  '#type' => 'select',
+      //  '#options' => _wysiwyg_fields_formatters(),
+      //  '#default_value' => isset($widget['wysiwyg_fields_formatters'])
+      //    ? $widget['wysiwyg_fields_formatters']
+      //    : array()
+      //  ,
+      //  '#multiple' => TRUE,
+      //  '#element_validate' => array('_wysiwyg_fields_widget_settings_alter_formatters_validate'),
+      //);
 
-        $settings['wysiwyg_fields']['wysiwyg_fields_advanced'] = array(
-          '#title' => t('Advanced settings'),
-          '#type' => 'fieldset',
-          '#collapsible' => 'TRUE',
-          '#collapsed' => 'TRUE',
-        );
+      $form['instance']['settings']['wysiwyg_fields']['wysiwyg_fields_advanced'] = array(
+        '#title' => t('Advanced settings'),
+        '#type' => 'fieldset',
+        '#collapsible' => 'TRUE',
+        '#collapsed' => 'TRUE',
+      );
 
-        $settings['wysiwyg_fields']['wysiwyg_fields_advanced']['wysiwyg_fields_hide'] = array(
-          '#title' => t('Set field display settings to &lt;Hidden&gt;.'),
-          '#type' => 'checkbox',
-          '#default_value' => isset($widget['wysiwyg_fields_hide'])
-            ? $widget['wysiwyg_fields_hide']
-            : TRUE
-          ,
-        );
+      $form['instance']['settings']['wysiwyg_fields']['wysiwyg_fields_advanced']['wysiwyg_fields_hide'] = array(
+        '#title' => t('Set field display settings to &lt;Hidden&gt;.'),
+        '#type' => 'checkbox',
+        '#default_value' => isset($widget['wysiwyg_fields_hide'])
+          ? $widget['wysiwyg_fields_hide']
+          : TRUE
+        ,
+      );
 
-        $settings['wysiwyg_fields']['wysiwyg_fields_advanced']['wysiwyg_fields_delete'] = array(
-          '#title' => t('Delete field items not inserted on Node save.'),
-          '#type' => 'checkbox',
-          '#default_value' => isset($widget['wysiwyg_fields_delete'])
-            ? $widget['wysiwyg_fields_delete']
-            : TRUE
-          ,
-        );
-        break;
-
-      case 'save':
-        $settings[] = 'wysiwyg_fields_status';
-        $settings[] = 'wysiwyg_fields_icon';
-        $settings[] = 'wysiwyg_fields_formatters';
-        $settings[] = 'wysiwyg_fields_hide';
-        $settings[] = 'wysiwyg_fields_delete';
+      $form['instance']['settings']['wysiwyg_fields']['wysiwyg_fields_advanced']['wysiwyg_fields_delete'] = array(
+        '#title' => t('Delete field items not inserted on Node save.'),
+        '#type' => 'checkbox',
+        '#default_value' => isset($widget['wysiwyg_fields_delete'])
+          ? $widget['wysiwyg_fields_delete']
+          : TRUE
+        ,
+      );
     }
   }
 }
@@ -140,7 +127,7 @@ function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
 function _wysiwyg_fields_widget_settings_alter_icons() {
   $icons = wysiwyg_fields_icons(NULL, TRUE);
   foreach ($icons as &$icon) {
-    $icon = theme('image', $icon);
+    $icon = theme('image', array('path' => $icon));
   }
   return $icons;
 }

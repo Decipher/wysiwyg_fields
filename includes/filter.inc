@@ -5,29 +5,25 @@
  */
 
 /**
- * Implements hook_filter().
+ * Implements hook_filter_info().
  */
-function wysiwyg_fields_filter($op, $delta = 0, $format = -1, $text = '', $cache_id = 0) {
-  switch ($op) {
-    case 'list':
-      return array(
-        0 => t('Wysiwyg Fields filter')
-      );
+function wysiwyg_fields_filter_info() {
+  $filters = array();
 
-    case 'process':
-      $node = node_load(arg(1));
-      $text = _wysiwyg_fields_filter_process($node, $text);
-      return $text;
+  $filters['wysiwyg_fields'] = array(
+    'title' => t('Wysiwyg Fields filter'),
+    'process callback' => '_wysiwyg_fields_filter_process',
+  );
 
-    default:
-      return $text;
-  }
+  return $filters;
 }
 
 /**
- *
+ * Wysiwyg Fields filter process callback.
  */
-function _wysiwyg_fields_filter_process($node, $text) {
+function _wysiwyg_fields_filter_process($text, $filter, $format) {
+  $node = node_load(arg(1));
+
   $fields = array();
   $tokens = _wysiwyg_fields_text_to_tokens($text);
 
@@ -101,9 +97,9 @@ function filter_wysiwyg_fields_nodeapi_alter($node, $op, $a3 = NULL, $a4 = NULL)
 /**
  * Implements hook_wysiwyg_fields_form_alter_alter() on behalf of filter.module.
  */
-function filter_wysiwyg_fields_form_alter_alter($form, $form_state, $form_id) {
+function filter_wysiwyg_fields_form_alter_alter(&$form, $form_state, $form_id) {
   if ($form_id == 'filter_admin_format_form') {
-    $form['filters']['wysiwyg_fields/0']['#default_value'] = TRUE;
-    $form['filters']['wysiwyg_fields/0']['#disabled'] = TRUE;
+    $form['filters']['status']['wysiwyg_fields']['#default_value'] = TRUE;
+    $form['filters']['status']['wysiwyg_fields']['#disabled'] = TRUE;
   }
 }

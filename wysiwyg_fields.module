@@ -16,7 +16,7 @@ foreach (module_list() as $module) {
 /**
  * Implements hook_wysiwyg_fields_menu_alter().
  */
-function wysiwyg_fields_wysiwyg_fields_menu_alter($items) {
+function wysiwyg_fields_wysiwyg_fields_menu_alter(&$items) {
   $items['ahah/wysiwyg_fields'] = array(
     'title' => 'Wysiwyg Fields AHAH callback',
     'page callback' => 'wysiwyg_fields_ahah',
@@ -55,62 +55,65 @@ function wysiwyg_fields_theme_registry_alter(&$theme_registry) {
 /**
  * Implements hook_wysiwyg_fields_nodeapi_alter().
  */
-function wysiwyg_fields_wysiwyg_fields_nodeapi_alter($node, $op, $a3 = NULL, $a4 = NULL) {
-  switch ($op) {
-    case 'prepare':
-    case 'validate':
-      $tokens = array();
-      $textfields = _wysiwyg_fields_textfields($node);
-      foreach ($textfields as &$textfield) {
-        $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
-      }
-
-      $replacements = array();
-      foreach ($tokens as $token) {
-        $replacements[$token[0]] = _wysiwyg_fields_filter_process($node, $token[0]);
-      }
-
-      $fields = array();
-      foreach (content_fields(NULL, $node->type) as $field) {
-        // Get first empty delta.
-        $delta = NULL;
-        $function = "{$field['module']}_content_is_empty";
-        if (is_array($node->{$field['field_name']})) {
-          foreach ($node->{$field['field_name']} as $count => $item) {
-            if ($function($item, $field)) {
-              $delta = $count;
-              break;
-            }
-          }
-        }
-
-        $fields[$field['field_name']] = array(
-          'multiple' => $field['multiple'],
-          'delta' => !is_null($delta) ? $delta : count($node->{$field['field_name']}),
-        );
-      }
-
-      // Convert settings to JavaScript for Wysiwyg plugin.
-      drupal_add_js(
-        array(
-          'wysiwygFields' => array(
-            'fields' => $fields,
-            'replacements' => $replacements
-          )
-        ),
-        'setting'
-      );
-      break;
-  }
-}
+//function wysiwyg_fields_wysiwyg_fields_nodeapi_alter($node, $op, $a3 = NULL, $a4 = NULL) {
+//  switch ($op) {
+//    case 'prepare':
+//    case 'validate':
+//      $tokens = array();
+//      $textfields = _wysiwyg_fields_textfields($node);
+//      foreach ($textfields as &$textfield) {
+//        $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
+//      }
+//
+//      $replacements = array();
+//      foreach ($tokens as $token) {
+//        $replacements[$token[0]] = _wysiwyg_fields_filter_process($node, $token[0]);
+//      }
+//
+//      $fields = array();
+//      foreach (content_fields(NULL, $node->type) as $field) {
+//        // Get first empty delta.
+//        $delta = NULL;
+//        $function = "{$field['module']}_content_is_empty";
+//        if (is_array($node->{$field['field_name']})) {
+//          foreach ($node->{$field['field_name']} as $count => $item) {
+//            if ($function($item, $field)) {
+//              $delta = $count;
+//              break;
+//            }
+//          }
+//        }
+//
+//        $fields[$field['field_name']] = array(
+//          'multiple' => $field['multiple'],
+//          'delta' => !is_null($delta) ? $delta : count($node->{$field['field_name']}),
+//        );
+//      }
+//
+//      // Convert settings to JavaScript for Wysiwyg plugin.
+//      drupal_add_js(
+//        array(
+//          'wysiwygFields' => array(
+//            'fields' => $fields,
+//            'replacements' => $replacements
+//          )
+//        ),
+//        'setting'
+//      );
+//      break;
+//  }
+//}
 
 /**
  * Implements hook_wysiwyg_fields_form_alter_alter().
  */
-function wysiwyg_fields_wysiwyg_fields_form_alter_alter($form, $form_state, $form_id) {
-  if (isset($form['type']['#value']) && $form_id == "{$form['type']['#value']}_node_form") {
-    // Store Content Type in $_SESSION['wysiwyg_fields'] to provide context.
-    $_SESSION['wysiwyg_fields'] = $form['type']['#value'];
+function wysiwyg_fields_wysiwyg_fields_form_alter_alter(&$form, $form_state, $form_id) {
+  if (isset($form['#entity_type'])) {
+    // Store Entity type and Bundle in $_SESSION['wysiwyg_fields'] to provide context.
+    $_SESSION['wysiwyg_fields'] = array(
+      '#entity_type' => $form['#entity_type'],
+      '#bundle' => $form['#bundle'],
+    );
 
     $form['#after_build'][] = 'wysiwyg_fields_form_alter_after_build';
   }
@@ -252,9 +255,9 @@ function _wysiwyg_fields_element_validate($item, $key, $formatter) {
  */
 function wysiwyg_fields_form_alter_after_build($form_element, &$form_state) {
   $flag = FALSE;
-  if (isset($form_element['#field_info'])) {
-    foreach ($form_element['#field_info'] as $field) {
-      if (isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status']) {
+  //if (isset($form_element['#field_info'])) {
+    foreach (field_info_instances($form_element['#entity_type'], $form_element['#bundle']) as $field) {
+      if (isset($field['settings']['wysiwyg_fields']) && $field['settings']['wysiwyg_fields']['wysiwyg_fields_status']) {
         drupal_add_js(drupal_get_path('module', 'wysiwyg_fields') . "/plugins/wysiwyg_fields_{$field['field_name']}/wysiwyg_fields_{$field['field_name']}.js", 'module', 'header', FALSE, TRUE, FALSE);
         $flag = TRUE;
 
@@ -264,35 +267,24 @@ function wysiwyg_fields_form_alter_after_build($form_element, &$form_state) {
         }
       }
     }
-  }
+  //}
 
   if ($flag) {
     // Add javascript.
-    jquery_ui_add(array('ui.core', 'ui.dialog'));
+    drupal_add_library('system', 'ui.dialog');
     drupal_add_js(drupal_get_path('module', 'wysiwyg_fields') . '/scripts/wysiwyg_fields.js');
     module_invoke_all('wysiwyg_fields_add_js', 'node_form');
 
     // Add Style sheets.
     drupal_add_css(drupal_get_path('module', 'wysiwyg_fields') . '/styles/node_form.css');
-
-    // jQuery 1.7 theme.
-    if (file_exists($css = JQUERY_UI_PATH . '/themes/base/ui.all.css')) {
-      // @TODO - Change if #388384 ever gets resolved.
-      drupal_add_css($css);
-    }
-
-    // jQuery 1.6 theme.
-    elseif (file_exists($css = JQUERY_UI_PATH . '/themes/default/ui.all.css')) {
-      drupal_add_css($css);
-    }
   }
 
   return $form_element;
 }
 
 function wysiwyg_field_after_build_wrapper(&$form_element, $field_name) {
-  $form_element['#prefix'] = "<div id='wysiwyg_fields-{$field_name}-wrapper'>{$form_element['#prefix']}";
-  $form_element['#suffix'] = "{$form_element['#suffix']}</div>";
+  //$form_element['#prefix'] = "<div id='wysiwyg_fields-{$field_name}-wrapper'>{$form_element['#prefix']}";
+  //$form_element['#suffix'] = "{$form_element['#suffix']}</div>";
 }
 
 /**
@@ -310,10 +302,10 @@ function wysiwyg_fields_icons($checksum = NULL, $reset = FALSE) {
     foreach ($directories as $directory) {
       if (is_dir($directory)) {
         foreach (array_diff(scandir($directory), array('.', '..')) as $file) {
-          $file = (object) array('filepath' => "{$directory}/{$file}");
-          if (!is_dir($file->filepath) && count(file_validate_is_image($file)) == 0) {
+          $file = (object) array('uri' => "{$directory}/{$file}");
+          if (!is_dir($file->uri) && count(file_validate_is_image($file)) == 0) {
             // User MD5 checksum to prevent duplicates.
-            $icons[md5_file($file->filepath)] = $file->filepath;
+            $icons[md5_file($file->uri)] = $file->uri;
           }
         }
       }

@@ -36,17 +36,17 @@ function wysiwyg_fields_enable() {
   // Enable Wysiwyg Fields filter on all Input formats.
   // Can't use filter_formats() as it fails to return all values when called via
   // Drush.
-  $filters = db_query("SELECT format FROM {filters}");
-  while ($filter = db_fetch_object($filters)) {
-    $flag = FALSE;
-
-    $results = db_query("SELECT * FROM {filters} WHERE format = %d AND module = '%s' AND delta = %d", $filter->format, 'wysiwyg_fields', 0);
-    while ($result = db_fetch_object($results)) {
-      $flag = TRUE;
-    }
-
-    if ($flag == FALSE) {
-      db_query("INSERT INTO {filters} (format, module, delta, weight) VALUES (%d, '%s', %d, %d)", $filter->format, 'wysiwyg_fields', 0, 10);
-    }
+  db_delete('filter')->condition('name', 'wysiwyg_fields')->execute();
+  $formats = db_select('filter_format', 'f')->fields('f')->execute();
+  foreach ($formats as $format) {
+    db_insert('filter')
+      ->fields(array(
+        'format' => $format->format,
+        'module' => 'wyswyg_fields',
+        'name' => 'wysiwyg_fields',
+        'status' => 1,
+        'settings' => serialize(array()),
+      ))
+      ->execute();
   }
 }
