@@ -26,13 +26,20 @@ function wysiwyg_fields_wysiwyg_fields_menu_alter(&$items) {
 }
 
 /**
- * Implements hook_wysiwyg_fields_elements_alter().
+ * Implements hook_wysiwyg_fields_elements_info_alter().
  */
-function wysiwyg_fields_wysiwyg_fields_elements_alter($elements) {
-  foreach (module_invoke_all('widget_info') as $widget_type => $widget) {
-    $elements[$widget_type] = is_array($elements[$widget_type]) ? $elements[$widget_type] : array();
-    $elements[$widget_type]['#process'] = is_array($elements[$widget_type]['#process']) ? $elements[$widget_type]['#process'] : array();
-    $elements[$widget_type]['#process'][] = 'wysiwyg_fields_elements_process';
+//function wysiwyg_fields_wysiwyg_fields_element_info_alter(&$elements) {
+//  foreach (module_invoke_all('field_widget_info') as $widget_type => $widget) {
+//    $elements[$widget_type] = isset($elements[$widget_type]) && is_array($elements[$widget_type]) ? $elements[$widget_type] : array();
+//    $elements[$widget_type]['#process'] = isset($elements[$widget_type]['#process']) && is_array($elements[$widget_type]['#process']) ? $elements[$widget_type]['#process'] : array();
+//    $elements[$widget_type]['#process'][] = 'wysiwyg_fields_elements_process';
+//  }
+//}
+
+function wysiwyg_fields_element_info_alter(&$type) {
+  foreach ($type as &$element) {
+    $element['#process'] = isset($element['#process']) && is_array($element['#process']) ? $element['#process'] : array();
+    $element['#process'][] = 'wysiwyg_fields_elements_process';
   }
 }
 
@@ -53,12 +60,19 @@ function wysiwyg_fields_theme_registry_alter(&$theme_registry) {
 }
 
 /**
- * Implements hook_wysiwyg_fields_nodeapi_alter().
+ * Implements hook_wysiwyg_fields_form_alter_alter().
  */
-//function wysiwyg_fields_wysiwyg_fields_nodeapi_alter($node, $op, $a3 = NULL, $a4 = NULL) {
-//  switch ($op) {
-//    case 'prepare':
-//    case 'validate':
+function wysiwyg_fields_wysiwyg_fields_form_alter_alter(&$form, $form_state, $form_id) {
+  if (isset($form['#entity_type'])) {
+    if (isset($form["#{$form['#entity_type']}"])) {
+      $entity = $form["#{$form['#entity_type']}"];
+
+      // Store Entity type and Bundle in $_SESSION['wysiwyg_fields'] to provide context.
+      $_SESSION['wysiwyg_fields'] = array(
+        '#entity_type' => $form['#entity_type'],
+        '#bundle' => $form['#bundle'],
+      );
+
 //      $tokens = array();
 //      $textfields = _wysiwyg_fields_textfields($node);
 //      foreach ($textfields as &$textfield) {
@@ -69,53 +83,43 @@ function wysiwyg_fields_theme_registry_alter(&$theme_registry) {
 //      foreach ($tokens as $token) {
 //        $replacements[$token[0]] = _wysiwyg_fields_filter_process($node, $token[0]);
 //      }
-//
-//      $fields = array();
-//      foreach (content_fields(NULL, $node->type) as $field) {
-//        // Get first empty delta.
-//        $delta = NULL;
-//        $function = "{$field['module']}_content_is_empty";
-//        if (is_array($node->{$field['field_name']})) {
-//          foreach ($node->{$field['field_name']} as $count => $item) {
-//            if ($function($item, $field)) {
-//              $delta = $count;
-//              break;
-//            }
-//          }
-//        }
-//
-//        $fields[$field['field_name']] = array(
-//          'multiple' => $field['multiple'],
-//          'delta' => !is_null($delta) ? $delta : count($node->{$field['field_name']}),
-//        );
-//      }
-//
-//      // Convert settings to JavaScript for Wysiwyg plugin.
-//      drupal_add_js(
-//        array(
-//          'wysiwygFields' => array(
-//            'fields' => $fields,
-//            'replacements' => $replacements
-//          )
-//        ),
-//        'setting'
-//      );
-//      break;
-//  }
-//}
 
-/**
- * Implements hook_wysiwyg_fields_form_alter_alter().
- */
-function wysiwyg_fields_wysiwyg_fields_form_alter_alter(&$form, $form_state, $form_id) {
-  if (isset($form['#entity_type'])) {
-    // Store Entity type and Bundle in $_SESSION['wysiwyg_fields'] to provide context.
-    $_SESSION['wysiwyg_fields'] = array(
-      '#entity_type' => $form['#entity_type'],
-      '#bundle' => $form['#bundle'],
-    );
+      //dpm($form);
 
-    $form['#after_build'][] = 'wysiwyg_fields_form_alter_after_build';
+      $fields = array();
+      foreach (field_info_instances($form['#entity_type'], $form['#bundle']) as $field) {
+        // Get first empty delta.
+        $count = 0;
+        $delta = NULL;
+        $function = "{$field['widget']['module']}_field_is_empty";
+        if (isset($entity->{$field['field_name']}) && is_array($entity->{$field['field_name']})) {
+          foreach ($entity->{$field['field_name']} as $count => $item) {
+            if ($function($item, $field)) {
+              $delta = $count;
+              break;
+            }
+          }
+        }
+
+        $fields[$field['field_name']] = array(
+          //'multiple' => $field['multiple'],
+          'delta' => !is_null($delta) ? $delta : $count,
+        );
+      }
+
+      // Convert settings to JavaScript for Wysiwyg plugin.
+      drupal_add_js(
+        array(
+          'wysiwygFields' => array(
+            'fields' => $fields,
+            //'replacements' => $replacements
+          )
+        ),
+        'setting'
+      );
+
+      $form['#after_build'][] = 'wysiwyg_fields_form_alter_after_build';
+    }
   }
 }
 
@@ -123,94 +127,98 @@ function wysiwyg_fields_wysiwyg_fields_form_alter_alter(&$form, $form_state, $fo
  *
  */
 function wysiwyg_fields_elements_process($form_element) {
-  $field = content_fields($form_element['#field_name'], $form_element['#type_name']);
-  if (!in_array(TRUE, module_invoke_all('wysiwyg_fields_field_bypass', $field)) && $form_element['#type'] == $field['widget']['type'] && isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status'] == TRUE) {
-    $form_element['#element_validate'][] = 'wysiwyg_fields_element_validate';
+  if (isset($form_element['#field_name'])) {
+    $field = field_info_instance($form_element['#entity_type'], $form_element['#field_name'], $form_element['#bundle']);
+    // @TODO - Re-implement bypass check.
+    //if (!in_array(TRUE, module_invoke_all('wysiwyg_fields_field_bypass', $field)) && $form_element['#type'] == $field['widget']['type'] && isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status'] == TRUE) {
+    if (isset($field['settings']['wysiwyg_fields']) && $field['settings']['wysiwyg_fields']['wysiwyg_fields_status']) {
+      $form_element['#element_validate'][] = 'wysiwyg_fields_element_validate';
 
-    // AHAH Wrapper.
-    $prefix = "<div id='{$form_element['#id']}-wysiwyg-fields-ahah-wrapper' class='wysiwyg_fields-field wysiwyg_fields-{$form_element['#field_name']}-field'>";
-    $form_element['#prefix'] = isset($form_element['#prefix']) ? "{$prefix}{$form_element['#prefix']}" : $prefix;
-    $form_element['#suffix'] = isset($form_element['#suffix']) ? "{$form_element['#suffix']}</div>" : '</div>';
+      // AJAX Wrapper.
+      $prefix = "<div id='{$form_element['#id']}-wysiwyg-fields-ajax-wrapper' class='wysiwyg_fields-field wysiwyg_fields-{$form_element['#field_name']}-field'>";
+      $form_element['#prefix'] = isset($form_element['#prefix']) ? "{$prefix}{$form_element['#prefix']}" : $prefix;
+      $form_element['#suffix'] = isset($form_element['#suffix']) ? "{$form_element['#suffix']}</div>" : '</div>';
 
-    $form_element['wysiwyg_fields'] = array(
-      '#prefix' => '<div class="wysiwyg_fields-widget">',
-      '#suffix' => '</div>',
-      '#weight' => 200,
-    );
-
-    // Formatters.
-    $formatters = array();
-    foreach ($field['widget']['wysiwyg_fields_formatters'] as $delta => $formatter) {
-      $formatter = _content_get_formatter($formatter, $field['type']);
-      $formatters["{$formatter[module]}_formatter_{$delta}"] = $formatter['label'];
-    }
-
-    // Multiple formatters - select field.
-    if (count($field['widget']['wysiwyg_fields_formatters']) > 1) {
-      $form_element['wysiwyg_fields']['wysiwyg_fields_formatters'] = array(
-        '#type' => 'select',
-        '#options' => $formatters,
-        '#name' => "{$form_element['#name']}[wysiwyg_fields_formatters]",
-        '#id' => "{$form_element['#id']}-wysiwyg-fields-formatters",
-        '#attributes' => array(
-          'class' => 'wysiwyg_fields_formatters',
-        ),
+      $form_element['wysiwyg_fields'] = array(
+        '#prefix' => '<div class="wysiwyg_fields-widget">',
+        '#suffix' => '</div>',
+        '#weight' => 200,
       );
+
+  //  // Formatters.
+  //  $formatters = array();
+  //  foreach ($field['widget']['wysiwyg_fields_formatters'] as $delta => $formatter) {
+  //    $formatter = _content_get_formatter($formatter, $field['type']);
+  //    $formatters["{$formatter[module]}_formatter_{$delta}"] = $formatter['label'];
+  //  }
+  //
+  //  // Multiple formatters - select field.
+  //  if (count($field['widget']['wysiwyg_fields_formatters']) > 1) {
+  //    $form_element['wysiwyg_fields']['wysiwyg_fields_formatters'] = array(
+  //      '#type' => 'select',
+  //      '#options' => $formatters,
+  //      '#name' => "{$form_element['#name']}[wysiwyg_fields_formatters]",
+  //      '#id' => "{$form_element['#id']}-wysiwyg-fields-formatters",
+  //      '#attributes' => array(
+  //        'class' => 'wysiwyg_fields_formatters',
+  //      ),
+  //    );
+  //  }
+  //
+  //  // Single formatter - hidden field.
+  //  else {
+  //    $form_element['wysiwyg_fields']['wysiwyg_fields_formatters'] = array(
+  //      '#type' => 'hidden',
+  //      '#value' => array_shift(array_keys($formatters)),
+  //      '#name' => "{$form_element['#name']}[wysiwyg_fields_formatters]",
+  //      '#id' => "{$form_element['#id']}-wysiwyg-fields-formatters",
+  //    );
+  //  }
+  //
+  //  // Insert button.
+  //  switch ($field['multiple']) {
+  //    case 0:
+  //      $wrapper = "{$form_element['#id']}-wysiwyg-fields-ahah-wrapper";
+  //      break;
+  //
+  //    case 1:
+  //      $wrapper = str_replace('_', '-', $field['field_name']) . '-items';
+  //      break;
+  //
+  //    default:
+  //      $wrapper = "{$field['field_name']}_values";
+  //  }
+  //  $form_element['wysiwyg_fields']['wysiwyg_fields_insert'] = array(
+  //    '#type' => 'submit',
+  //    '#value' => t('Insert'),
+  //    '#ahah' => array(
+  //      'path' => "ahah/wysiwyg_fields/insert/{$form_element['#field_name']}/{$form_element['#delta']}",
+  //      'wrapper' => $wrapper,
+  //    ),
+  //    '#name' => "{$form_element['#name']}[wysiwyg_fields_insert]",
+  //    '#id' => "{$form_element['#id']}-wysiwyg-fields-insert",
+  //    '#attributes' => array(
+  //      'class' => 'wysiwyg_fields_insert',
+  //    ),
+  //  );
+  //
+  //  // Multiselect checkbox.
+  //  $form_element['wysiwyg_fields']['wysiwyg_fields_select'] = array(
+  //    '#type' => 'checkbox',
+  //    '#defult_value' => FALSE,
+  //    '#name' => "{$form_element['#name']}[wysiwyg_fields_select]",
+  //    '#id' => "{$form_element['#id']}-wysiwyg-fields-select",
+  //    '#attributes' => array(
+  //      'class' => 'wysiwyg_fields_select',
+  //    ),
+  //  );
+  //
+  //  // Original field delta.
+  //  $form_element['wysiwyg_fields']['wysiwyg_fields_delta'] = array(
+  //    '#type' => 'hidden',
+  //    '#value' => $form_element['#delta']
+  //  );
     }
-
-    // Single formatter - hidden field.
-    else {
-      $form_element['wysiwyg_fields']['wysiwyg_fields_formatters'] = array(
-        '#type' => 'hidden',
-        '#value' => array_shift(array_keys($formatters)),
-        '#name' => "{$form_element['#name']}[wysiwyg_fields_formatters]",
-        '#id' => "{$form_element['#id']}-wysiwyg-fields-formatters",
-      );
-    }
-
-    // Insert button.
-    switch ($field['multiple']) {
-      case 0:
-        $wrapper = "{$form_element['#id']}-wysiwyg-fields-ahah-wrapper";
-        break;
-
-      case 1:
-        $wrapper = str_replace('_', '-', $field['field_name']) . '-items';
-        break;
-
-      default:
-        $wrapper = "{$field['field_name']}_values";
-    }
-    $form_element['wysiwyg_fields']['wysiwyg_fields_insert'] = array(
-      '#type' => 'submit',
-      '#value' => t('Insert'),
-      '#ahah' => array(
-        'path' => "ahah/wysiwyg_fields/insert/{$form_element['#field_name']}/{$form_element['#delta']}",
-        'wrapper' => $wrapper,
-      ),
-      '#name' => "{$form_element['#name']}[wysiwyg_fields_insert]",
-      '#id' => "{$form_element['#id']}-wysiwyg-fields-insert",
-      '#attributes' => array(
-        'class' => 'wysiwyg_fields_insert',
-      ),
-    );
-
-    // Multiselect checkbox.
-    $form_element['wysiwyg_fields']['wysiwyg_fields_select'] = array(
-      '#type' => 'checkbox',
-      '#defult_value' => FALSE,
-      '#name' => "{$form_element['#name']}[wysiwyg_fields_select]",
-      '#id' => "{$form_element['#id']}-wysiwyg-fields-select",
-      '#attributes' => array(
-        'class' => 'wysiwyg_fields_select',
-      ),
-    );
-
-    // Original field delta.
-    $form_element['wysiwyg_fields']['wysiwyg_fields_delta'] = array(
-      '#type' => 'hidden',
-      '#value' => $form_element['#delta']
-    );
   }
 
   return $form_element;
@@ -226,9 +234,9 @@ function wysiwyg_fields_element_validate($element, &$form_state) {
         // Some fields have a single field that the widget will later split into
         // deltas, we need to make sure that the Wyswyg Fields items are still
         // available to the individual deltas.
-        $post = (!isset($form_state['post'][$element['#field_name']][$delta]) && isset($form_state['post'][$element['#field_name']]['wysiwyg_fields']))
-          ? $form_state['post'][$element['#field_name']]
-          : $form_state['post'][$element['#field_name']][$delta];
+        $post = (!isset($form_state['input'][$element['#field_name']][$delta]) && isset($form_state['input'][$element['#field_name']]['wysiwyg_fields']))
+          ? $form_state['input'][$element['#field_name']]
+          : $form_state['input'][$element['#field_name']][$delta];
 
         if (is_array($post)) {
           if (isset($post['wysiwyg_fields_select']) && !isset($field['wysiwyg_fields_select'])) {
@@ -283,8 +291,8 @@ function wysiwyg_fields_form_alter_after_build($form_element, &$form_state) {
 }
 
 function wysiwyg_field_after_build_wrapper(&$form_element, $field_name) {
-  //$form_element['#prefix'] = "<div id='wysiwyg_fields-{$field_name}-wrapper'>{$form_element['#prefix']}";
-  //$form_element['#suffix'] = "{$form_element['#suffix']}</div>";
+  $form_element['#prefix'] = "<div id='wysiwyg_fields-{$field_name}-wrapper'>" . (isset($form_element['#prefix']) ? $form_element['#prefix'] : '');
+  $form_element['#suffix'] = (isset($form_element['#suffix']) ? $form_element['#suffix'] : '') . '</div>';
 }
 
 /**
