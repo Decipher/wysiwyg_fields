@@ -10,7 +10,7 @@
    */
   Drupal.wysiwygFields.wysiwyg.tinymce = {
     // Wrapper element override.
-    wrapperElement: 'span',
+    //wrapperElement: 'wysiwyg_field',
 
     init: function(id) {
       // MCEditor icon size fix.
@@ -41,9 +41,8 @@
       if (typeof tinyMCE !== "undefined") {
         $.each(tinyMCE.editors, function(instance) {
           if (typeof tinyMCE.editors[instance].contentDocument !== "undefined") {
-            $('span.wysiwyg_fields-placeholder', tinyMCE.editors[instance].contentDocument.body).each(function() {
-              $(this).removeClass('wysiwyg_fields-placeholder');
-              replacement = "<span id='" + $(this).attr('id') + "' class='" + $(this).attr('class') + "'>" + Drupal.settings.wysiwygFields.replacements['[' + $(this).attr('id') + ']'] + "</span>";
+            $('.wysiwyg_fields-placeholder', tinyMCE.editors[instance].contentDocument.body).each(function() {
+              replacement = Drupal.settings.wysiwygFields.fields[$(this).parent().attr('wf_field')].replacements[$(this).parent().attr('wf_deltas')][$(this).parent().attr('wf_formatter')];
               Drupal.wysiwygFields.wysiwyg.tinymce.wysiwygIsNode(this);
               Drupal.wysiwyg.instances[tinyMCE.editors[instance].editorId].insert(replacement);
             });

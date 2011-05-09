@@ -67,12 +67,13 @@ function wysiwyg_fields_wysiwyg_fields_nodeapi_alter($node, $op, $a3 = NULL, $a4
 
       $replacements = array();
       foreach ($tokens as $key => $token) {
-        $replacements[$token['wf_field']][$token['wf_deltas']][$token['wf_formatter']] = "<wysiwyg_field wf_field='{$token['wf_field']}' wf_deltas='{$token['wf_deltas']}' wf_formatter='{$token['wf_formatter']}' >" . _wysiwyg_fields_filter_process($node, $key) . '</wysiwyg_field>';
+        $replacements[$token['wf_field']][$token['wf_deltas']][$token['wf_formatter']] = "<wysiwyg_field wf_field='{$token['wf_field']}' wf_deltas='{$token['wf_deltas']}' wf_formatter='{$token['wf_formatter']}' >" . _wysiwyg_fields_filter_process($key, $node) . '</wysiwyg_field>';
       }
 
       $fields = array();
       foreach (content_fields(NULL, $node->type) as $field) {
         // Get first empty delta.
+        $count = 0;
         $delta = NULL;
         $function = "{$field['module']}_content_is_empty";
         if (is_array($node->{$field['field_name']})) {
@@ -86,7 +87,7 @@ function wysiwyg_fields_wysiwyg_fields_nodeapi_alter($node, $op, $a3 = NULL, $a4
 
         $fields[$field['field_name']] = array(
           'multiple' => $field['multiple'],
-          'delta' => !is_null($delta) ? $delta : count($node->{$field['field_name']}),
+          'delta' => !is_null($delta) ? $delta : $count,
           'replacements' => $replacements[$field['field_name']],
         );
       }
@@ -356,6 +357,7 @@ function wysiwyg_fields_ahah() {
 
 /**
  * @TODO - Weight field becomes visible after AHAH - fix.
+ * @TODO - Sort output by weight.
  */
 function wysiwyg_fields_ahah_insert() {
   // Include node definition.

@@ -71,6 +71,7 @@
       if (typeof CKEDITOR !== "undefined") {
         $.each(CKEDITOR.instances, function(instance) {
           if (CKEDITOR.instances[instance].mode == 'wysiwyg' && typeof CKEDITOR.instances[instance].document !== "undefined") {
+            // @TODO - Handle items with no replacements.
             $('.wysiwyg_fields-placeholder', CKEDITOR.instances[instance].document.$.body).each(function() {
               replacement = Drupal.settings.wysiwygFields.fields[$(this).parent().attr('wf_field')].replacements[$(this).parent().attr('wf_deltas')][$(this).parent().attr('wf_formatter')];
               Drupal.wysiwygFields.wysiwyg.ckeditor.wysiwygIsNode($(this).parent().get(0));

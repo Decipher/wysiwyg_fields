@@ -32,13 +32,17 @@ function wysiwyg_fields_wysiwyg_fields_plugin() {
         'css path' => drupal_get_path('module', 'wysiwyg_fields') . '/plugins',
         'css file' => 'wysiwyg_fields.css',
         'settings' => array(),
+        // @See http://drupal.org/node/1010534
+        //'extended_valid_elements' => array(
+        //  'wysiwyg_field[*]',
+        //),
       );
 
       // Enable Wysiwyg plugin.
       // @TODO - Provide fine grain control on Wysiwyg profile settings.
       foreach (wysiwyg_profile_load_all() as $profile) {
         $profile->settings = is_array($profile->settings) ? $profile->settings : array();
-        $profile->settings['buttons'] = is_array($profile->settings['buttons']) ? $profile->settings['buttons'] : array();
+        $profile->settings['buttons'] = isset($profile->settings['buttons']) ? $profile->settings['buttons'] : array();
 
         $id = "wysiwyg_fields_{$name}";
         if (!isset($profile->settings['buttons']['drupal'][$id]) || empty($profile->settings['buttons']['drupal'][$id])) {

@@ -251,16 +251,36 @@ function _content_wysiwyg_fields_form_alter_alter_submit($form, &$form_state) {
 function content_wysiwyg_fields_nodeapi_alter($node, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
     case 'presave':
-      // @TODO - Handle multi-field tokens.
+      $tokens = array();
+      $textfields = _wysiwyg_fields_textfields($node);
+      foreach ($textfields as &$textfield) {
+        $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
+      }
+
+      // Build info array.
+      $info = array();
+      foreach ($tokens as $token => $data) {
+        $deltas = explode(',', $tokens[$token]['wf_deltas']);
+        $tokens[$token]['wf_deltas'] = array();
+        foreach ($deltas as $delta) {
+          $tokens[$token]['wf_deltas'][$delta] = $delta;
+        }
+        $info['fields'][$tokens[$token]['wf_field']]['deltas'] = isset($info['fields'][$tokens[$token]['wf_field']]['deltas']) ? $info['fields'][$tokens[$token]['wf_field']]['deltas'] : array();
+        foreach ($tokens[$token]['wf_deltas'] as $delta) {
+          $info['fields'][$tokens[$token]['wf_field']]['deltas'][$delta] = isset($info['fields'][$tokens[$token]['wf_field']]['deltas'][$delta]) ? $info['fields'][$tokens[$token]['wf_field']]['deltas'][$delta] : array();
+          $info['fields'][$tokens[$token]['wf_field']]['deltas'][$delta][] = &$tokens[$token]['wf_deltas'][$delta];
+        }
+        ksort($info['fields'][$tokens[$token]['wf_field']]['deltas']);
+        $info['tokens'][$token] = &$tokens[$token];
+      }
+
       // Re-assign deltas to match CCKs changes.
-      list($fields, $textfields) = _content_wysiwyg_fields_get_fields($node);
-      foreach ($fields as $id => $items) {
-        ksort($items);
-        foreach ($items as $delta => $val) {
-          foreach ($node->{$id} as $field_delta => $item) {
-            if ($item['wysiwyg_fields']['wysiwyg_fields_delta'] == $delta) {
-              foreach ($textfields as &$textfield) {
-                $textfield['value'] = str_replace("[wysiwyg_fields-{$id}-{$delta}", "[wysiwyg_fields-{$id}-{$field_delta}", $textfield['value']);
+      foreach ($info['fields'] as $field_name => $field) {
+        foreach (array_keys($field['deltas']) as $delta) {
+          foreach ($node->{$field_name} as $field_delta => $item) {
+            if ($item['wysiwyg_fields']['wysiwyg_fields_delta'] == $delta && $delta != $field_delta) {
+              foreach ($info['fields'][$field_name]['deltas'][$delta] as &$reference) {
+                $reference = $field_delta;
               }
               break;
             }
@@ -269,29 +289,41 @@ function content_wysiwyg_fields_nodeapi_alter($node, $op, $a3 = NULL, $a4 = NULL
       }
 
       // Delete any Wysiwyg Fields that weren't inserted.
-      list($fields, $textfields) = _content_wysiwyg_fields_get_fields($node);
       foreach (content_fields(NULL, $node->type) as $field) {
         if ($field['widget']['wysiwyg_fields_status'] == TRUE && $field['widget']['wysiwyg_fields_delete'] && isset($node->{$field['field_name']})) {
           foreach (array_keys($node->{$field['field_name']}) as $delta) {
-            if (!$fields[$field['field_name']][$delta]) {
-              $fields[$field['field_name']][$delta] = FALSE;
+            if (isset($info['fields'][$field['field_name']]['deltas']) && !isset($info['fields'][$field['field_name']]['deltas'][$delta])) {
+              foreach (array_keys($info['fields'][$field['field_name']]['deltas']) as $value) {
+                if ($value > $delta) {
+                  foreach ($info['fields'][$field['field_name']]['deltas'][$value] as &$reference) {
+                    $reference = $value - 1;
+                  }
+                }
+              }
               unset($node->{$field['field_name']}[$delta]);
             }
           }
         }
       }
 
-      // Update token deltas.
-      foreach ($fields as $id => $field) {
-        $minus = 0;
-        ksort($field);
-        foreach ($field as $delta => $value) {
-          $minus = $value ? $minus : $minus + 1;
-          if ($value) {
-            foreach ($textfields as &$textfield) {
-              $textfield['value'] = str_replace("[wysiwyg_fields-{$id}-{$delta}", "[wysiwyg_fields-{$id}-" . ($delta - $minus), $textfield['value']);
-            }
+      // Set new deltas.
+      foreach (array_keys($info['tokens']) as $token) {
+        $info['tokens'][$token]['wf_deltas'] = array_flip($info['tokens'][$token]['wf_deltas']);
+        foreach (array_keys($info['tokens'][$token]['wf_deltas']) as $delta) {
+          $info['tokens'][$token]['wf_deltas'][$delta] = $delta;
+        }
+        ksort($info['tokens'][$token]['wf_deltas']);
+      }
+
+      // Replace tokens.
+      foreach ($info['tokens'] as $token => $attributes) {
+        foreach ($textfields as &$textfield) {
+          $attributes['wf_deltas'] = is_array($attributes['wf_deltas']) ? implode(',', array_keys($attributes['wf_deltas'])) : $attributes['wf_deltas'];
+          $new_token = array();
+          foreach ($attributes as $key => $value) {
+            $new_token[] = "{$key}=\"{$value}\"";
           }
+          $textfield['value'] = str_replace($token, '[wysiwyg_field ' . implode(' ', $new_token) . ']', $textfield['value']);
         }
       }
       break;
@@ -329,27 +361,4 @@ function _wysiwyg_fields_textfields($node) {
   }
 
   return $textfields;
-}
-
-/**
- *
- */
-function _content_wysiwyg_fields_get_fields($node) {
-  // Get all tokens from all textfields.
-  $tokens = array();
-  $textfields = _wysiwyg_fields_textfields($node);
-  foreach ($textfields as &$textfield) {
-    $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
-  }
-
-  $fields = array();
-  foreach ($tokens as $token) {
-    $fields[$token['wf_field']] = is_array($fields[$token['wf_field']]) ? $fields[$token['wf_field']] : array();
-    $token['wf_deltas'] = explode('_', $token['wf_deltas']);
-    foreach ($token['wf_deltas'] as $delta) {
-      $fields[$token['wf_field']][$delta] = TRUE;
-    }
-  }
-
-  return array($fields, $textfields);
 }
