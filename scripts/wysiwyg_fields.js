@@ -38,7 +38,9 @@
         $('#wysiwyg_fields-' + id + '-wrapper').bind('dialogclose', function(event, ui) {
           Drupal.wysiwygFields.dialogClose(id);
         });
-        $('#wysiwyg_fields-' + id + '-wrapper').parents('.ui-dialog').attr('id', 'wysiwyg_fields-' + id + '-dialog');
+        $('#wysiwyg_fields-' + id + '-wrapper').parents('.ui-dialog')
+          .attr('id', 'wysiwyg_fields-' + id + '-dialog')
+          .addClass('wysiwyg_fields-dialog');
         $('#wysiwyg_fields-' + id + '-dialog .ui-dialog-buttonpane').hide();
 
         // Expand icon.
