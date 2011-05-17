@@ -2,6 +2,7 @@ Wysiwyg Fields 6.x-1.x-dev, xxxx-xx-xx (Development release)
 ----------------------------------
 
 - #1096948: Fixed issue when Wysiwyg Field is in a Fieldgroup.
+- #1093354: Improved TinyMCE support.
 - #1092586: Fixed issue when JavaScript Cache is turned on.
 - #1092586: Fixed issue with Wysiwyg plugin not loading content type settings.
 - #1090746: Added support for Fullscreen mode.
@@ -9,6 +10,7 @@ Wysiwyg Fields 6.x-1.x-dev, xxxx-xx-xx (Development release)
 - #1085948: Fixed issue with View Source plugin.
 - Added Field bypass hook.
 - Added Wyswiwyg plugins hook.
+- Added context and cache-buster to Filter tag.
 - Fixed issue with inserting multiple fields via a non-multi formatter.
 - Improved support for multiple Wysiwyg instances on a single node form.
 

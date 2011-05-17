@@ -42,7 +42,7 @@
           if (FCKeditorAPI.Instances[instance].EditMode == FCK_EDITMODE_WYSIWYG && typeof FCKeditorAPI.Instances[instance].EditorDocument !== "undefined") {
             $('.wysiwyg_fields-placeholder', FCKeditorAPI.Instances[instance].EditorDocument.body).each(function() {
               $(this).removeClass('wysiwyg_fields-placeholder');
-              replacement = Drupal.settings.wysiwygFields.fields[$(this).parent().attr('wf_field')].replacements[$(this).parent().attr('wf_deltas')][$(this).parent().attr('wf_formatter')];
+              replacement = Drupal.settings.wysiwygFields.fields[$(this).attr('wf_field')].replacements[$(this).attr('wf_deltas')][$(this).attr('wf_formatter')];
               Drupal.wysiwygFields.wysiwyg.fckeditor.wysiwygIsNode(this);
               Drupal.wysiwyg.instances[instance].insert(replacement);
             });

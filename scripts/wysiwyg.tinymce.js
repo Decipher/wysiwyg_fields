@@ -9,12 +9,16 @@
    *
    */
   Drupal.wysiwygFields.wysiwyg.tinymce = {
-    // Wrapper element override.
-    //wrapperElement: 'wysiwyg_field',
-
     init: function(id) {
       // MCEditor icon size fix.
       $('.mce_wysiwyg_fields_' + id).addClass('mce_wysiwyg_fields_icon');
+    },
+
+    /**
+     *
+     */
+    insert: function(instance, content) {
+      tinyMCE.editors[instance].selection.setContent(content);
     },
 
     /**
@@ -42,9 +46,9 @@
         $.each(tinyMCE.editors, function(instance) {
           if (typeof tinyMCE.editors[instance].contentDocument !== "undefined") {
             $('.wysiwyg_fields-placeholder', tinyMCE.editors[instance].contentDocument.body).each(function() {
-              replacement = Drupal.settings.wysiwygFields.fields[$(this).parent().attr('wf_field')].replacements[$(this).parent().attr('wf_deltas')][$(this).parent().attr('wf_formatter')];
+              replacement = Drupal.settings.wysiwygFields.fields[$(this).attr('wf_field')].replacements[$(this).attr('wf_deltas')][$(this).attr('wf_formatter')];
               Drupal.wysiwygFields.wysiwyg.tinymce.wysiwygIsNode(this);
-              Drupal.wysiwyg.instances[tinyMCE.editors[instance].editorId].insert(replacement);
+              Drupal.wysiwygFields.wysiwyg.tinymce.insert(instance, replacement);
             });
           }
 

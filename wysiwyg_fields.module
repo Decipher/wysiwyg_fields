@@ -442,7 +442,7 @@ function wysiwyg_fields_ahah_insert() {
       $element = _wysiwyg_fields_ahah_get_element($field, $items, array($formatter_module, $formatter_name));
       $element = theme($element['#theme'], $element);
     }
-    $element = drupal_to_js("<wrapper_element wf_field='{$field['field_name']}' wf_deltas='" . implode(',', $deltas) . "' wf_formatter='{$formatter_module}_formatter_$formatter_name'>" . $element . "</wrapper_element>");
+    $element = drupal_to_js("<wysiwyg_field wf_field='{$field['field_name']}' wf_deltas='" . implode(',', $deltas) . "' wf_formatter='{$formatter_module}_formatter_{$formatter_name}'>{$element}</wysiwyg_field>");
 
     // Get first empty delta.
     $delta = NULL;
@@ -456,21 +456,8 @@ function wysiwyg_fields_ahah_insert() {
     $add_more = is_null($delta);
     $delta = is_null($delta) ? $count + 1 : $delta;
 
-    // Trigger 'Add more' button.
-    $add_more = ($field['multiple'] == 1 && $add_more) ? "$('.form-submit[name=\"" . arg(3) . "_add_more\"]').trigger('mousedown');" : '';
-
-    // @TODO - Turn this into a theme function?
-    // @TODO - Clean/Improve up this code.
-    $output .= "
-      <script type='text/javascript'>
-        $('#wysiwyg_fields-" . arg(3) . "-wrapper').dialog('close');
-        Drupal.wysiwygFields.dialogClose('" . arg(3) . "');
-        content = {$element};
-        content = content.replace('wrapper_element', Drupal.wysiwygFields.wrapperElement, 'g');
-        Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].insert(content);
-        Drupal.settings.wysiwygFields.fields['" . arg(3) . "'].delta = {$delta};
-        {$add_more}
-      </script>";
+    // Insert callback.
+    $output .= "<script type='text/javascript'>Drupal.wysiwygFields.insert('" . arg(3) . "', {$element}, {$delta});</script>";
   }
 
   return array(
