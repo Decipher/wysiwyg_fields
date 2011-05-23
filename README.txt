@@ -9,7 +9,7 @@ Wysiwyg Fields was written and is maintained by Stuart Clark (deciphered).
 
 
 Testing
---------------------------
+--------------------------------------------------------------------------------
 
 Setup a test site with all dependencies (plus some extra modules for testing
 purposes) with the following Drush Make command:
@@ -33,7 +33,7 @@ Notes:
 
 
 Features
---------------------------
+--------------------------------------------------------------------------------
 
 * Support for Wysiwyg module libraries:
   * CKEditor/FCKEditor.
@@ -48,7 +48,7 @@ Features
 
 
 Required modules
---------------------------
+--------------------------------------------------------------------------------
 
 * Content Construction Kit (CCK) module.
 * jQuery UI module.
@@ -56,7 +56,7 @@ Required modules
 
 
 Recommended modules
---------------------------
+--------------------------------------------------------------------------------
 
 * Custom Formatters module.
 * jQuery Update module (in conjunction with jQuery UI 1.7).
@@ -64,7 +64,7 @@ Recommended modules
 
 
 Configuration
---------------------------
+--------------------------------------------------------------------------------
 
 Wysiwyg Fields settings can be found with the standard CCK field settings:
   Administer > Content management > Content types > [content type] > Manage fields > [field] > Configure
@@ -78,7 +78,7 @@ Wysiwyg Fields settings can be found with the standard CCK field settings:
 
 
 Frequently asked questions
---------------------------
+--------------------------------------------------------------------------------
 
 Q. Where did my CCK field go?
 
@@ -94,7 +94,7 @@ A. While the Wysiwyg Fields dialog is active you will see a '+' icon to the left
 
 
 Known issues
---------------------------
+--------------------------------------------------------------------------------
 
 - Following CCK field modules aren't compatible: @TODO - write incompatibility detection code.
   - Embedded Media Field module.

@@ -84,10 +84,10 @@ function wysiwyg_fields_wysiwyg_fields_form_alter_alter(&$form, $form_state, $fo
 //        $replacements[$token[0]] = _wysiwyg_fields_filter_process($node, $token[0]);
 //      }
 
-      //dpm($form);
-
       $fields = array();
       foreach (field_info_instances($form['#entity_type'], $form['#bundle']) as $field) {
+        $field_info = field_info_field($field['field_name']);
+
         // Get first empty delta.
         $count = 0;
         $delta = NULL;
@@ -102,7 +102,7 @@ function wysiwyg_fields_wysiwyg_fields_form_alter_alter(&$form, $form_state, $fo
         }
 
         $fields[$field['field_name']] = array(
-          //'multiple' => $field['multiple'],
+          'cardinality' => $field_info['cardinality'],
           'delta' => !is_null($delta) ? $delta : $count,
         );
       }

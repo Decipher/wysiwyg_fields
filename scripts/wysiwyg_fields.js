@@ -202,7 +202,7 @@
         delta = Drupal.settings.wysiwygFields.fields[id].delta;
       }
 
-      if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
+      if (Drupal.settings.wysiwygFields.fields[id].cardinality == -1 || Drupal.settings.wysiwygFields.fields[id].cardinality > 0) {
         $('#' + id.replace('_', '-', 'g') + '-items, #wysiwyg_fields-' + id + '-wrapper table').hide();
         if ($('#edit-' + id.replace('_', '-', 'g') + '-' + delta + '-wysiwyg-fields-ahah-wrapper').parents('table#' + id + '_values').length == 1) {
           $('#edit-' + id.replace('_', '-', 'g') + '-' + delta + '-wysiwyg-fields-ahah-wrapper')
@@ -222,7 +222,7 @@
     dialogShowUpdate: function(id) {
       this.dialogClose(id);
 
-      if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
+      if (Drupal.settings.wysiwygFields.fields[id].cardinality > 0) {
         token = Drupal.settings.wysiwygFields.fields[id].active.split('-');
         deltas = token[2].split('_');
 
@@ -257,7 +257,7 @@
         this.buttonsAttach(id);
 
         // Reposition Multiselect checkboxes.
-        if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
+        if (Drupal.settings.wysiwygFields.fields[id].cardinality > 0) {
           $('#wysiwyg_fields-' + id + '-dialog .wysiwyg_fields_select').each(function() {
             $(this)
               .before('<div id="' + $(this).attr('id') + '-placeholder" class="wysiwyg_fields-placeholder" />')
@@ -288,7 +288,7 @@
       $('#wysiwyg_fields-' + id + '-dialog').appendTo($('#' + Drupal.settings.wysiwygFields.activeId).parents('form').first());
       $('#' + Drupal.settings.wysiwygFields.activeId + '-' + id).remove();
 
-      if (Drupal.settings.wysiwygFields.fields[id].multiple > 0) {
+      if (Drupal.settings.wysiwygFields.fields[id].cardinality > 0) {
         $('#wysiwyg_fields-' + id + '-wrapper table, #' + id.replace('_', '-', 'g') + '-items').show();
       }
 
