@@ -48,7 +48,7 @@
             $('.wysiwyg_fields-placeholder', tinyMCE.editors[instance].contentDocument.body).each(function() {
               replacement = Drupal.settings.wysiwygFields.fields[$(this).attr('wf_field')].replacements[$(this).attr('wf_deltas')][$(this).attr('wf_formatter')];
               Drupal.wysiwygFields.wysiwyg.tinymce.wysiwygIsNode(this);
-              Drupal.wysiwygFields.wysiwyg.tinymce.insert(instance, replacement);
+              $(this).replaceWith(replacement);
             });
           }
 

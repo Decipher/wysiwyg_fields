@@ -101,7 +101,7 @@ function wysiwyg_fields_wysiwyg_plugin_callback() {
  *
  * @See http://drupal.org/node/1010534
  */
-function wysiwyg_fields_wysiwyg_editor_settings_alter(&$settings, &$context) {
+function wysiwyg_fields_wysiwyg_editor_settings_alter(&$settings, $context) {
   if ($context['profile']->editor == 'tinymce'/* && $context['profile']->settings['buttons']['drupal']['MY_PLUGIN']*/) {
     $settings['extended_valid_elements'] = (!empty($settings['extended_valid_elements']) ? $settings['extended_valid_elements'] . ', ' : '') . 'wysiwyg_field[*]';
   }

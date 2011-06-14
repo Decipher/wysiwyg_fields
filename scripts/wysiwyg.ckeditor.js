@@ -73,6 +73,7 @@
           if (CKEDITOR.instances[instance].mode == 'wysiwyg' && typeof CKEDITOR.instances[instance].document !== "undefined") {
             // @TODO - Handle items with no replacements.
             $('.wysiwyg_fields-placeholder', CKEDITOR.instances[instance].document.$.body).each(function() {
+              $(this).removeClass('wysiwyg_fields-placeholder')
               replacement = Drupal.settings.wysiwygFields.fields[$(this).attr('wf_field')].replacements[$(this).attr('wf_deltas')][$(this).attr('wf_formatter')];
               Drupal.wysiwygFields.wysiwyg.ckeditor.wysiwygIsNode(this);
 
@@ -83,8 +84,7 @@
                 now = new Date();
               }
 
-              // @TODO - This breaks WebKit support.
-              Drupal.wysiwyg.instances[instance].insert(replacement);
+              $(this).replaceWith(replacement);
             });
           }
 

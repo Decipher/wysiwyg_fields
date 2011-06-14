@@ -44,7 +44,7 @@
               $(this).removeClass('wysiwyg_fields-placeholder');
               replacement = Drupal.settings.wysiwygFields.fields[$(this).attr('wf_field')].replacements[$(this).attr('wf_deltas')][$(this).attr('wf_formatter')];
               Drupal.wysiwygFields.wysiwyg.fckeditor.wysiwygIsNode(this);
-              Drupal.wysiwyg.instances[instance].insert(replacement);
+              $(this).replaceWith(replacement);
             });
           }
 
