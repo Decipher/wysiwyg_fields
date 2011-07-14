@@ -38,19 +38,6 @@ function wysiwyg_fields_wysiwyg_fields_plugin() {
         //),
       );
 
-      // Enable Wysiwyg plugin.
-      // @TODO - Provide fine grain control on Wysiwyg profile settings.
-      foreach (wysiwyg_profile_load_all() as $profile) {
-        $profile->settings = is_array($profile->settings) ? $profile->settings : array();
-        $profile->settings['buttons'] = isset($profile->settings['buttons']) ? $profile->settings['buttons'] : array();
-
-        $id = "wysiwyg_fields_{$name}";
-        if (!isset($profile->settings['buttons']['drupal'][$id]) || empty($profile->settings['buttons']['drupal'][$id])) {
-          $profile->settings['buttons']['drupal'][$id] = 1;
-          db_query("UPDATE {wysiwyg} SET settings = '%s' WHERE format = %d", serialize($profile->settings), $profile->format);
-        }
-      }
-
       // Prevent dynamic JavaScript files from being parsed through locale.
       $parsed = variable_get('javascript_parsed', array());
       $js = drupal_get_path('module', 'wysiwyg_fields') . "/plugins/wysiwyg_fields_{$name}/wysiwyg_fields_{$name}.js";

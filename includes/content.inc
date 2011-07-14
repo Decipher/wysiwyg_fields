@@ -13,7 +13,9 @@ function content_wysiwyg_fields_wysiwyg_plugins($content_type) {
     if ($field = content_fields($field['field_name'], $content_type)) {
       if (!in_array(TRUE, module_invoke_all('wysiwyg_fields_field_bypass', $field)) && !is_null(content_fields($field['field_name'], $content_type)) && isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status']) {
         $plugins[$field['field_name']] = array(
-          'label' => $field['widget']['label'],
+          'label' => isset($field['widget']['wysiwyg_fields_label'])
+            ? $field['widget']['wysiwyg_fields_label']
+            : $field['widget']['label'],
           'icon' => $field['widget']['wysiwyg_fields_icon'],
         );
       }
@@ -64,6 +66,14 @@ function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
           ,
         );
 
+        $settings['wysiwyg_fields']['wysiwyg_fields_label'] = array(
+          '#title' => t('Label'),
+          '#type' => 'textfield',
+          '#default_value' => isset($widget['wysiwyg_fields_label'])
+            ? $widget['wysiwyg_fields_label']
+            : $widget['label']
+        );
+
         $settings['wysiwyg_fields']['wysiwyg_fields_icon'] = array(
           '#title' => t('Icon'),
           '#type' => 'radios',
@@ -105,6 +115,16 @@ function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
           '#collapsed' => 'TRUE',
         );
 
+        $settings['wysiwyg_fields']['wysiwyg_fields_advanced']['wysiwyg_fields_profiles'] = array(
+          '#title' => t('Enable on all Wysiwyg profiles.'),
+          '#type' => 'checkbox',
+          '#default_value' => isset($widget['wysiwyg_fields_profiles'])
+            ? $widget['wysiwyg_fields_profiles']
+            : TRUE
+          ,
+          '#description' => 'When checked, this will forcefully enable the plugin on all Wysiwyg profiles. If you wish this plugin only enabled on specific Wysiwyg profiles, be sure to uncheck this before making changes.'
+        );
+
         $settings['wysiwyg_fields']['wysiwyg_fields_advanced']['wysiwyg_fields_hide'] = array(
           '#title' => t('Set field display settings to &lt;Hidden&gt;.'),
           '#type' => 'checkbox',
@@ -126,8 +146,10 @@ function wysiwyg_fields_widget_settings_alter(&$settings, $op, $widget) {
 
       case 'save':
         $settings[] = 'wysiwyg_fields_status';
+        $settings[] = 'wysiwyg_fields_label';
         $settings[] = 'wysiwyg_fields_icon';
         $settings[] = 'wysiwyg_fields_formatters';
+        $settings[] = 'wysiwyg_fields_profiles';
         $settings[] = 'wysiwyg_fields_hide';
         $settings[] = 'wysiwyg_fields_delete';
     }
@@ -234,6 +256,23 @@ function _content_wysiwyg_fields_form_alter_alter_required_validate($element, &$
 function _content_wysiwyg_fields_form_alter_alter_submit($form, &$form_state) {
   $field = content_fields($form_state['values']['field_name'], $form_state['values']['type_name']);
 
+  if ($field['widget']['wysiwyg_fields_profiles'] == TRUE) {
+    foreach (wysiwyg_profile_load_all() as $profile) {
+      $profile->settings = is_array($profile->settings) ? $profile->settings : array();
+      $profile->settings['buttons'] = isset($profile->settings['buttons']) ? $profile->settings['buttons'] : array();
+
+      $id = "wysiwyg_fields_{$field['field_name']}";
+      if (!isset($profile->settings['buttons']['drupal'][$id])) {
+        $profile->settings['buttons']['drupal'][$id] = 1;
+        db_query("UPDATE {wysiwyg} SET settings = '%s' WHERE format = %d", serialize($profile->settings), $profile->format);
+
+        $format = filter_formats($profile->format);
+        drupal_set_message(t('Wysiwyg Field plugin for %field enabled on %format format.', array('%field' => $field['field_name'], '%format' => $format->name)));
+      }
+    }
+    wysiwyg_profile_load_all(TRUE);
+  }
+
   // Set display settings to <Hidden>.
   if ($field['widget']['wysiwyg_fields_status'] == TRUE && $form_state['values']['wysiwyg_fields_hide'] == TRUE) {
     foreach ($field['display_settings'] as $name => &$type) {
@@ -251,79 +290,88 @@ function _content_wysiwyg_fields_form_alter_alter_submit($form, &$form_state) {
 function content_wysiwyg_fields_nodeapi_alter($node, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
     case 'presave':
-      $tokens = array();
-      $textfields = _wysiwyg_fields_textfields($node);
-      foreach ($textfields as &$textfield) {
-        $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
+      $flag = FALSE;
+      foreach (content_fields(NULL, $node->type) as $field) {
+        if ($field = content_fields($field['field_name'], $node->type)) {
+          $flag = !empty($field['widget']['wysiwyg_fields_status']) ? TRUE : $flag;
+        }
       }
 
-      // Build info array.
-      $info = array();
-      foreach ($tokens as $token => $data) {
-        $deltas = explode(',', $tokens[$token]['wf_deltas']);
-        $tokens[$token]['wf_deltas'] = array();
-        foreach ($deltas as $delta) {
-          $tokens[$token]['wf_deltas'][$delta] = $delta;
+      if ($flag) {
+        $tokens = array();
+        $textfields = _wysiwyg_fields_textfields($node);
+        foreach ($textfields as &$textfield) {
+          $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
         }
-        $info['fields'][$tokens[$token]['wf_field']]['deltas'] = isset($info['fields'][$tokens[$token]['wf_field']]['deltas']) ? $info['fields'][$tokens[$token]['wf_field']]['deltas'] : array();
-        foreach ($tokens[$token]['wf_deltas'] as $delta) {
-          $info['fields'][$tokens[$token]['wf_field']]['deltas'][$delta] = isset($info['fields'][$tokens[$token]['wf_field']]['deltas'][$delta]) ? $info['fields'][$tokens[$token]['wf_field']]['deltas'][$delta] : array();
-          $info['fields'][$tokens[$token]['wf_field']]['deltas'][$delta][] = &$tokens[$token]['wf_deltas'][$delta];
-        }
-        ksort($info['fields'][$tokens[$token]['wf_field']]['deltas']);
-        $info['tokens'][$token] = &$tokens[$token];
-      }
 
-      // Re-assign deltas to match CCKs changes.
-      foreach ($info['fields'] as $field_name => $field) {
-        foreach (array_keys($field['deltas']) as $delta) {
-          foreach ($node->{$field_name} as $field_delta => $item) {
-            if ($item['wysiwyg_fields']['wysiwyg_fields_delta'] == $delta && $delta != $field_delta) {
-              foreach ($info['fields'][$field_name]['deltas'][$delta] as &$reference) {
-                $reference = $field_delta;
+        // Build info array.
+        $info = array();
+        foreach ($tokens as $token => $data) {
+          $deltas = explode(',', $tokens[$token]['wf_deltas']);
+          $tokens[$token]['wf_deltas'] = array();
+          foreach ($deltas as $delta) {
+            $tokens[$token]['wf_deltas'][$delta] = $delta;
+          }
+          $info['fields'][$tokens[$token]['wf_field']]['deltas'] = isset($info['fields'][$tokens[$token]['wf_field']]['deltas']) ? $info['fields'][$tokens[$token]['wf_field']]['deltas'] : array();
+          foreach ($tokens[$token]['wf_deltas'] as $delta) {
+            $info['fields'][$tokens[$token]['wf_field']]['deltas'][$delta] = isset($info['fields'][$tokens[$token]['wf_field']]['deltas'][$delta]) ? $info['fields'][$tokens[$token]['wf_field']]['deltas'][$delta] : array();
+            $info['fields'][$tokens[$token]['wf_field']]['deltas'][$delta][] = &$tokens[$token]['wf_deltas'][$delta];
+          }
+          ksort($info['fields'][$tokens[$token]['wf_field']]['deltas']);
+          $info['tokens'][$token] = &$tokens[$token];
+        }
+
+        // Re-assign deltas to match CCKs changes.
+        foreach ($info['fields'] as $field_name => $field) {
+          foreach (array_keys($field['deltas']) as $delta) {
+            foreach ($node->{$field_name} as $field_delta => $item) {
+              if ($item['wysiwyg_fields']['wysiwyg_fields_delta'] == $delta && $delta != $field_delta) {
+                foreach ($info['fields'][$field_name]['deltas'][$delta] as &$reference) {
+                  $reference = $field_delta;
+                }
+                break;
               }
-              break;
             }
           }
         }
-      }
 
-      // Delete any Wysiwyg Fields that weren't inserted.
-      foreach (content_fields(NULL, $node->type) as $field) {
-        if ($field['widget']['wysiwyg_fields_status'] == TRUE && $field['widget']['wysiwyg_fields_delete'] && isset($node->{$field['field_name']})) {
-          foreach (array_keys($node->{$field['field_name']}) as $delta) {
-            if (isset($info['fields'][$field['field_name']]['deltas']) && !isset($info['fields'][$field['field_name']]['deltas'][$delta])) {
-              foreach (array_keys($info['fields'][$field['field_name']]['deltas']) as $value) {
-                if ($value > $delta) {
-                  foreach ($info['fields'][$field['field_name']]['deltas'][$value] as &$reference) {
-                    $reference = $value - 1;
+        // Delete any Wysiwyg Fields that weren't inserted.
+        foreach (content_fields(NULL, $node->type) as $field) {
+          if ($field['widget']['wysiwyg_fields_status'] == TRUE && $field['widget']['wysiwyg_fields_delete'] && isset($node->{$field['field_name']})) {
+            foreach (array_keys($node->{$field['field_name']}) as $delta) {
+              if (isset($info['fields'][$field['field_name']]['deltas']) && !isset($info['fields'][$field['field_name']]['deltas'][$delta])) {
+                foreach (array_keys($info['fields'][$field['field_name']]['deltas']) as $value) {
+                  if ($value > $delta) {
+                    foreach ($info['fields'][$field['field_name']]['deltas'][$value] as &$reference) {
+                      $reference = $value - 1;
+                    }
                   }
                 }
+                unset($node->{$field['field_name']}[$delta]);
               }
-              unset($node->{$field['field_name']}[$delta]);
             }
           }
         }
-      }
 
-      // Set new deltas.
-      foreach (array_keys($info['tokens']) as $token) {
-        $info['tokens'][$token]['wf_deltas'] = array_flip($info['tokens'][$token]['wf_deltas']);
-        foreach (array_keys($info['tokens'][$token]['wf_deltas']) as $delta) {
-          $info['tokens'][$token]['wf_deltas'][$delta] = $delta;
-        }
-        ksort($info['tokens'][$token]['wf_deltas']);
-      }
-
-      // Replace tokens.
-      foreach ($info['tokens'] as $token => $attributes) {
-        foreach ($textfields as &$textfield) {
-          $attributes['wf_deltas'] = is_array($attributes['wf_deltas']) ? implode(',', array_keys($attributes['wf_deltas'])) : $attributes['wf_deltas'];
-          $new_token = array();
-          foreach ($attributes as $key => $value) {
-            $new_token[] = "{$key}=\"{$value}\"";
+        // Set new deltas.
+        foreach (array_keys($info['tokens']) as $token) {
+          $info['tokens'][$token]['wf_deltas'] = array_flip($info['tokens'][$token]['wf_deltas']);
+          foreach (array_keys($info['tokens'][$token]['wf_deltas']) as $delta) {
+            $info['tokens'][$token]['wf_deltas'][$delta] = $delta;
           }
-          $textfield['value'] = str_replace($token, '[wysiwyg_field ' . implode(' ', $new_token) . ']', $textfield['value']);
+          ksort($info['tokens'][$token]['wf_deltas']);
+        }
+
+        // Replace tokens.
+        foreach ($info['tokens'] as $token => $attributes) {
+          foreach ($textfields as &$textfield) {
+            $attributes['wf_deltas'] = is_array($attributes['wf_deltas']) ? implode(',', array_keys($attributes['wf_deltas'])) : $attributes['wf_deltas'];
+            $new_token = array();
+            foreach ($attributes as $key => $value) {
+              $new_token[] = "{$key}=\"{$value}\"";
+            }
+            $textfield['value'] = str_replace($token, '[wysiwyg_field ' . implode(' ', $new_token) . ']', $textfield['value']);
+          }
         }
       }
       break;

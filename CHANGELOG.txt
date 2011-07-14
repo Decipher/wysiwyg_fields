@@ -1,8 +1,11 @@
 Wysiwyg Fields 6.x-1.x-dev, xxxx-xx-xx (Development release)
 ----------------------------------
 
+- #1213028: Fixed issue when unnecessarily processing non-Wysiwyg Fields nodes.
 - #1162738 by szantog: Fixed Pass by reference issue.
+- #1131494: Added ability to override Wysiwyg plugin label.
 - #1096948: Fixed issue when Wysiwyg Field is in a Fieldgroup.
+- #1096430: Added ability to restrict Wysiwyg Fields by Wysiwyg profile.
 - #1093354: Improved TinyMCE support.
 - #1092586: Fixed issue when JavaScript Cache is turned on.
 - #1092586: Fixed issue with Wysiwyg plugin not loading content type settings.
