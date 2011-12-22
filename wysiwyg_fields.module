@@ -124,100 +124,98 @@ function wysiwyg_fields_wysiwyg_fields_form_alter_alter(&$form, $form_state, $fo
 }
 
 /**
- *
+ * @TODO
  */
 function wysiwyg_fields_elements_process($form_element) {
-  if (isset($form_element['#field_name'])) {
-    $field = field_info_instance($form_element['#entity_type'], $form_element['#field_name'], $form_element['#bundle']);
+  if (isset($form_element['#field_name']) && isset($form_element['#entity_type'])) {
+    $field = field_info_field($form_element['#field_name']);
+    $instance = field_info_instance($form_element['#entity_type'], $form_element['#field_name'], $form_element['#bundle']);
+    $wysiwyg_fields = isset($instance['settings']['wysiwyg_fields']) ? $instance['settings']['wysiwyg_fields'] : NULL;
     // @TODO - Re-implement bypass check.
     //if (!in_array(TRUE, module_invoke_all('wysiwyg_fields_field_bypass', $field)) && $form_element['#type'] == $field['widget']['type'] && isset($field['widget']['wysiwyg_fields_status']) && $field['widget']['wysiwyg_fields_status'] == TRUE) {
-    if (isset($field['settings']['wysiwyg_fields']) && $field['settings']['wysiwyg_fields']['wysiwyg_fields_status']) {
-      $form_element['#element_validate'][] = 'wysiwyg_fields_element_validate';
+    if (!is_null($wysiwyg_fields) && $wysiwyg_fields['status'] == TRUE) {
+      //$form_element['#element_validate'][] = 'wysiwyg_fields_element_validate';
 
       // AJAX Wrapper.
-      $prefix = "<div id='{$form_element['#id']}-wysiwyg-fields-ajax-wrapper' class='wysiwyg_fields-field wysiwyg_fields-{$form_element['#field_name']}-field'>";
-      $form_element['#prefix'] = isset($form_element['#prefix']) ? "{$prefix}{$form_element['#prefix']}" : $prefix;
-      $form_element['#suffix'] = isset($form_element['#suffix']) ? "{$form_element['#suffix']}</div>" : '</div>';
+      //$prefix = "<div id='{$form_element['#id']}-wysiwyg-fields-ajax-wrapper' class='wysiwyg_fields-field wysiwyg_fields-{$form_element['#field_name']}-field'>";
+      //$form_element['#prefix'] = isset($form_element['#prefix']) ? "{$prefix}{$form_element['#prefix']}" : $prefix;
+      //$form_element['#suffix'] = isset($form_element['#suffix']) ? "{$form_element['#suffix']}</div>" : '</div>';
+
+      $form_element['#attributes']['class'][] = "wysiwyg_fields-{$form_element['#field_name']}-{$form_element['#delta']}";
 
       $form_element['wysiwyg_fields'] = array(
         '#prefix' => '<div class="wysiwyg_fields-widget">',
         '#suffix' => '</div>',
         '#weight' => 200,
+        '#tree' => TRUE,
       );
 
-  //  // Formatters.
-  //  $formatters = array();
-  //  foreach ($field['widget']['wysiwyg_fields_formatters'] as $delta => $formatter) {
-  //    $formatter = _content_get_formatter($formatter, $field['type']);
-  //    $formatters["{$formatter[module]}_formatter_{$delta}"] = $formatter['label'];
-  //  }
-  //
-  //  // Multiple formatters - select field.
-  //  if (count($field['widget']['wysiwyg_fields_formatters']) > 1) {
-  //    $form_element['wysiwyg_fields']['wysiwyg_fields_formatters'] = array(
-  //      '#type' => 'select',
-  //      '#options' => $formatters,
-  //      '#name' => "{$form_element['#name']}[wysiwyg_fields_formatters]",
-  //      '#id' => "{$form_element['#id']}-wysiwyg-fields-formatters",
-  //      '#attributes' => array(
-  //        'class' => 'wysiwyg_fields_formatters',
-  //      ),
-  //    );
-  //  }
-  //
-  //  // Single formatter - hidden field.
-  //  else {
-  //    $form_element['wysiwyg_fields']['wysiwyg_fields_formatters'] = array(
-  //      '#type' => 'hidden',
-  //      '#value' => array_shift(array_keys($formatters)),
-  //      '#name' => "{$form_element['#name']}[wysiwyg_fields_formatters]",
-  //      '#id' => "{$form_element['#id']}-wysiwyg-fields-formatters",
-  //    );
-  //  }
-  //
-  //  // Insert button.
-  //  switch ($field['multiple']) {
-  //    case 0:
-  //      $wrapper = "{$form_element['#id']}-wysiwyg-fields-ahah-wrapper";
-  //      break;
-  //
-  //    case 1:
-  //      $wrapper = str_replace('_', '-', $field['field_name']) . '-items';
-  //      break;
-  //
-  //    default:
-  //      $wrapper = "{$field['field_name']}_values";
-  //  }
-  //  $form_element['wysiwyg_fields']['wysiwyg_fields_insert'] = array(
-  //    '#type' => 'submit',
-  //    '#value' => t('Insert'),
-  //    '#ahah' => array(
-  //      'path' => "ahah/wysiwyg_fields/insert/{$form_element['#field_name']}/{$form_element['#delta']}",
-  //      'wrapper' => $wrapper,
-  //    ),
-  //    '#name' => "{$form_element['#name']}[wysiwyg_fields_insert]",
-  //    '#id' => "{$form_element['#id']}-wysiwyg-fields-insert",
-  //    '#attributes' => array(
-  //      'class' => 'wysiwyg_fields_insert',
-  //    ),
-  //  );
-  //
-  //  // Multiselect checkbox.
-  //  $form_element['wysiwyg_fields']['wysiwyg_fields_select'] = array(
-  //    '#type' => 'checkbox',
-  //    '#defult_value' => FALSE,
-  //    '#name' => "{$form_element['#name']}[wysiwyg_fields_select]",
-  //    '#id' => "{$form_element['#id']}-wysiwyg-fields-select",
-  //    '#attributes' => array(
-  //      'class' => 'wysiwyg_fields_select',
-  //    ),
-  //  );
-  //
-  //  // Original field delta.
-  //  $form_element['wysiwyg_fields']['wysiwyg_fields_delta'] = array(
-  //    '#type' => 'hidden',
-  //    '#value' => $form_element['#delta']
-  //  );
+    // Formatters.
+    $formatters = array();
+    foreach ($wysiwyg_fields['settings']['formatters'] as $delta) {
+      $formatter = field_info_formatter_types($delta);
+      if (isset($formatter)) {
+        $formatters[$delta] = $formatter['label'];
+      //  //$formatters["{$formatter[module]}_formatter_{$delta}"] = $formatter['label'];
+      }
+    }
+
+    // Multiple formatters - select field.
+    $form_element['wysiwyg_fields']['formatters'] = array(
+      '#type' => 'select',
+      '#options' => $formatters,
+      '#name' => "{$form_element['#name']}[wysiwyg_fields][formatters]",
+      '#id' => "{$form_element['#id']}-wysiwyg-fields-formatters",
+      '#attributes' => array(
+        'class' => array('wysiwyg_fields_formatters'),
+      ),
+    );
+
+    // Insert button.
+    //switch ($field['multiple']) {
+    //  case 0:
+    //    $wrapper = "{$form_element['#id']}-wysiwyg-fields-ahah-wrapper";
+    //    break;
+    //
+    //  case 1:
+    //    $wrapper = str_replace('_', '-', $field['field_name']) . '-items';
+    //    break;
+    //
+    //  default:
+    //    $wrapper = "{$field['field_name']}_values";
+    //}
+    $form_element['wysiwyg_fields']['insert'] = array(
+      '#type' => 'submit',
+      '#value' => t('Insert'),
+      '#ajax' => array(
+        'callback' => 'wysiwyg_fields_ajax_insert',
+      //  'path' => "ahah/wysiwyg_fields/insert/{$form_element['#field_name']}/{$form_element['#delta']}",
+      //  'wrapper' => $wrapper,
+      ),
+      '#name' => "{$form_element['#name']}[wysiwyg_fields][insert]",
+      '#id' => "{$form_element['#id']}-wysiwyg-fields-insert",
+      '#attributes' => array(
+        'class' => array('wysiwyg_fields_insert'),
+      ),
+    );
+
+    //// Multiselect checkbox.
+    //$form_element['wysiwyg_fields']['wysiwyg_fields_select'] = array(
+    //  '#type' => 'checkbox',
+    //  '#defult_value' => FALSE,
+    //  '#name' => "{$form_element['#name']}[wysiwyg_fields_select]",
+    //  '#id' => "{$form_element['#id']}-wysiwyg-fields-select",
+    //  '#attributes' => array(
+    //    'class' => 'wysiwyg_fields_select',
+    //  ),
+    //);
+
+      // Original field delta.
+      $form_element['wysiwyg_fields']['delta'] = array(
+        '#type' => 'hidden',
+        '#value' => $form_element['#delta']
+      );
+      //dpm($form_element);
     }
   }
 
@@ -265,7 +263,8 @@ function wysiwyg_fields_form_alter_after_build($form_element, &$form_state) {
   $flag = FALSE;
   //if (isset($form_element['#field_info'])) {
     foreach (field_info_instances($form_element['#entity_type'], $form_element['#bundle']) as $field) {
-      if (isset($field['settings']['wysiwyg_fields']) && $field['settings']['wysiwyg_fields']['wysiwyg_fields_status']) {
+      $wysiwyg_fields = isset($field['settings']['wysiwyg_fields']) ? $field['settings']['wysiwyg_fields'] : NULL;
+      if (!is_null($wysiwyg_fields) && $wysiwyg_fields['status'] == TRUE) {
         drupal_add_js(drupal_get_path('module', 'wysiwyg_fields') . "/plugins/wysiwyg_fields_{$field['field_name']}/wysiwyg_fields_{$field['field_name']}.js", 'module', 'header', FALSE, TRUE, FALSE);
         $flag = TRUE;
 
@@ -357,125 +356,200 @@ function wysiwyg_fields_ahah() {
 /**
  * @TODO - Weight field becomes visible after AHAH - fix.
  */
-function wysiwyg_fields_ahah_insert() {
-  // Include node definition.
-  module_load_include('inc', 'node', 'node.pages');
-
-  // Load the form.
-  $form_state = array(
-    'rebuild' => TRUE,
-    'storage' => NULL,
-    'submitted' => FALSE
-  );
-  $form_build_id = $_POST['form_build_id'];
-  $form = form_get_cache($form_build_id, $form_state);
-  $args = $form['#parameters'];
-  $form_id = array_shift($args);
-  $form_state['post'] = $form['#post'] = $_POST;
-  $form['#programmed'] = $form['#redirect'] = FALSE;
-
-  // Process the form with drupal_process_form(), which calls the submit
-  // handlers that puts whatever was worthy of keeping in the $form_state.
-  drupal_process_form($form_id, $form, $form_state);
+function wysiwyg_fields_ajax_insert($form, $form_state) {
+  //// Include node definition.
+  //module_load_include('inc', 'node', 'node.pages');
+  //
+  //// Load the form.
+  //$form_state = array(
+  //  'rebuild' => TRUE,
+  //  'storage' => NULL,
+  //  'submitted' => FALSE
+  //);
+  //$form_build_id = $_POST['form_build_id'];
+  //$form = form_get_cache($form_build_id, $form_state);
+  //$args = $form['#parameters'];
+  //$form_id = array_shift($args);
+  //$form_state['post'] = $form['#post'] = $_POST;
+  //$form['#programmed'] = $form['#redirect'] = FALSE;
+  //
+  //// Process the form with drupal_process_form(), which calls the submit
+  //// handlers that puts whatever was worthy of keeping in the $form_state.
+  //drupal_process_form($form_id, $form, $form_state);
 
   // Session messages would get displayed at the next regular request, but
-  // we're in AHAH here, so that won't happen. Make them go away.
+  // we're in AJAX here, so that won't happen. Make them go away.
   unset($_SESSION['messages']);
 
-  unset($form[arg(3)]['#prefix'], $form[arg(3)]['#suffix']);
-  $output = drupal_render($form[arg(3)]);
-  $errors = form_get_errors();
-
-  $items = array();
-  $deltas = array();
-  foreach ($form_state['values'][arg(3)] as $delta => $item) {
-    if (is_array($item) && $item['wysiwyg_fields_select'] == TRUE) {
-      $items[$delta] = $item;
-      $deltas[] = $delta;
-    }
-  }
-  $items = count($items) > 0 ? $items : array($form_state['values'][arg(3)][arg(4)]);
-  $deltas = count($deltas) > 0 ? $deltas : array(arg(4));
-
-  // Check for empty fields.
-  $field = content_fields(arg(3));
-  $is_empty = "{$field['module']}_content_is_empty";
-  $error = FALSE;
-  $message = '';
-  foreach ($items as $item) {
-    if ($is_empty($item, $field) && empty($errors[$item['_error_element']])) {
-      $errors[$item['_error_element']] = t("Can't insert an empty field.");
-    }
-
-    if (isset($errors[$item['_error_element']])) {
-      $error = TRUE;
-      $message .= $errors[$item['_error_element']];
-    }
-  }
-
-  // @TODO - Add multi-field error checking.
-  //$item = $form_state['values'][arg(3)][arg(4)];
-  //if (isset($errors) && (isset($errors[$item['_error_element']]) || isset($errors[arg(3)]))) {
-  //  $error = isset($errors[$item['_error_element']]) ? $errors[$item['_error_element']] : $errors[arg(3)];
-  //  drupal_set_message($error, 'error');
+  //unset($form[arg(3)]['#prefix'], $form[arg(3)]['#suffix']);
+  //$output = drupal_render($form[arg(3)]);
+  //$errors = form_get_errors();
+  //
+  //$items = array();
+  //$deltas = array();
+  //foreach ($form_state['values'][arg(3)] as $delta => $item) {
+  //  if (is_array($item) && $item['wysiwyg_fields_select'] == TRUE) {
+  //    $items[$delta] = $item;
+  //    $deltas[] = $delta;
+  //  }
+  //}
+  //$items = count($items) > 0 ? $items : array($form_state['values'][arg(3)][arg(4)]);
+  //$deltas = count($deltas) > 0 ? $deltas : array(arg(4));
+  //
+  //// Check for empty fields.
+  //$field = content_fields(arg(3));
+  //$is_empty = "{$field['module']}_content_is_empty";
+  //$error = FALSE;
+  //$message = '';
+  //foreach ($items as $item) {
+  //  if ($is_empty($item, $field) && empty($errors[$item['_error_element']])) {
+  //    $errors[$item['_error_element']] = t("Can't insert an empty field.");
+  //  }
+  //
+  //  if (isset($errors[$item['_error_element']])) {
+  //    $error = TRUE;
+  //    $message .= $errors[$item['_error_element']];
+  //  }
+  //}
+  //
+  //// @TODO - Add multi-field error checking.
+  ////$item = $form_state['values'][arg(3)][arg(4)];
+  ////if (isset($errors) && (isset($errors[$item['_error_element']]) || isset($errors[arg(3)]))) {
+  ////  $error = isset($errors[$item['_error_element']]) ? $errors[$item['_error_element']] : $errors[arg(3)];
+  ////  drupal_set_message($error, 'error');
+  ////  $output = theme('status_messages') . $output;
+  ////}
+  //if ($error) {
+  //  drupal_set_message($message, 'error');
   //  $output = theme('status_messages') . $output;
   //}
-  if ($error) {
-    drupal_set_message($message, 'error');
-    $output = theme('status_messages') . $output;
-  }
+  //
+  //else {
+  //  list($formatter_module, $formatter_name) = explode('_formatter_', $items[current(array_keys($items))]['wysiwyg_fields']['wysiwyg_fields_formatters']);
+  //  $formatter = _content_get_formatter($formatter_name, $field['module']);
+  //  $id = 'wysiwyg_fields-' . arg(3) . '-' . implode('_', $deltas) . "-{$items[current(array_keys($items))]['wysiwyg_fields']['wysiwyg_fields_formatters']}";
+  //
+  //  if ($formatter['multiple values'] == CONTENT_HANDLE_CORE) {
+  //    $element = '';
+  //    foreach ($items as $item) {
+  //      $item = _wysiwyg_fields_ahah_get_element($field, $item, array($formatter_module, $formatter_name));
+  //      $element .= theme($item['#theme'], $item);
+  //    }
+  //  }
+  //  else {
+  //    $element = _wysiwyg_fields_ahah_get_element($field, $items, array($formatter_module, $formatter_name));
+  //    $element = theme($element['#theme'], $element);
+  //  }
+  //  dpm($field);
+  //  dpm($deltas);
+  //  dpm($formatter_module);
+  //  dpm($formatter_name);
+  //  dpm($element);
+  //  //$element = drupal_to_js("<wysiwyg_field wf_field='{$field['field_name']}' wf_deltas='" . implode(',', $deltas) . "' wf_formatter='{$formatter_module}_formatter_{$formatter_name}'>{$element}</wysiwyg_field>");
+  //  $element = drupal_to_js("<wysiwyg_field id='{$id}' class='wysiwyg_fields wysiwyg_fields-" . arg(3) . "'>" . $element . "</wrapper_element>");
+  //
+  //  // Get first empty delta.
+  //  $delta = NULL;
+  //  ksort($_POST[arg(3)]);
+  //  foreach ($_POST[arg(3)] as $count => $item) {
+  //    if ($is_empty($item, $field)) {
+  //      $delta = $count;
+  //      break;
+  //    }
+  //  }
+  //  $add_more = is_null($delta);
+  //  $delta = is_null($delta) ? $count + 1 : $delta;
+  //
+  //  // Insert callback.
+  //  dpm(arg(3));
+  //  dpm($element);
+  //  dpm($delta);
+  //  //$output .= "<script type='text/javascript'>Drupal.wysiwygFields.insert('" . arg(3) . "', {$element}, {$delta});</script>";
+  //
+  //  // Trigger 'Add more' button.
+  //  //$add_more = ($field['multiple'] == 1 && $add_more) ? "$('.form-submit[name=\"" . arg(3) . "_add_more\"]').trigger('mousedown');" : '';
+  //
+  //  // @TODO - Turn this into a theme function?
+  //  // @TODO - Clean/Improve up this code.
+  //  //$output .= "
+  //  //  <script type='text/javascript'>
+  //  //    $('#wysiwyg_fields-" . arg(3) . "-wrapper').dialog('close');
+  //  //    Drupal.wysiwygFields.dialogClose('" . arg(3) . "');
+  //  //    content = {$element};
+  //  //    content = content.replace('wrapper_element', Drupal.wysiwygFields.wrapperElement, 'g');
+  //  //    Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].insert(content);
+  //  //    Drupal.settings.wysiwygFields.fields['" . arg(3) . "'].delta = {$delta};
+  //  //    {$add_more}
+  //  //  </script>";
+  //}
 
-  else {
-    list($formatter_module, $formatter_name) = explode('_formatter_', $items[current(array_keys($items))]['wysiwyg_fields']['wysiwyg_fields_formatters']);
-    $formatter = _content_get_formatter($formatter_name, $field['module']);
-    $id = 'wysiwyg_fields-' . arg(3) . '-' . implode('_', $deltas) . "-{$items[current(array_keys($items))]['wysiwyg_fields']['wysiwyg_fields_formatters']}";
+  $commands = array();
 
-    if ($formatter['multiple values'] == CONTENT_HANDLE_CORE) {
-      $element = '';
-      foreach ($items as $item) {
-        $item = _wysiwyg_fields_ahah_get_element($field, $item, array($formatter_module, $formatter_name));
-        $element .= theme($item['#theme'], $item);
+  if (preg_match('/(.*?)\[(.*?)\]\[(\d*?)\]\[wysiwyg_fields\]\[insert\]/', $form_state['clicked_button']['#name'], $matches)) {
+    $deltas = array($matches[3]);
+
+    $entity_type = $form['#entity_type'];
+    $entity = $form["#{$entity_type}"];
+    $field = field_info_field($matches[1]);
+    $instance = field_info_instance($entity_type, $field['field_name'], $form['#bundle']);
+    $langcode = $matches[2];
+    //$langcode = field_language($obj_type, $object, $field['field_name']);
+
+    $items = array();
+    foreach ($deltas as $delta) {
+      // @TODO - Prepare item apropriately (file_load() only applicable to files).
+      $items[$delta] = (array) file_load($form_state['values'][$field['field_name']][$langcode][$delta]['fid']);
+      $formatter_type = $form_state['values'][$field['field_name']][$langcode][$delta]['wysiwyg_fields']['formatters'];
+    }
+
+    // @TODO - Get formatter from input.
+    $formatter = field_info_formatter_types($formatter_type);
+    $function = "{$formatter['module']}_field_formatter_view";
+
+    $display = array(
+      'label' => 'hidden',
+      'type' => $formatter_type,
+      'module' => $formatter['module'],
+      'settings' => $formatter['settings'],
+    );
+
+    if (function_exists($function)) {
+      $elements = $function($entity_type, $entity, $field, $instance, $langcode, $items, $display);
+
+      if ($elements) {
+        $info = array(
+          // @TODO - Make 'wysiwyg_fields_field' theme.
+          '#theme' => 'field',
+          '#weight' => $display['weight'],
+          '#title' => $instance['label'],
+          //'#access' => field_access('view', $field, $entity_type, $entity),
+          '#label_display' => 'hidden',
+          //'#view_mode' => $view_mode,
+          '#language' => $langcode,
+          '#field_name' => $field['field_name'],
+          '#field_type' => $field['type'],
+          '#field_translatable' => $field['translatable'],
+          '#entity_type' => $entity_type,
+          '#bundle' => $form['#bundle'],
+          '#object' => $entity,
+          '#items' => $items,
+          '#formatter' => 'image',
+        );
+
+        $element = drupal_json_encode(render(array_merge($info, $elements)));
+        //$commands[] = ajax_command_html(NULL, "<script type='text/javascript'>Drupal.wysiwygFields.insert('{$field['field_name']}', {$element}, {$delta});</script>");
       }
     }
-    else {
-      $element = _wysiwyg_fields_ahah_get_element($field, $items, array($formatter_module, $formatter_name));
-      $element = theme($element['#theme'], $element);
-    }
-    $element = drupal_to_js("<wrapper_element id='{$id}' class='wysiwyg_fields wysiwyg_fields-" . arg(3) . "'>" . $element . "</wrapper_element>");
 
-    // Get first empty delta.
-    $delta = NULL;
-    ksort($_POST[arg(3)]);
-    foreach ($_POST[arg(3)] as $count => $item) {
-      if ($is_empty($item, $field)) {
-        $delta = $count;
-        break;
-      }
-    }
-    $add_more = is_null($delta);
-    $delta = is_null($delta) ? $count + 1 : $delta;
+    // @TODO - Error handling.
+    //$errors = form_get_errors();
 
-    // Trigger 'Add more' button.
-    $add_more = ($field['multiple'] == 1 && $add_more) ? "$('.form-submit[name=\"" . arg(3) . "_add_more\"]').trigger('mousedown');" : '';
-
-    // @TODO - Turn this into a theme function?
-    // @TODO - Clean/Improve up this code.
-    $output .= "
-      <script type='text/javascript'>
-        $('#wysiwyg_fields-" . arg(3) . "-wrapper').dialog('close');
-        Drupal.wysiwygFields.dialogClose('" . arg(3) . "');
-        content = {$element};
-        content = content.replace('wrapper_element', Drupal.wysiwygFields.wrapperElement, 'g');
-        Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].insert(content);
-        Drupal.settings.wysiwygFields.fields['" . arg(3) . "'].delta = {$delta};
-        {$add_more}
-      </script>";
+    //$commands[] = ajax_command_html(NULL, '<script>alert("tst");</script>');
+    $commands[] = ajax_command_html('#edit-field-image-und-ajax-wrapper', theme('status_messages'));
+    return array('#type' => 'ajax', '#commands' => $commands);
   }
 
-  return array(
-    'status' => TRUE,
-    'data' => $output,
-  );
+  // @TODO - Error
 }
 
 /**
