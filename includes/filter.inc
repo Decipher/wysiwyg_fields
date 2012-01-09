@@ -57,6 +57,11 @@ function _wysiwyg_fields_filter_process($text, $filter, $format, $node = NULL) {
           'type' => $token['wf_formatter'],
           'module' => $formatter['module'],
           'settings' => $formatter['settings'],
+          // @TODO - Move this to includes/custom_formatters.inc and determine
+          // a way to allow contextual links without exposing to anonymous user.
+          'cf_options' => array(
+            '#contextual_links' => FALSE,
+          ),
         );
 
         $element = render($function($entity_type, $entity, $field, $instance, $langcode, $items, $display));

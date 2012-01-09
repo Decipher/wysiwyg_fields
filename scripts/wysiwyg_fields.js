@@ -21,7 +21,10 @@
           autoOpen: false,
           buttons: {
             'Insert': function() {
-              $('#wysiwyg_fields-' + field_name + '-dialog tr:not(.wysiwyg_fields-temporary_hide) .wysiwyg_fields-widget input.form-submit').trigger('mousedown');
+              delta = typeof Drupal.settings.wysiwygFields.fields[field_name].active == 'undefined'
+                ? Drupal.settings.wysiwygFields.fields[field_name].delta - 1
+                : Drupal.settings.wysiwygFields.fields[field_name].active.wf_deltas;
+              $('#wysiwyg_fields-' + field_name + '-dialog .wysiwyg_fields-' + field_name + '-' + delta + ' .wysiwyg_fields-widget input.form-submit').trigger('mousedown');
             },
             // @TODO - Implement remove button here.
             //'Remove' : function() {}
@@ -248,8 +251,11 @@
             // if ($('.' + field_id).attr('id') == '') {
             //   $('.' + field_id).attr('id', field_id);
             // }
-
             $('table[id^="edit-' + field_name_dash + '"], .' + field_id).siblings().addClass('wysiwyg_fields-temporary_hide').hide();
+
+            // @TODO - This is a temporary workaround until I figure out a sane
+            //   way to deal with 'Remove' button clicks.
+            $('table[id^="edit-' + field_name_dash + '"] tr > :last-child').hide();
           }
         // }
 
@@ -330,8 +336,11 @@
       if ($('#wysiwyg_fields-' + field_name + '-dialog .ui-dialog-buttonpane select').length == 0) {
        button = $('#wysiwyg_fields-' + field_name + '-dialog .ui-dialog-buttonpane button');
       //  $('.wysiwyg_fields-' + field_name + '-field:first .wysiwyg_fields-widget select')
-      console.log($('#wysiwyg_fields-' + field_name + '-wrapper tr:not(.wysiwyg_fields-temporary_hide) .wysiwyg_fields-widget select'));
-        $('#wysiwyg_fields-' + field_name + '-wrapper tr:not(.wysiwyg_fields-temporary_hide) .wysiwyg_fields-widget select')
+        delta = typeof Drupal.settings.wysiwygFields.fields[field_name].active == 'undefined'
+          ? Drupal.settings.wysiwygFields.fields[field_name].delta - 1
+          : Drupal.settings.wysiwygFields.fields[field_name].active.wf_deltas;
+
+        $('#wysiwyg_fields-' + field_name + '-wrapper .wysiwyg_fields-' + field_name + '-' + delta + ' .wysiwyg_fields-widget select')
          .css({
            fontSize: button.css('font-size'),
            float: button.parent().css('float'),
@@ -385,11 +394,21 @@
               Drupal.wysiwygFields.dialogClose(field_name);
             //Drupal.wysiwygFields.buttonsAttach(field_name);
               //if (!$('#wysiwyg_fields-' + field_name + '-dialog .wysiwyg_fields-icon-expand .ui-icon').hasClass('ui-icon-minusthick')) {
-                Drupal.settings.wysiwygFields.fields[field_name].active = {
-                  wf_deltas: Drupal.settings.wysiwygFields.fields[field_name].delta
+
+                // Insert
+                if (typeof Drupal.settings.wysiwygFields.fields[field_name].active == 'undefined') {
+                  Drupal.settings.wysiwygFields.fields[field_name].active = {
+                    wf_deltas: Drupal.settings.wysiwygFields.fields[field_name].delta - 1
+                  }
+                  Drupal.wysiwygFields.dialogShow(field_name, 'Update');
+                  delete Drupal.settings.wysiwygFields.fields[field_name].active;
                 }
-                Drupal.wysiwygFields.dialogShow(field_name, 'Update');
-                delete Drupal.settings.wysiwygFields.fields[field_name].active;
+
+                // Update
+                else {
+                  Drupal.wysiwygFields.dialogShow(field_name, 'Update');
+                }
+
                 // Drupal.wysiwygFields.dialogFocus(field_name, )
               //}
               // else {
