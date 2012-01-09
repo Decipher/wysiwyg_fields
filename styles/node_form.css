@@ -29,7 +29,8 @@
 }
 
 .wysiwyg_fields-dialog .ui-dialog-titlebar .ui-dialog-title {
-  margin-left: 16px;
+  /* @TODO - Reimplement this */
+  /*margin-left: 16px;*/
 }
 
 .wysiwyg_fields-dialog .ui-dialog-content {

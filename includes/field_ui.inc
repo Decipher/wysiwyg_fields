@@ -285,29 +285,20 @@ function _field_ui_wysiwyg_fields_form_alter_alter_submit($form, &$form_state) {
 /**
  *
  */
-function _wysiwyg_fields_textfields($node) {
+function _wysiwyg_fields_textfields($entity) {
   $textfields = array();
 
-  // Node body field.
-  $textfields['body'] = array(
-    'value' => &$node->body,
-    'format' => $node->format,
-  );
-
-  // Node teaser field.
-  $textfields['teaser'] = array(
-    'value' => &$node->teaser,
-    'format' => $node->format,
-  );
-
-  // CCK Textarea fields.
-  foreach (content_fields(NULL, $node->type) as $field) {
-    if ($field['widget']['type'] == 'text_textarea' && isset($node->{$field['field_name']})) {
-      foreach ($node->{$field['field_name']} as $delta => $data) {
-        $textfields["{$field['field_name']}-{$delta}"] = array(
-          'value' => &$node->{$field['field_name']}[$delta]['value'],
-          'format' => $node->{$field['field_name']}[$delta]['format'],
-        );
+  // @TODO - Use field_info_instances() for more efficiency.
+  $fields = field_info_fields();
+  foreach ($fields as $name => $field) {
+    if ($field['module'] == 'text' && isset($entity->{$field['field_name']}) && is_array($entity->{$field['field_name']})) {
+      foreach ($entity->{$field['field_name']} as $langcode => $items) {
+        foreach ($items as $delta => $item) {
+         $textfields["{$field['field_name']}-{$langcode}-{$delta}"] = array(
+          'value' => &$entity->{$field['field_name']}[$langcode][$delta]['value'],
+          'format' => $entity->{$field['field_name']}[$langcode][$delta]['format'],
+         );
+        }
       }
     }
   }

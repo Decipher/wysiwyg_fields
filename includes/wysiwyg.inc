@@ -48,6 +48,21 @@ function wysiwyg_wysiwyg_fields_theme_alter(&$items) {
 }
 
 /**
+ * Implements hook_wysiwyg_fields_form_alter_alter() on behalf of wysiwyg.module.
+ */
+//function wysiwyg_wysiwyg_fields_form_alter_alter($form, $form_state, $form_id) {
+//  if ($form_id == 'wysiwyg_profile_form') {
+//    foreach (module_invoke_all('wysiwyg_fields_wysiwyg_plugins', $_SESSION['wysiwyg_fields']) as $name => $settings) {
+//      $form['buttons']['drupal']["wysiwyg_fields_{$name}"] = array(
+//        '#type' => 'checkbox',
+//        '#title' => t('!label (!id)', array('!label' => $settings['label'], '!id' => $name)),
+//        '#default_value' => isset($form['#parameters'][2]->settings['buttons']['drupal']["wysiwyg_fields_{$name}"]),
+//      );
+//    }
+//  }
+//}
+
+/**
  * Implements hook_wysiwyg_include_directory().
  */
 function wysiwyg_fields_wysiwyg_include_directory($type) {
@@ -93,5 +108,16 @@ function wysiwyg_fields_wysiwyg_plugin_callback() {
       header("Content-type: text/javascript");
       print theme('wysiwyg_fields_wysiwyg_plugin_js', array('field' => $field));
       break;
+  }
+}
+
+/**
+ * Implements hook_wysiwyg_editor_settings_alter().
+ *
+ * @See http://drupal.org/node/1010534
+ */
+function wysiwyg_fields_wysiwyg_editor_settings_alter(&$settings, $context) {
+  if ($context['profile']->editor == 'tinymce'/* && $context['profile']->settings['buttons']['drupal']['MY_PLUGIN']*/) {
+    $settings['extended_valid_elements'] = (!empty($settings['extended_valid_elements']) ? $settings['extended_valid_elements'] . ',' : '') . 'wysiwyg_field[*]';
   }
 }

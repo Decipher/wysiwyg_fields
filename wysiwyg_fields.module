@@ -63,63 +63,62 @@ function wysiwyg_fields_theme_registry_alter(&$theme_registry) {
  * Implements hook_wysiwyg_fields_form_alter_alter().
  */
 function wysiwyg_fields_wysiwyg_fields_form_alter_alter(&$form, $form_state, $form_id) {
-  if (isset($form['#entity_type'])) {
-    if (isset($form["#{$form['#entity_type']}"])) {
-      $entity = $form["#{$form['#entity_type']}"];
+  if (isset($form['#entity_type']) && isset($form["#{$form['#entity_type']}"])) {
+    $entity = $form["#{$form['#entity_type']}"];
 
-      // Store Entity type and Bundle in $_SESSION['wysiwyg_fields'] to provide context.
-      $_SESSION['wysiwyg_fields'] = array(
-        '#entity_type' => $form['#entity_type'],
-        '#bundle' => $form['#bundle'],
-      );
+    // Store Entity type and Bundle in $_SESSION['wysiwyg_fields'] to provide context.
+    $_SESSION['wysiwyg_fields'] = array(
+      '#entity_type' => $form['#entity_type'],
+      '#bundle' => $form['#bundle'],
+    );
 
-//      $tokens = array();
-//      $textfields = _wysiwyg_fields_textfields($node);
-//      foreach ($textfields as &$textfield) {
-//        $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
-//      }
-//
-//      $replacements = array();
-//      foreach ($tokens as $token) {
-//        $replacements[$token[0]] = _wysiwyg_fields_filter_process($node, $token[0]);
-//      }
-
-      $fields = array();
-      foreach (field_info_instances($form['#entity_type'], $form['#bundle']) as $field) {
-        $field_info = field_info_field($field['field_name']);
-
-        // Get first empty delta.
-        $count = 0;
-        $delta = NULL;
-        $function = "{$field['widget']['module']}_field_is_empty";
-        if (isset($entity->{$field['field_name']}) && is_array($entity->{$field['field_name']})) {
-          foreach ($entity->{$field['field_name']} as $count => $item) {
-            if ($function($item, $field)) {
-              $delta = $count;
-              break;
-            }
-          }
-        }
-
-        $fields[$field['field_name']] = array(
-          'cardinality' => $field_info['cardinality'],
-          'delta' => !is_null($delta) ? $delta : $count,
-        );
-      }
-
-      // Convert settings to JavaScript for Wysiwyg plugin.
-      drupal_add_js(
-        array(
-          'wysiwygFields' => array(
-            'fields' => $fields,
-            //'replacements' => $replacements
-          )
-        ),
-        'setting'
-      );
-
-      $form['#after_build'][] = 'wysiwyg_fields_form_alter_after_build';
+    $tokens = array();
+    $textfields = _wysiwyg_fields_textfields($entity);
+    foreach ($textfields as &$textfield) {
+      $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
     }
+
+    $replacements = array();
+    foreach ($tokens as $key => $token) {
+      $replacements[$token['wf_field']][$token['wf_deltas']][$token['wf_formatter']] = "<wysiwyg_field wf_field='{$token['wf_field']}' wf_deltas='{$token['wf_deltas']}' wf_formatter='{$token['wf_formatter']}' contenteditable='false'>" . _wysiwyg_fields_filter_process($key, array(), array(), $entity) . '</wysiwyg_field>';
+    }
+
+    $fields = array();
+    foreach (field_info_instances($form['#entity_type'], $form['#bundle']) as $field) {
+      $field_info = field_info_field($field['field_name']);
+
+      // Get first empty delta.
+      // $count = 0;
+      // $delta = NULL;
+      // $function = "{$field['widget']['module']}_field_is_empty";
+      // if (isset($entity->{$field['field_name']}[LANGUAGE_NONE]) && is_array($entity->{$field['field_name']}[LANGUAGE_NONE])) {
+        // dpm(count($entity->{$field['field_name']}[LANGUAGE_NONE]));
+        // foreach ($entity->{$field['field_name']}[LANGUAGE_NONE] as $count => $item) {
+        //   if (!$function($item, $field)) {
+        //     $delta = $count;
+        //   }
+        // }
+      // }
+
+      $fields[$field['field_name']] = array(
+        'cardinality' => $field_info['cardinality'],
+        // 'delta' => !is_null($delta) ? $delta : $count + 1,
+        'delta' => isset($entity->{$field['field_name']}[LANGUAGE_NONE]) ? count($entity->{$field['field_name']}[LANGUAGE_NONE]): 0,
+        'replacements' => isset($replacements[$field['field_name']]) ? $replacements[$field['field_name']] : array(),
+      );
+    }
+
+    // Convert settings to JavaScript for Wysiwyg plugin.
+    drupal_add_js(
+      array(
+        'wysiwygFields' => array(
+          'fields' => $fields,
+        )
+      ),
+      'setting'
+    );
+
+    $form['#after_build'][] = 'wysiwyg_fields_form_alter_after_build';
   }
 }
 
@@ -141,7 +140,7 @@ function wysiwyg_fields_elements_process($form_element) {
       //$form_element['#prefix'] = isset($form_element['#prefix']) ? "{$prefix}{$form_element['#prefix']}" : $prefix;
       //$form_element['#suffix'] = isset($form_element['#suffix']) ? "{$form_element['#suffix']}</div>" : '</div>';
 
-      $form_element['#attributes']['class'][] = "wysiwyg_fields-{$form_element['#field_name']}-{$form_element['#delta']}";
+      $form_element['#attributes']['class'][] = "wysiwyg_fields-{$form_element['#field_name']}-{$form_element['#parents'][2]}";
 
       $form_element['wysiwyg_fields'] = array(
         '#prefix' => '<div class="wysiwyg_fields-widget">',
@@ -498,11 +497,10 @@ function wysiwyg_fields_ajax_insert($form, $form_state) {
     $items = array();
     foreach ($deltas as $delta) {
       // @TODO - Prepare item apropriately (file_load() only applicable to files).
-      $items[$delta] = (array) file_load($form_state['values'][$field['field_name']][$langcode][$delta]['fid']);
+      $items[] = (array) file_load($form_state['values'][$field['field_name']][$langcode][$delta]['fid']);
       $formatter_type = $form_state['values'][$field['field_name']][$langcode][$delta]['wysiwyg_fields']['formatters'];
     }
 
-    // @TODO - Get formatter from input.
     $formatter = field_info_formatter_types($formatter_type);
     $function = "{$formatter['module']}_field_formatter_view";
 
@@ -513,39 +511,22 @@ function wysiwyg_fields_ajax_insert($form, $form_state) {
       'settings' => $formatter['settings'],
     );
 
+    // Set next delta.
+    $delta = max($deltas) + 1;
+
     if (function_exists($function)) {
-      $elements = $function($entity_type, $entity, $field, $instance, $langcode, $items, $display);
+        // Build field output.
+        $element = render($function($entity_type, $entity, $field, $instance, $langcode, $items, $display));
+        $element = drupal_json_encode("<wysiwyg_field wf_field='{$field['field_name']}' wf_deltas='" . implode(',', $deltas) . "' wf_formatter='{$formatter_type}' contenteditable='false'>{$element}</wysiwyg_field>");
 
-      if ($elements) {
-        $info = array(
-          // @TODO - Make 'wysiwyg_fields_field' theme.
-          '#theme' => 'field',
-          '#weight' => $display['weight'],
-          '#title' => $instance['label'],
-          //'#access' => field_access('view', $field, $entity_type, $entity),
-          '#label_display' => 'hidden',
-          //'#view_mode' => $view_mode,
-          '#language' => $langcode,
-          '#field_name' => $field['field_name'],
-          '#field_type' => $field['type'],
-          '#field_translatable' => $field['translatable'],
-          '#entity_type' => $entity_type,
-          '#bundle' => $form['#bundle'],
-          '#object' => $entity,
-          '#items' => $items,
-          '#formatter' => 'image',
-        );
-
-        $element = drupal_json_encode(render(array_merge($info, $elements)));
-        //$commands[] = ajax_command_html(NULL, "<script type='text/javascript'>Drupal.wysiwygFields.insert('{$field['field_name']}', {$element}, {$delta});</script>");
-      }
+        $commands[] = ajax_command_html(NULL, "<script type='text/javascript'>Drupal.wysiwygFields.insert('{$field['field_name']}', {$element}, {$delta});</script>");
+      // }
     }
 
     // @TODO - Error handling.
     //$errors = form_get_errors();
 
-    //$commands[] = ajax_command_html(NULL, '<script>alert("tst");</script>');
-    $commands[] = ajax_command_html('#edit-field-image-und-ajax-wrapper', theme('status_messages'));
+    $commands[] = ajax_command_html(NULL, theme('status_messages'));
     return array('#type' => 'ajax', '#commands' => $commands);
   }
 

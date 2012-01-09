@@ -31,11 +31,11 @@
     /**
      * @see http://drupal.org/node/1060552
      */
-    isNode: function(id) {
-      var node = CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId].getSelection().getSelectedElement();
-      var state = Drupal.wysiwygFields.wysiwygIsNode(id, node ? node.$ : null) ? CKEDITOR.TRISTATE_ON : CKEDITOR.TRISTATE_OFF;
-      CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId].getCommand('wysiwyg_fields_' + id).setState(state);
-    },
+    //isNode: function(id) {
+    //  var node = CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId].getSelection().getSelectedElement();
+    //  var state = Drupal.wysiwygFields.wysiwygIsNode(id, node ? node.$ : null) ? CKEDITOR.TRISTATE_ON : CKEDITOR.TRISTATE_OFF;
+    //  CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId].getCommand('wysiwyg_fields_' + id).setState(state);
+    //},
 
     /**
      * Returns Text node.
@@ -71,9 +71,10 @@
       if (typeof CKEDITOR !== "undefined") {
         $.each(CKEDITOR.instances, function(instance) {
           if (CKEDITOR.instances[instance].mode == 'wysiwyg' && typeof CKEDITOR.instances[instance].document !== "undefined") {
-            $('wysiwyg_field.wysiwyg_fields-placeholder', CKEDITOR.instances[instance].document.$.body).each(function() {
-              $(this).removeClass('wysiwyg_fields-placeholder');
-              replacement = "<wysiwyg_field id='" + $(this).attr('id') + "' class='" + $(this).attr('class') + "'>" + Drupal.settings.wysiwygFields.replacements['[' + $(this).attr('id') + ']'] + "</wysiwyg_field>";
+            // @TODO - Handle items with no replacements.
+            $('.wysiwyg_fields-placeholder', CKEDITOR.instances[instance].document.$.body).each(function() {
+              $(this).removeClass('wysiwyg_fields-placeholder')
+              replacement = Drupal.settings.wysiwygFields.fields[$(this).attr('wf_field')].replacements[$(this).attr('wf_deltas')][$(this).attr('wf_formatter')];
               Drupal.wysiwygFields.wysiwyg.ckeditor.wysiwygIsNode(this);
 
               // This is required to slow down this function so that the insert
@@ -83,8 +84,7 @@
                 now = new Date();
               }
 
-              // @TODO - This breaks WebKit support.
-              Drupal.wysiwyg.instances[instance].insert(replacement);
+              $(this).replaceWith(replacement);
             });
           }
 

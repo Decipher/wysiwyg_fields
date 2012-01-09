@@ -107,6 +107,7 @@ Known issues
 - Formatters that use drupal_add_js() or drupal_add_css() don't don't render correctly in the Wysiwyg, nor in Node view when with filter caching.
 - jQuery 1.6:
   - Overflow is hidden, should scroll or Dialog should grow.
+  - Firefox - Form elements unclickable.
 - Firefox issues:
   - Images and DIVs are resizable.
 - Rubik theme:

@@ -46,8 +46,15 @@ function wysiwyg_fields_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
- * Implements hook_nodeapi().
+ * Implements hook_node_insert().
  */
-//function wysiwyg_fields_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
-//  drupal_alter('wysiwyg_fields_nodeapi', $node, $op, $a3, $a4);
-//}
+function wysiwyg_fields_node_insert($node) {
+  drupal_alter('wysiwyg_fields_node_insert', $node);
+}
+
+/**
+ * Implements hook_node_insert().
+ */
+function wysiwyg_fields_node_update($node) {
+  drupal_alter('wysiwyg_fields_node_update', $node);
+}
