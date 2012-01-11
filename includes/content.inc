@@ -322,14 +322,16 @@ function content_wysiwyg_fields_nodeapi_alter($node, $op, $a3 = NULL, $a4 = NULL
         }
 
         // Re-assign deltas to match CCKs changes.
-        foreach ($info['fields'] as $field_name => $field) {
-          foreach (array_keys($field['deltas']) as $delta) {
-            foreach ($node->{$field_name} as $field_delta => $item) {
-              if ($item['wysiwyg_fields']['wysiwyg_fields_delta'] == $delta && $delta != $field_delta) {
-                foreach ($info['fields'][$field_name]['deltas'][$delta] as &$reference) {
-                  $reference = $field_delta;
+        if (is_array($info['fields'])) {
+          foreach ($info['fields'] as $field_name => $field) {
+            foreach (array_keys($field['deltas']) as $delta) {
+              foreach ($node->{$field_name} as $field_delta => $item) {
+                if ($item['wysiwyg_fields']['wysiwyg_fields_delta'] == $delta && $delta != $field_delta) {
+                  foreach ($info['fields'][$field_name]['deltas'][$delta] as &$reference) {
+                    $reference = $field_delta;
+                  }
+                  break;
                 }
-                break;
               }
             }
           }
@@ -354,23 +356,25 @@ function content_wysiwyg_fields_nodeapi_alter($node, $op, $a3 = NULL, $a4 = NULL
         }
 
         // Set new deltas.
-        foreach (array_keys($info['tokens']) as $token) {
-          $info['tokens'][$token]['wf_deltas'] = array_flip($info['tokens'][$token]['wf_deltas']);
-          foreach (array_keys($info['tokens'][$token]['wf_deltas']) as $delta) {
-            $info['tokens'][$token]['wf_deltas'][$delta] = $delta;
-          }
-          ksort($info['tokens'][$token]['wf_deltas']);
-        }
-
-        // Replace tokens.
-        foreach ($info['tokens'] as $token => $attributes) {
-          foreach ($textfields as &$textfield) {
-            $attributes['wf_deltas'] = is_array($attributes['wf_deltas']) ? implode(',', array_keys($attributes['wf_deltas'])) : $attributes['wf_deltas'];
-            $new_token = array();
-            foreach ($attributes as $key => $value) {
-              $new_token[] = "{$key}=\"{$value}\"";
+        if (is_array($info['tokens'])) {
+          foreach (array_keys($info['tokens']) as $token) {
+            $info['tokens'][$token]['wf_deltas'] = array_flip($info['tokens'][$token]['wf_deltas']);
+            foreach (array_keys($info['tokens'][$token]['wf_deltas']) as $delta) {
+              $info['tokens'][$token]['wf_deltas'][$delta] = $delta;
             }
-            $textfield['value'] = str_replace($token, '[wysiwyg_field ' . implode(' ', $new_token) . ']', $textfield['value']);
+            ksort($info['tokens'][$token]['wf_deltas']);
+          }
+
+          // Replace tokens.
+          foreach ($info['tokens'] as $token => $attributes) {
+            foreach ($textfields as &$textfield) {
+              $attributes['wf_deltas'] = is_array($attributes['wf_deltas']) ? implode(',', array_keys($attributes['wf_deltas'])) : $attributes['wf_deltas'];
+              $new_token = array();
+              foreach ($attributes as $key => $value) {
+                $new_token[] = "{$key}=\"{$value}\"";
+              }
+              $textfield['value'] = str_replace($token, '[wysiwyg_field ' . implode(' ', $new_token) . ']', $textfield['value']);
+            }
           }
         }
       }
@@ -398,7 +402,7 @@ function _wysiwyg_fields_textfields($node) {
 
   // CCK Textarea fields.
   foreach (content_fields(NULL, $node->type) as $field) {
-    if ($field['widget']['type'] == 'text_textarea' && isset($node->{$field['field_name']})) {
+    if (substr($field['widget']['type'], 0, 13) == 'text_textarea' && isset($node->{$field['field_name']})) {
       foreach ($node->{$field['field_name']} as $delta => $data) {
         $textfields["{$field['field_name']}-{$delta}"] = array(
           'value' => &$node->{$field['field_name']}[$delta]['value'],

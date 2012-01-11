@@ -67,7 +67,7 @@ function wysiwyg_fields_wysiwyg_fields_nodeapi_alter($node, $op, $a3 = NULL, $a4
 
       $replacements = array();
       foreach ($tokens as $key => $token) {
-        $replacements[$token['wf_field']][$token['wf_deltas']][$token['wf_formatter']] = "<wysiwyg_field wf_field='{$token['wf_field']}' wf_deltas='{$token['wf_deltas']}' wf_formatter='{$token['wf_formatter']}' >" . _wysiwyg_fields_filter_process($key, $node) . '</wysiwyg_field>';
+        $replacements[$token['wf_field']][$token['wf_deltas']][$token['wf_formatter']] = "<wysiwyg_field wf_field='{$token['wf_field']}' wf_deltas='{$token['wf_deltas']}' wf_formatter='{$token['wf_formatter']}' contenteditable='false'>" . _wysiwyg_fields_filter_process($key, $node) . '</wysiwyg_field>';
       }
 
       $fields = array();
@@ -118,7 +118,7 @@ function wysiwyg_fields_wysiwyg_fields_form_alter_alter($form, $form_state, $for
 }
 
 /**
- *
+ * @TODO
  */
 function wysiwyg_fields_elements_process($form_element) {
   $field = content_fields($form_element['#field_name'], $form_element['#type_name']);
@@ -276,14 +276,17 @@ function wysiwyg_fields_form_alter_after_build($form_element, &$form_state) {
     // Add Style sheets.
     drupal_add_css(drupal_get_path('module', 'wysiwyg_fields') . '/styles/node_form.css');
 
+    // Get jQuery UI library path.
+    $jquery_ui_path = function_exists('libraries_get_path') ? libraries_get_path('jquery.ui') : 'sites/all/libraries/jquery.ui';
+
     // jQuery 1.7 theme.
-    if (file_exists($css = JQUERY_UI_PATH . '/themes/base/ui.all.css')) {
+    if (file_exists($css = "{$jquery_ui_path}/themes/base/ui.all.css")) {
       // @TODO - Change if #388384 ever gets resolved.
       drupal_add_css($css);
     }
 
     // jQuery 1.6 theme.
-    elseif (file_exists($css = JQUERY_UI_PATH . '/themes/default/ui.all.css')) {
+    elseif (file_exists($css = "{$jquery_ui_path}/themes/default/ui.all.css")) {
       drupal_add_css($css);
     }
   }
@@ -442,7 +445,7 @@ function wysiwyg_fields_ahah_insert() {
       $element = _wysiwyg_fields_ahah_get_element($field, $items, array($formatter_module, $formatter_name));
       $element = theme($element['#theme'], $element);
     }
-    $element = drupal_to_js("<wysiwyg_field wf_field='{$field['field_name']}' wf_deltas='" . implode(',', $deltas) . "' wf_formatter='{$formatter_module}_formatter_{$formatter_name}'>{$element}</wysiwyg_field>");
+    $element = drupal_to_js("<wysiwyg_field wf_field='{$field['field_name']}' wf_deltas='" . implode(',', $deltas) . "' wf_formatter='{$formatter_module}_formatter_{$formatter_name}' contenteditable='false'>{$element}</wysiwyg_field>");
 
     // Get first empty delta.
     $delta = NULL;

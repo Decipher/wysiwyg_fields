@@ -1,6 +1,11 @@
 Wysiwyg Fields 6.x-1.x-dev, xxxx-xx-xx (Development release)
 ----------------------------------
 
+- #1393964 by MPetrovic: Fixed issue with warnings when creating node with no Wysiwyg Fields.
+- #1380602 by MPetrovic: Added contenteditable='false' to Wysiwyg Fields custom element.
+- #1380458 by MPetrovic: Fixed issue with TinyMCE removing custom element.
+- #1320820 by kongoji: Improved Better Formats module compatability.
+- #1119324 by MPetrovic, Deciphered: Updated javascript.
 - #1213028: Fixed issue when unnecessarily processing non-Wysiwyg Fields nodes.
 - #1162738 by szantog: Fixed Pass by reference issue.
 - #1131494: Added ability to override Wysiwyg plugin label.
