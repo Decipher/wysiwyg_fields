@@ -15,9 +15,13 @@ function wysiwyg_wysiwyg_fields_init_alter($data) {
   }
 
   // Store Content Type in $_SESSION['wysiwyg_fields'] to provide context.
-  if (isset($_POST) && isset($_POST['form_id']) && strpos($_POST['form_id'], '_node_form') == strlen($_POST['form_id']) - 10) {
-    $_SESSION['wysiwyg_fields'] = str_replace('_node_form', '', $_POST['form_id']);
-  }
+  // @TODO - Determine if this is necessary anymore.
+  // if (isset($_POST) && isset($_POST['form_id']) && strpos($_POST['form_id'], '_node_form') == strlen($_POST['form_id']) - 10) {
+  //   $_SESSION['wysiwyg_fields'] = array(
+  //     '#entity_type' => 'node',
+  //     '#bundle' => str_replace('_node_form', '', $_POST['form_id'])
+  //   );
+  // }
 }
 
 /**
@@ -73,17 +77,13 @@ function wysiwyg_fields_wysiwyg_include_directory($type) {
 }
 
 /**
- * Implements hook_wysiwyg_fields_add_js() on behalf of wysiwyg.module.
+ * Implements hook_wysiwyg_fields_node_form_attached_alter() on behalf of wysiwyg.module.
  */
-function wysiwyg_wysiwyg_fields_add_js($type) {
-  switch ($type) {
-    case 'node_form':
-      foreach (wysiwyg_profile_load_all() as $profile) {
-        if (isset($profile->editor) && file_exists($js = drupal_get_path('module', 'wysiwyg_fields') . "/scripts/wysiwyg.{$profile->editor}.js")) {
-          drupal_add_js($js);
-        }
-      }
-      break;
+function wysiwyg_wysiwyg_fields_node_form_attached_alter(&$attached) {
+  foreach (wysiwyg_profile_load_all() as $profile) {
+    if (isset($profile->editor) && file_exists($js = drupal_get_path('module', 'wysiwyg_fields') . "/scripts/wysiwyg.{$profile->editor}.js")) {
+      $attached['js'][] = $js;
+    }
   }
 }
 

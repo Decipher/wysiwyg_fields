@@ -64,63 +64,113 @@ function wysiwyg_fields_theme_registry_alter(&$theme_registry) {
  */
 function wysiwyg_fields_wysiwyg_fields_form_alter_alter(&$form, $form_state, $form_id) {
   if (isset($form['#entity_type']) && isset($form["#{$form['#entity_type']}"])) {
-    // Build a fake Entity object.
-    $entity = (object) array_merge((array) $form["#{$form['#entity_type']}"], isset($form_state['values']) ? $form_state['values'] : array());
-
-    // Store Entity type and Bundle in $_SESSION['wysiwyg_fields'] to provide context.
-    $_SESSION['wysiwyg_fields'] = array(
-      '#entity_type' => $form['#entity_type'],
-      '#bundle' => $form['#bundle'],
-    );
-
-    $tokens = array();
-    $textfields = _wysiwyg_fields_textfields($entity);
-    foreach ($textfields as &$textfield) {
-      $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
-    }
-
-    $replacements = array();
-    foreach ($tokens as $key => $token) {
-      $replacements[$token['wf_field']][$token['wf_deltas']][$token['wf_formatter']] = "<wysiwyg_field wf_field='{$token['wf_field']}' wf_deltas='{$token['wf_deltas']}' wf_formatter='{$token['wf_formatter']}' contenteditable='false'>" . _wysiwyg_fields_filter_process($key, array(), array(), $entity) . '</wysiwyg_field>';
-    }
+    // Make sure the '#attached' key exists and is prepared correctly.
+    $form['#attached'] = isset($form['#attached']) ? $form['#attached'] : array();
+    $form['#attached']['library'] = isset($form['#attached']['library']) ? $form['#attached']['library'] : array();
+    $form['#attached']['js'] = isset($form['#attached']['js']) ? $form['#attached']['js'] : array();
 
     $fields = array();
     foreach (field_info_instances($form['#entity_type'], $form['#bundle']) as $field) {
-      $field_info = field_info_field($field['field_name']);
+      if (isset($field['settings']['wysiwyg_fields']) && $field['settings']['wysiwyg_fields']['status'] == TRUE) {
+        $field_info = field_info_field($field['field_name']);
 
-      // Get first empty delta.
-      // $count = 0;
-      // $delta = NULL;
-      // $function = "{$field['widget']['module']}_field_is_empty";
-      // if (isset($entity->{$field['field_name']}[LANGUAGE_NONE]) && is_array($entity->{$field['field_name']}[LANGUAGE_NONE])) {
-        // dpm(count($entity->{$field['field_name']}[LANGUAGE_NONE]));
-        // foreach ($entity->{$field['field_name']}[LANGUAGE_NONE] as $count => $item) {
-        //   if (!$function($item, $field)) {
-        //     $delta = $count;
-        //   }
+        // Get first empty delta.
+        // $count = 0;
+        // $delta = NULL;
+        // $function = "{$field['widget']['module']}_field_is_empty";
+        // if (isset($entity->{$field['field_name']}[LANGUAGE_NONE]) && is_array($entity->{$field['field_name']}[LANGUAGE_NONE])) {
+          // dpm(count($entity->{$field['field_name']}[LANGUAGE_NONE]));
+          // foreach ($entity->{$field['field_name']}[LANGUAGE_NONE] as $count => $item) {
+          //   if (!$function($item, $field)) {
+          //     $delta = $count;
+          //   }
+          // }
         // }
-      // }
 
-      $fields[$field['field_name']] = array(
-        'cardinality' => $field_info['cardinality'],
-        // 'delta' => !is_null($delta) ? $delta : $count + 1,
-        'delta' => isset($entity->{$field['field_name']}[LANGUAGE_NONE]) ? count($entity->{$field['field_name']}[LANGUAGE_NONE]): 0,
-        'replacements' => isset($replacements[$field['field_name']]) ? $replacements[$field['field_name']] : array(),
-      );
+        // Store field settings.
+        $fields[$field['field_name']] = array(
+          'cardinality' => $field_info['cardinality'],
+          // 'delta' => !is_null($delta) ? $delta : $count + 1,
+          'delta' => isset($form["#{$form['#entity_type']}"]->{$field['field_name']}[LANGUAGE_NONE]) ? count($form["#{$form['#entity_type']}"]->{$field['field_name']}[LANGUAGE_NONE]): 0,
+        );
+
+        // Add dynamically generated Wysiwyg plugin Javascript.
+        $js = drupal_get_path('module', 'wysiwyg_fields') . "/plugins/wysiwyg_fields_{$field['field_name']}/wysiwyg_fields_{$field['field_name']}.js";
+        $form['#attached']['js'][$js] = array(
+          'cache' => TRUE,
+          'preproces' => FALSE,
+        );
+
+        // Attach field wrapper.
+        $form[$field['field_name']]['#prefix'] =  "<div id='wysiwyg_fields-{$field['field_name']}-wrapper'>" . (isset($form[$field['field_name']]['#prefix']) ? $form[$field['field_name']]['#prefix'] : '');
+        $form[$field['field_name']]['#suffix'] = (isset($form[$field['field_name']]['#suffix']) ? $form[$field['field_name']]['#suffix'] : '') . '</div>';
+      }
     }
 
-    // Convert settings to JavaScript for Wysiwyg plugin.
-    drupal_add_js(
-      array(
-        'wysiwygFields' => array(
-          'fields' => $fields,
-        )
-      ),
-      'setting'
-    );
+    if (!empty($fields)) {
+      // Add jQuery UI Dialog library.
+      $form['#attached']['library'][] = array('system', 'ui.dialog');
 
-    $form['#after_build'][] = 'wysiwyg_fields_form_alter_after_build';
+      // Add Javascript.
+      $form['#attached']['js'][] = drupal_get_path('module', 'wysiwyg_fields') . '/scripts/wysiwyg_fields.js';
+      drupal_alter('wysiwyg_fields_node_form_attached', $form['#attached']);
+
+      // Add Javascript settings.
+      $form['#attached']['js'][] = array(
+        'data' => array(
+          'wysiwygFields' => array(
+            'fields' => $fields,
+          )
+        ),
+        'type' => 'setting',
+      );
+
+      // Add Style sheets.
+      $form['#attached']['css'][] = drupal_get_path('module', 'wysiwyg_fields') . '/styles/node_form.css';
+
+      $form['#after_build'][] = '_wysiwyg_fields_entity_form_after_build';
+    }
   }
+}
+
+function _wysiwyg_fields_entity_form_after_build(&$form, $form_state) {
+  // Build a fake Entity object.
+  $entity_type = $form['#entity_type'];
+  $entity = (object) array_merge((array) $form["#{$entity_type}"], isset($form_state['values']) ? $form_state['values'] : array());
+  $instances = field_info_instances($entity_type, $entity->type);
+  foreach ($instances as $instance) {
+    if (isset($instance['settings']['wysiwyg_fields']) && $instance['settings']['wysiwyg_fields']['status'] == TRUE) {
+      $field = field_info_field($instance['field_name']);
+      if (function_exists($function = "{$field['module']}_field_load"))  {
+        $langcode = field_language($entity_type, $entity, $instance['field_name']);
+        $items = array(field_get_items($entity_type, $entity, $instance['field_name'], $langcode));
+        $function($entity_type, array($entity), $field, array($instance), $langcode, $items, FIELD_LOAD_CURRENT);
+        foreach ($items[0] as $delta => $item) {
+          $entity->{$instance['field_name']}[$langcode][$delta] = $item;
+        }
+      }
+    }
+  }
+
+  // Store Entity type and Bundle in $_SESSION['wysiwyg_fields'] to provide context.
+  $_SESSION['wysiwyg_fields'] = array(
+    '#entity_type' => $form['#entity_type'],
+    '#bundle' => $form['#bundle'],
+  );
+
+  $tokens = array();
+  $textfields = _wysiwyg_fields_textfields($entity);
+  foreach ($textfields as &$textfield) {
+    $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
+  }
+
+  // $replacements = array();
+  foreach ($tokens as $key => $token) {
+    // @TODO - Don't guess the delta.
+    $form['#attached']['js'][2]['data']['wysiwygFields']['fields'][$token['wf_field']]['replacements'][$token['wf_deltas']][$token['wf_formatter']] = "<wysiwyg_field wf_field='{$token['wf_field']}' wf_deltas='{$token['wf_deltas']}' wf_formatter='{$token['wf_formatter']}' contenteditable='false'>" . _wysiwyg_fields_filter_process($key, array(), array(), NULL, NULL, NULL, $entity) . '</wysiwyg_field>';
+  }
+
+  return $form;
 }
 
 /**
@@ -215,7 +265,6 @@ function wysiwyg_fields_elements_process($form_element) {
         '#type' => 'hidden',
         '#value' => $form_element['#delta']
       );
-      //dpm($form_element);
     }
   }
 
@@ -254,44 +303,6 @@ function _wysiwyg_fields_element_validate($item, $key, $formatter) {
   if ($key == 'wysiwyg_fields_formatters') {
     $formatter[0] = $item;
   }
-}
-
-/**
- *
- */
-function wysiwyg_fields_form_alter_after_build($form_element, &$form_state) {
-  $flag = FALSE;
-  //if (isset($form_element['#field_info'])) {
-    foreach (field_info_instances($form_element['#entity_type'], $form_element['#bundle']) as $field) {
-      $wysiwyg_fields = isset($field['settings']['wysiwyg_fields']) ? $field['settings']['wysiwyg_fields'] : NULL;
-      if (!is_null($wysiwyg_fields) && $wysiwyg_fields['status'] == TRUE) {
-        drupal_add_js(drupal_get_path('module', 'wysiwyg_fields') . "/plugins/wysiwyg_fields_{$field['field_name']}/wysiwyg_fields_{$field['field_name']}.js", 'module', 'header', FALSE, TRUE, FALSE);
-        $flag = TRUE;
-
-        if (isset($form_element[$field['field_name']])) {
-          // Modify field element.
-          wysiwyg_field_after_build_wrapper($form_element[$field['field_name']], $field['field_name']);
-        }
-      }
-    }
-  //}
-
-  if ($flag) {
-    // Add javascript.
-    drupal_add_library('system', 'ui.dialog');
-    drupal_add_js(drupal_get_path('module', 'wysiwyg_fields') . '/scripts/wysiwyg_fields.js');
-    module_invoke_all('wysiwyg_fields_add_js', 'node_form');
-
-    // Add Style sheets.
-    drupal_add_css(drupal_get_path('module', 'wysiwyg_fields') . '/styles/node_form.css');
-  }
-
-  return $form_element;
-}
-
-function wysiwyg_field_after_build_wrapper(&$form_element, $field_name) {
-  $form_element['#prefix'] = "<div id='wysiwyg_fields-{$field_name}-wrapper'>" . (isset($form_element['#prefix']) ? $form_element['#prefix'] : '');
-  $form_element['#suffix'] = (isset($form_element['#suffix']) ? $form_element['#suffix'] : '') . '</div>';
 }
 
 /**

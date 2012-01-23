@@ -21,7 +21,7 @@ function wysiwyg_fields_filter_info() {
 /**
  * Wysiwyg Fields filter process callback.
  */
-function _wysiwyg_fields_filter_process($text, $filter, $format, $node = NULL) {
+function _wysiwyg_fields_filter_process($text, $filter, $format, $langcode, $cache, $cache_id, $entity = NULL) {
   if ((isset($_SESSION['wf_filter_recurse']) && $_SESSION['wf_filter_recurse'] < REQUEST_TIME) || !isset($_SESSION['wf_filter_recurse'])) {
     $_SESSION['wf_filter_recurse'] = REQUEST_TIME;
     $fields = array();
@@ -29,7 +29,7 @@ function _wysiwyg_fields_filter_process($text, $filter, $format, $node = NULL) {
     $tokens = _wysiwyg_fields_text_to_tokens($text);
 
     foreach ($tokens as $key => $token) {
-      if (isset($token['wf_field']) && isset($token['wf_deltas']) && isset($token['wf_formatter']) && isset($token['wf_nid'])) {
+      if (isset($token['wf_field']) && isset($token['wf_deltas']) && isset($token['wf_formatter']) && (isset($token['wf_nid']) || !is_null($entity))) {
         // @TODO - Move to Entities instead of Nodes.
         $entity_type = 'node';
         $entity = isset($entity) ? $entity : node_load($token['wf_nid']);

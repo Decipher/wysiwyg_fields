@@ -13,6 +13,7 @@
         this.wysiwyg[Drupal.wysiwyg.instances[Drupal.settings.wysiwygFields.activeId].editor].init(field_name);
       }
 
+      // Make sure that the initialization script is only triggered once.
       if (typeof Drupal.settings.wysiwygFields.fields[field_name].init == "undefined") {
         Drupal.settings.wysiwygFields.fields[field_name].init = true;
 
@@ -22,7 +23,7 @@
           buttons: {
             'Insert': function() {
               delta = typeof Drupal.settings.wysiwygFields.fields[field_name].active == 'undefined'
-                ? Drupal.settings.wysiwygFields.fields[field_name].delta - 1
+                ? Drupal.settings.wysiwygFields.fields[field_name].delta
                 : Drupal.settings.wysiwygFields.fields[field_name].active.wf_deltas;
               $('#wysiwyg_fields-' + field_name + '-dialog .wysiwyg_fields-' + field_name + '-' + delta + ' .wysiwyg_fields-widget input.form-submit').trigger('mousedown');
             },
@@ -50,6 +51,9 @@
 
         // Hide dialog button pane.
         $('#wysiwyg_fields-' + field_name + '-dialog .ui-dialog-buttonpane').hide();
+
+        // Move Dialog inside of Entity form.
+        $('#wysiwyg_fields-' + field_name + '-dialog').appendTo($('#' + Drupal.settings.wysiwygFields.activeId).parents('form').first());
 
         // @TODO - Reimplement this functionality.
         // Setup expand/collapse icon.
@@ -305,7 +309,6 @@
      *
      */
     dialogClose: function(field_name) {
-      $('#wysiwyg_fields-' + field_name + '-dialog').appendTo($('#' + Drupal.settings.wysiwygFields.activeId).parents('form').first());
       // $('#' + Drupal.settings.wysiwygFields.activeId + '-' + field_name).remove();
 
       // if (Drupal.settings.wysiwygFields.fields[field_name].cardinality == -1 || Drupal.settings.wysiwygFields.fields[field_name].cardinality > 0) {
@@ -398,7 +401,7 @@
                 // Insert
                 if (typeof Drupal.settings.wysiwygFields.fields[field_name].active == 'undefined') {
                   Drupal.settings.wysiwygFields.fields[field_name].active = {
-                    wf_deltas: Drupal.settings.wysiwygFields.fields[field_name].delta - 1
+                    wf_deltas: Drupal.settings.wysiwygFields.fields[field_name].delta
                   }
                   Drupal.wysiwygFields.dialogShow(field_name, 'Update');
                   delete Drupal.settings.wysiwygFields.fields[field_name].active;
