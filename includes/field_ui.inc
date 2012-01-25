@@ -294,10 +294,10 @@ function _wysiwyg_fields_textfields($entity) {
     if ($field['module'] == 'text' && isset($entity->{$field['field_name']}) && is_array($entity->{$field['field_name']})) {
       foreach ($entity->{$field['field_name']} as $langcode => $items) {
         foreach ($items as $delta => $item) {
-         $textfields["{$field['field_name']}-{$langcode}-{$delta}"] = array(
-          'value' => &$entity->{$field['field_name']}[$langcode][$delta]['value'],
-          'format' => $entity->{$field['field_name']}[$langcode][$delta]['format'],
-         );
+          $textfields["{$field['field_name']}-{$langcode}-{$delta}"] = array(
+            'value' => &$entity->{$field['field_name']}[$langcode][$delta]['value'],
+            // 'format' => $entity->{$field['field_name']}[$langcode][$delta]['format'],
+          );
         }
       }
     }

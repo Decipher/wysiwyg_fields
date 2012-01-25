@@ -100,7 +100,6 @@ function filter_wysiwyg_fields_node_insert_alter(&$node) {
   $textfields = _wysiwyg_fields_textfields($node);
   foreach ($textfields as &$textfield) {
     $tokens = _wysiwyg_fields_text_to_tokens($textfield['value']);
-    print '<pre>';
     foreach ($tokens as $token => $attributes) {
       $attributes['wf_cache'] = $node->changed;
       if (!isset($attributes['wf_nid'])) {
