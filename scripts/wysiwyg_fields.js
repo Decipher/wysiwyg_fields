@@ -317,9 +317,9 @@
 
       // Undo DOM modificatons.
       $('.wysiwyg_fields-temporary_hide').show().removeClass('wysiwyg_fields-temporary_hide');
-      // $('.wysiwyg_fields-placeholder').each(function() {
-      //   $(this).replaceWith($('#' + $(this).attr('id').substr(0, $(this).attr('id').length - 12)));
-      // });
+      $('.wysiwyg_fields-placeholder').each(function() {
+        $(this).replaceWith($('#' + $(this).attr('id').substr(0, $(this).attr('id').length - 12)));
+      });
 
       // Reset button pane.
       $('#wysiwyg_fields-' + field_name + '-dialog .ui-dialog-buttonpane').hide();
@@ -337,24 +337,24 @@
      */
     buttonsAttach: function(field_name, label) {
       if ($('#wysiwyg_fields-' + field_name + '-dialog .ui-dialog-buttonpane select').length == 0) {
-       button = $('#wysiwyg_fields-' + field_name + '-dialog .ui-dialog-buttonpane button');
-      //  $('.wysiwyg_fields-' + field_name + '-field:first .wysiwyg_fields-widget select')
+        button = $('#wysiwyg_fields-' + field_name + '-dialog .ui-dialog-buttonpane button');
+        // $('.wysiwyg_fields-' + field_name + '-field:first .wysiwyg_fields-widget select')
         delta = typeof Drupal.settings.wysiwygFields.fields[field_name].active == 'undefined'
-          ? Drupal.settings.wysiwygFields.fields[field_name].delta - 1
+          ? Drupal.settings.wysiwygFields.fields[field_name].delta
           : Drupal.settings.wysiwygFields.fields[field_name].active.wf_deltas;
 
         $('#wysiwyg_fields-' + field_name + '-wrapper .wysiwyg_fields-' + field_name + '-' + delta + ' .wysiwyg_fields-widget select')
-         .css({
-           fontSize: button.css('font-size'),
-           float: button.parent().css('float'),
-           lineHeight: button.css('line-height'),
-           marginBottom: button.css('margin-bottom'),
-           marginLeft: button.css('margin-left'),
-           marginRight: button.css('margin-right'),
-           marginTop: button.css('margin-top')
-         })
-         // .before('<div id="' + $('.wysiwyg_fields-' + field_name + '-field:first .wysiwyg_fields-widget select').attr('id') + '-placeholder" class="wysiwyg_fields-placeholder" />')
-         .appendTo('#wysiwyg_fields-' + field_name + '-dialog .ui-dialog-buttonpane');
+          .css({
+            fontSize: button.css('font-size'),
+            float: button.parent().css('float'),
+            lineHeight: button.css('line-height'),
+            marginBottom: button.css('margin-bottom'),
+            marginLeft: button.css('margin-left'),
+            marginRight: button.css('margin-right'),
+            marginTop: button.css('margin-top')
+          })
+          .before('<div id="' + $('#wysiwyg_fields-' + field_name + '-wrapper .wysiwyg_fields-' + field_name + '-' + delta + ' .wysiwyg_fields-widget select').attr('id') + '-placeholder" class="wysiwyg_fields-placeholder" />')
+          .appendTo('#wysiwyg_fields-' + field_name + '-dialog .ui-dialog-buttonpane');
       }
       // if (label !== undefined) {
       //  token = Drupal.settings.wysiwygFields.fields[field_name].active.split('-');

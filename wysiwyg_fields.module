@@ -485,7 +485,8 @@ function wysiwyg_fields_ajax_insert($form, $form_state) {
 
     $items = array();
     foreach ($deltas as $delta) {
-      // @TODO - Prepare item apropriately (file_load() only applicable to files).
+      // @TODO - Prepare item apropriately (file_load() only applicable to
+      // files).
       $items[] = (array) file_load($form_state['values'][$field['field_name']][$langcode][$delta]['fid']);
       $formatter_type = $form_state['values'][$field['field_name']][$langcode][$delta]['wysiwyg_fields']['formatters'];
     }
