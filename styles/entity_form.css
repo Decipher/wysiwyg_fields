@@ -1,0 +1,98 @@
+/**
+ * @file
+ */
+
+.wysiwyg_fields-form > div,
+.wysiwyg_fields-widget {
+  display: none;
+}
+
+.wysiwyg_fields-dialog .ui-dialog-titlebar .wysiwyg_fields-icon-expand {
+  height: 18px;
+  left: 0.3em;
+  margin: -10px 0 0;
+  padding: 1px;
+  position: absolute;
+  top: 50%;
+  width: 19px;
+}
+
+.wysiwyg_fields-dialog .ui-dialog-titlebar .wysiwyg_fields-icon-expand:hover,
+.wysiwyg_fields-dialog .ui-dialog-titlebar .wysiwyg_fields-icon-expand:focus {
+  padding: 0;
+}
+
+.wysiwyg_fields-dialog .ui-dialog-titlebar .wysiwyg_fields-icon-expand span {
+  display: block;
+  margin: 1px;
+}
+
+.wysiwyg_fields-dialog .ui-dialog-titlebar .ui-dialog-title {
+  /* @TODO - Reimplement this */
+  /*margin-left: 16px;*/
+}
+
+.wysiwyg_fields-dialog .ui-dialog-content,
+.wysiwyg_fields-dialog .ui-dialog-buttonpane {
+  height: auto;
+  padding: 1.5em 1.7em;
+  position: static;
+  width: auto;
+}
+
+.wysiwyg_fields-dialog .ui-dialog-content fieldset.form-wrapper {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.wysiwyg_fields-dialog .ui-dialog-content fieldset.form-wrapper > legend {
+  display: none;
+}
+
+.wysiwyg_fields-dialog .ui-dialog-content fieldset.form-wrapper > .fieldset-wrapper {
+  padding: 0;
+}
+
+.wysiwyg_fields-dialog.wysiwyg_fields-dialog-collapsed .ui-dialog-content .tabledrag-toggle-weight-wrapper,
+.wysiwyg_fields-dialog.wysiwyg_fields-dialog-collapsed .ui-dialog-content .sticky-header,
+.wysiwyg_fields-dialog.wysiwyg_fields-dialog-collapsed .ui-dialog-content .field-multiple-table thead,
+.wysiwyg_fields-dialog.wysiwyg_fields-dialog-collapsed .ui-dialog-content .field-add-more-submit,
+.wysiwyg_fields-dialog.wysiwyg_fields-dialog-collapsed .ui-dialog-content table .tabledrag-hide,
+.wysiwyg_fields-dialog.wysiwyg_fields-dialog-collapsed .ui-dialog-content table .field-multiple-drag {
+  display: none;
+}
+
+.wysiwyg_fields-dialog.wysiwyg_fields-dialog-collapsed .ui-dialog-content .field-multiple-table,
+.wysiwyg_fields-dialog.wysiwyg_fields-dialog-collapsed .ui-dialog-content .field-multiple-table tbody tr,
+.wysiwyg_fields-dialog.wysiwyg_fields-dialog-collapsed .ui-dialog-content fieldset.form-wrapper > .fieldset-wrapper table,
+.wysiwyg_fields-dialog.wysiwyg_fields-dialog-collapsed .ui-dialog-content fieldset.form-wrapper > .fieldset-wrapper table tr {
+  background-color: transparent;
+  border: none;
+  margin: 0;
+}
+
+.wysiwyg_fields-dialog.wysiwyg_fields-dialog-collapsed .ui-dialog-content fieldset.form-wrapper > .fieldset-wrapper table tr {
+  border: none;
+}
+
+.wysiwyg_fields-dialog.wysiwyg_fields-dialog-collapsed .ui-dialog-content fieldset.form-wrapper > .fieldset-wrapper table tr td {
+  padding: 0;
+}
+
+/*.wysiwyg_fields-dialog .content-multiple-table td.content-multiple-drag {
+  min-width: 45px;
+  width: 45px;
+}*/
+
+.wysiwyg_fields-dialog .ui-dialog-buttonpane .form-wrapper > .form-type-select:first-child label {
+  display: inline;
+}
+
+
+/* MCEditor icon size fix. */
+.defaultSkin .mce_wysiwyg_fields_icon img.mceIcon {
+  height: 16px;
+  padding: 2px;
+  width: 16px;
+}

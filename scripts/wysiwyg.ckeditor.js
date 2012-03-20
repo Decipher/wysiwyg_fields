@@ -12,7 +12,7 @@
     /**
      *
      */
-    //init: function(id) {
+    init: function(id) {
     //  if (typeof CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId] !== "undefined" && typeof CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId].document !== "undefined") {
     //    $(CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId].document.$).bind('mouseup keyup', function() {
     //      Drupal.wysiwygFields.wysiwyg.ckeditor.isNode(id);
@@ -26,7 +26,13 @@
     //      10
     //    );
     //  }
-    //},
+      // Prevent links being clickable inside Wysiwyg.
+      $.each(CKEDITOR.instances, function() {
+        $(this).delegate('a', 'click', function() {
+          return false;
+        });
+      });
+    },
 
     /**
      * @see http://drupal.org/node/1060552
@@ -73,18 +79,35 @@
           if (CKEDITOR.instances[instance].mode == 'wysiwyg' && typeof CKEDITOR.instances[instance].document !== "undefined") {
             // @TODO - Handle items with no replacements.
             $('.wysiwyg_fields-placeholder', CKEDITOR.instances[instance].document.$.body).each(function() {
-              $(this).removeClass('wysiwyg_fields-placeholder')
-              replacement = Drupal.settings.wysiwygFields.fields[$(this).attr('wf_field')].replacements[$(this).attr('wf_deltas')][$(this).attr('wf_formatter')];
-              Drupal.wysiwygFields.wysiwyg.ckeditor.wysiwygIsNode(this);
+              // @TODO - Figure out a better way to sort the attributes.
+              // @TODO - Move this logic into a more generic location.
+              var keys = new Array();
+              var attributes = {};
+              $.each(this.attributes, function(index, attr) {
+                keys.push(attr.name);
+                attributes[attr.name] = attr.value;
+              });
+              var token_data = {};
+              $.each(keys.sort(), function(index, attr) {
+                token_data[attr] = attributes[attr];
+              });
+              delete token_data['class'];
+              delete token_data['wf_cache'];
+              delete token_data['wf_nid'];
 
-              // This is required to slow down this function so that the insert
-              // doesn't get fired to early. It is hacky and needs fixing.
-              timestamp = now = new Date();
-              while (timestamp.getMilliseconds == now.getMilliseconds()) {
-                now = new Date();
+              if (typeof Drupal.settings.wysiwygFields.fields[$(this).attr('wf_field')].replacements !== "undefined") {
+                replacement = Drupal.settings.wysiwygFields.fields[$(this).attr('wf_field')].replacements[JSON.stringify(token_data)];
+                Drupal.wysiwygFields.wysiwyg.ckeditor.wysiwygIsNode(this);
+
+                // This is required to slow down this function so that the insert
+                // doesn't get fired to early. It is hacky and needs fixing.
+                timestamp = now = new Date();
+                while (timestamp.getMilliseconds == now.getMilliseconds()) {
+                  now = new Date();
+                }
+
+                $(this).replaceWith(replacement);
               }
-
-              $(this).replaceWith(replacement);
             });
           }
 

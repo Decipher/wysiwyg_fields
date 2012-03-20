@@ -285,19 +285,21 @@ function _field_ui_wysiwyg_fields_form_alter_alter_submit($form, &$form_state) {
 /**
  *
  */
-function _wysiwyg_fields_textfields($entity) {
+function _wysiwyg_fields_textfields($entity_type, $entity) {
   $textfields = array();
 
-  // @TODO - Use field_info_instances() for more efficiency.
-  $fields = field_info_fields();
+  $bundle_name = field_extract_bundle($entity_type, $entity);
+  $fields = field_info_fields($entity_type, $bundle_name);
   foreach ($fields as $name => $field) {
     if ($field['module'] == 'text' && isset($entity->{$field['field_name']}) && is_array($entity->{$field['field_name']})) {
       foreach ($entity->{$field['field_name']} as $langcode => $items) {
         foreach ($items as $delta => $item) {
-          $textfields["{$field['field_name']}-{$langcode}-{$delta}"] = array(
-            'value' => &$entity->{$field['field_name']}[$langcode][$delta]['value'],
-            // 'format' => $entity->{$field['field_name']}[$langcode][$delta]['format'],
-          );
+          if (is_numeric($delta)) {
+            $textfields["{$field['field_name']}-{$langcode}-{$delta}"] = array(
+              'value' => &$entity->{$field['field_name']}[$langcode][$delta]['value'],
+              // 'format' => $entity->{$field['field_name']}[$langcode][$delta]['format'],
+            );
+          }
         }
       }
     }
@@ -309,22 +311,22 @@ function _wysiwyg_fields_textfields($entity) {
 /**
  *
  */
-function _content_wysiwyg_fields_get_fields($node) {
-  // Get all tokens from all textfields.
-  $tokens = array();
-  $textfields = _wysiwyg_fields_textfields($node);
-  foreach ($textfields as &$textfield) {
-    $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
-  }
+// function _content_wysiwyg_fields_get_fields($node) {
+//   // Get all tokens from all textfields.
+//   $tokens = array();
+//   $textfields = _wysiwyg_fields_textfields($node);
+//   foreach ($textfields as &$textfield) {
+//     $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
+//   }
 
-  $fields = array();
-  foreach ($tokens as $token) {
-    $fields[$token[1]] = is_array($fields[$token[1]]) ? $fields[$token[1]] : array();
-    $token[2] = explode('_', $token[2]);
-    foreach ($token[2] as $delta) {
-      $fields[$token[1]][$delta] = TRUE;
-    }
-  }
+//   $fields = array();
+//   foreach ($tokens as $token) {
+//     $fields[$token[1]] = is_array($fields[$token[1]]) ? $fields[$token[1]] : array();
+//     $token[2] = explode('_', $token[2]);
+//     foreach ($token[2] as $delta) {
+//       $fields[$token[1]][$delta] = TRUE;
+//     }
+//   }
 
-  return array($fields, $textfields);
-}
+//   return array($fields, $textfields);
+// }

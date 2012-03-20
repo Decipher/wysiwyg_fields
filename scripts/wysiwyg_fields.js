@@ -25,7 +25,7 @@
               delta = typeof Drupal.settings.wysiwygFields.fields[field_name].active == 'undefined'
                 ? Drupal.settings.wysiwygFields.fields[field_name].delta
                 : Drupal.settings.wysiwygFields.fields[field_name].active.wf_deltas;
-              $('#wysiwyg_fields-' + field_name + '-dialog .wysiwyg_fields-' + field_name + '-' + delta + ' .wysiwyg_fields-widget input.form-submit').trigger('mousedown');
+              $('#wysiwyg_fields-' + field_name + '-dialog .wysiwyg_fields-widget-' + field_name + '-' + delta + ' input.form-submit').trigger('mousedown');
             },
             // @TODO - Implement remove button here.
             //'Remove' : function() {}
@@ -57,6 +57,7 @@
 
         // @TODO - Reimplement this functionality.
         // Setup expand/collapse icon.
+        $('#wysiwyg_fields-' + field_name + '-dialog').addClass('wysiwyg_fields-dialog-collapsed');
         // $('#wysiwyg_fields-' + field_name + '-dialog .ui-dialog-titlebar').prepend('<a class="ui-corner-all wysiwyg_fields-icon-expand" href="#" role="button" unselectable="on"><span class="ui-icon ui-icon-plusthick ui-plus-default" unselectable="on">' + Drupal.t('Expand') + '</span></a>');
         // $('#wysiwyg_fields-' + field_name + '-dialog .ui-dialog-titlebar .wysiwyg_fields-icon-expand')
         //   .hover(
@@ -106,10 +107,7 @@
         }
 
         // Store active token in settings.
-        Drupal.settings.wysiwygFields.fields[field_name].active = {
-          'wf_deltas': $(node).attr('wf_deltas'),
-          'wf_formatter': $(node).attr('wf_formatter')
-        }
+        Drupal.settings.wysiwygFields.fields[field_name].active = this.getTokenData(node);
       }
 
       return $(node).parents('wysiwyg_field[wf_field="' + field_name + '"]').length == 1 || $(node).is('wysiwyg_field[wf_field="' + field_name + '"]');
@@ -162,10 +160,19 @@
             var item = elem.match(regex);
             var token = '[wysiwyg_field' + item[1] + ']';
 
+            var regex = new RegExp(/([\w\-]*?)=["\'](.*?)["\']/g);
+            var attributes = item[1].match(regex);
+            attributes.sort();
+            token_data = {};
+            $.each(attributes, function (index, attr) {
+              var regex = new RegExp(/([\w\-]*?)=["\'](.*?)["\']/);
+              attr = attr.match(regex);
+              token_data[attr[1]] = attr[2];
+            });
+
             // Store replacement in Drupal.settings for wysiwygAttach.
             Drupal.settings.wysiwygFields.fields[field_name].replacements = Drupal.settings.wysiwygFields.fields[field_name].replacements || {};
-            Drupal.settings.wysiwygFields.fields[field_name].replacements[$(elem).attr('wf_deltas')] = Drupal.settings.wysiwygFields.fields[field_name].replacements[$(elem).attr('wf_deltas')] || {};
-            Drupal.settings.wysiwygFields.fields[field_name].replacements[$(elem).attr('wf_deltas')][$(elem).attr('wf_formatter')] = '<wysiwyg_field' + item[1] + '>' + item[2] + '</wysiwyg_field>';
+            Drupal.settings.wysiwygFields.fields[field_name].replacements[JSON.stringify(token_data)] = '<wysiwyg_field' + item[1] + '>' + item[2] + '</wysiwyg_field>';
 
             content = content.replace(elem, token);
           });
@@ -190,6 +197,7 @@
         op = 'Default';
       }
 
+      // Open Wysiwyg Field dialog.
       $('#wysiwyg_fields-' + field_name + '-wrapper').dialog('open').focus();
 
       // Invoke appropriate function based on 'op'.
@@ -220,19 +228,26 @@
       }
 
       if (Drupal.settings.wysiwygFields.fields[field_name].cardinality == -1 || Drupal.settings.wysiwygFields.fields[field_name].cardinality > 0) {
-        field_name_dash = field_name.replace('_', '-', 'g');
+        field_name_dash = field_name.replace(/_/g, '-');
+        field_id = 'wysiwyg_fields-' + field_name + '-' + delta;
 
         // $('#' + field_name_dash + '-items, #wysiwyg_fields-' + field_name + '-wrapper table').hide();
         // if ($('#edit-' + field_name_dash + '-' + delta + '-wysiwyg-fields-ahah-wrapper').parents('table#' + field_name + '_values').length == 1) {
-        if ($('table[id^="edit-' + field_name_dash + '"]').length == 1) {
+        if ($('table[id^="edit-' + field_name_dash + '"], table[id^="' + field_name_dash + '-values"]').length == 1) {
           // $('#edit-' + field_name_dash + '-' + delta + '-wysiwyg-fields-ahah-wrapper')
-          //   .before('<div id="edit-' + field_name.replace('_', '-', 'g') + '-' + delta + '-wysiwyg-fields-ahah-wrapper-placeholder" class="wysiwyg_fields-placeholder" />')
+          //   .before('<div id="edit-' + field_name.replace(/_/g, '-') + '-' + delta + '-wysiwyg-fields-ahah-wrapper-placeholder" class="wysiwyg_fields-placeholder" />')
           //   .prependTo('#wysiwyg_fields-' + field_name + '-wrapper');
+
+          // @TODO - Class doesn't always end at the delta, fix this.
           $('.form-item-' + field_name_dash + '-und-' + delta).siblings().addClass('wysiwyg_fields-temporary_hide').hide();
+
+          if ($('.' + field_id).parents('.field-multiple-table').length > 0) {
+            $('.' + field_id).closest('tr').siblings().addClass('wysiwyg_fields-temporary_hide').hide();
+          }
         }
       }
 
-      if ($('.wysiwyg_fields-' + field_name + '-field:first .wysiwyg_fields-widget').length == 1) {
+      if ($('#wysiwyg_fields-' + field_name + '-dialog .wysiwyg_fields-widget-' + field_name + '-' + delta).length == 1) {
         this.buttonsAttach(field_name);
       }
     },
@@ -247,33 +262,39 @@
         // deltas = Drupal.settings.wysiwygFields.fields[field_name].active.wf_deltas.toString().split(',');
 
         // if (deltas.length == 1) {
-          field_name_dash = field_name.replace('_', '-', 'g');
+          field_name_dash = field_name.replace(/_/g, '-');
           field_id = 'wysiwyg_fields-' + field_name + '-' + Drupal.settings.wysiwygFields.fields[field_name].active.wf_deltas;
 
-          if ($('.' + field_id).parents('table[id^="edit-' + field_name_dash + '"]').length == 1) {
+          // if ($('.' + field_id).parents('table[id^="edit-' + field_name_dash + '"]').length == 1) {
+          if ($('table[id^="edit-' + field_name_dash + '"], table[id^="' + field_name_dash + '-values"]').length == 1) {
             // Set ID if not present.
             // if ($('.' + field_id).attr('id') == '') {
             //   $('.' + field_id).attr('id', field_id);
             // }
             $('table[id^="edit-' + field_name_dash + '"], .' + field_id).siblings().addClass('wysiwyg_fields-temporary_hide').hide();
+            $('table[id^="edit-' + field_name_dash + '"] thead, table[id^="edit-' + field_name_dash + '"] .tabledrag-handle').addClass('wysiwyg_fields-temporary_hide').hide();
 
             // @TODO - This is a temporary workaround until I figure out a sane
             //   way to deal with 'Remove' button clicks.
             $('table[id^="edit-' + field_name_dash + '"] tr > :last-child').hide();
+
+            if ($('.' + field_id).parents('.field-multiple-table').length > 0) {
+              $('.' + field_id).closest('tr').siblings().addClass('wysiwyg_fields-temporary_hide').hide();
+            }
           }
         // }
 
         // else {
         //   this.dialogShowAll(field_name);
         //   $.each(deltas, function(delta) {
-        //     $('#edit-' + field_name.replace('_', '-', 'g') + '-' + delta + '-wysiwyg-fields-select').attr('checked', 'checked');
+        //     $('#edit-' + field_name.replace(/_/g, '-') + '-' + delta + '-wysiwyg-fields-select').attr('checked', 'checked');
         //   });
         // }
       }
 
-      //if ($('.wysiwyg_fields-' + field_name + '-field:first .wysiwyg_fields-widget').length == 1) {
+      // if ($('#wysiwyg_fields-' + field_name + '-dialog .wysiwyg_fields-widget-' + field_name + '-' + delta).length == 1) {
         this.buttonsAttach(field_name, Drupal.t('Update'));
-      //}
+      // }
     },
 
     /**
@@ -312,7 +333,7 @@
       // $('#' + Drupal.settings.wysiwygFields.activeId + '-' + field_name).remove();
 
       // if (Drupal.settings.wysiwygFields.fields[field_name].cardinality == -1 || Drupal.settings.wysiwygFields.fields[field_name].cardinality > 0) {
-      //   $('#wysiwyg_fields-' + field_name + '-wrapper table, #' + field_name.replace('_', '-', 'g') + '-items').show();
+      //   $('#wysiwyg_fields-' + field_name + '-wrapper table, #' + field_name.replace(/_/g, '-') + '-items').show();
       // }
 
       // Undo DOM modificatons.
@@ -337,30 +358,21 @@
      */
     buttonsAttach: function(field_name, label) {
       if ($('#wysiwyg_fields-' + field_name + '-dialog .ui-dialog-buttonpane select').length == 0) {
-        button = $('#wysiwyg_fields-' + field_name + '-dialog .ui-dialog-buttonpane button');
-        // $('.wysiwyg_fields-' + field_name + '-field:first .wysiwyg_fields-widget select')
         delta = typeof Drupal.settings.wysiwygFields.fields[field_name].active == 'undefined'
           ? Drupal.settings.wysiwygFields.fields[field_name].delta
           : Drupal.settings.wysiwygFields.fields[field_name].active.wf_deltas;
 
-        $('#wysiwyg_fields-' + field_name + '-wrapper .wysiwyg_fields-' + field_name + '-' + delta + ' .wysiwyg_fields-widget select')
-          .css({
-            fontSize: button.css('font-size'),
-            float: button.parent().css('float'),
-            lineHeight: button.css('line-height'),
-            marginBottom: button.css('margin-bottom'),
-            marginLeft: button.css('margin-left'),
-            marginRight: button.css('margin-right'),
-            marginTop: button.css('margin-top')
-          })
-          .before('<div id="' + $('#wysiwyg_fields-' + field_name + '-wrapper .wysiwyg_fields-' + field_name + '-' + delta + ' .wysiwyg_fields-widget select').attr('id') + '-placeholder" class="wysiwyg_fields-placeholder" />')
+        // Formatter selection and settings widget.
+        $('#wysiwyg_fields-' + field_name + '-dialog .wysiwyg_fields-widget-' + field_name + '-' + delta + ' > .form-wrapper')
+          .before('<div id="' + $('#wysiwyg_fields-' + field_name + '-dialog .wysiwyg_fields-widget-' + field_name + '-' + delta + ' > .form-wrapper').attr('id') + '-placeholder" class="wysiwyg_fields-placeholder" />')
           .appendTo('#wysiwyg_fields-' + field_name + '-dialog .ui-dialog-buttonpane');
       }
-      // if (label !== undefined) {
-      //  token = Drupal.settings.wysiwygFields.fields[field_name].active.split('-');
-      //  $('#wysiwyg_fields-' + field_name + '-dialog select.wysiwyg_fields_formatters').val(token[3]);
-      //  $('#wysiwyg_fields-' + field_name + '-dialog .ui-dialog-buttonpane button').html(label);
-      // }
+      if (typeof Drupal.settings.wysiwygFields.fields[field_name].active !== 'undefined' && typeof Drupal.settings.wysiwygFields.fields[field_name].active.wf_formatter !== 'undefined') {
+        // $('#wysiwyg_fields-' + field_name + '-dialog .ui-dialog-buttonpane .wysiwyg_fields_formatters')
+        //   .val(Drupal.settings.wysiwygFields.fields[field_name].active.wf_formatter)
+        //   .trigger('change');
+        $('#wysiwyg_fields-' + field_name + '-dialog .ui-dialog-buttonpane button').html(label);
+      }
 
       // Show button pane.
       $('#wysiwyg_fields-' + field_name + '-dialog .ui-dialog-buttonpane').show();
@@ -382,7 +394,30 @@
       }
 
       Drupal.settings.wysiwygFields.fields[field_name].delta = delta;
-      $('.form-submit[name="' + field_name + '_add_more"]').trigger('mousedown');
+      if (typeof Drupal.settings.wysiwygFields.fields[field_name].active == 'undefined' || Drupal.settings.wysiwygFields.fields[field_name].active.wf_deltas !== delta - 1) {
+        $('.form-submit[name="' + field_name + '_add_more"]').trigger('mousedown');
+      }
+    },
+
+    /**
+     *
+     */
+    getTokenData: function(token) {
+      var keys = new Array();
+      var attributes = {};
+      $.each(token.attributes, function(index, attr) {
+        keys.push(attr.name);
+        attributes[attr.name] = attr.value;
+      });
+      var token_data = {};
+      $.each(keys.sort(), function(index, attr) {
+        token_data[attr] = attributes[attr];
+      });
+      delete token_data['class'];
+      delete token_data['wf_cache'];
+      delete token_data['wf_nid'];
+
+      return token_data;
     }
   }
 

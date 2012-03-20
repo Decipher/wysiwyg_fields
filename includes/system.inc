@@ -48,13 +48,13 @@ function wysiwyg_fields_form_alter(&$form, &$form_state, $form_id) {
 /**
  * Implements hook_node_insert().
  */
-function wysiwyg_fields_node_insert($node) {
-  drupal_alter('wysiwyg_fields_node_insert', $node);
+function wysiwyg_fields_entity_insert($entity, $type) {
+  drupal_alter('wysiwyg_fields_entity_insert', $entity, $type);
 }
 
 /**
  * Implements hook_node_insert().
  */
-function wysiwyg_fields_node_update($node) {
-  drupal_alter('wysiwyg_fields_node_update', $node);
+function wysiwyg_fields_entity_update($entity, $type) {
+  drupal_alter('wysiwyg_fields_entity_update', $entity, $type);
 }
