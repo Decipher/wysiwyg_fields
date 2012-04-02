@@ -66,7 +66,8 @@
               });
               delete token_data['class'];
               delete token_data['wf_cache'];
-              delete token_data['wf_nid'];
+              delete token_data['wf_entity_id'];
+              delete token_data['wf_entity_type'];
 
               replacement = Drupal.settings.wysiwygFields.fields[$(this).attr('wf_field')].replacements[JSON.stringify(token_data)];
               Drupal.wysiwygFields.wysiwyg.tinymce.wysiwygIsNode(this);

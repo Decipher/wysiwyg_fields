@@ -11,7 +11,7 @@
  * Flush the field cache of all fields referencing this node.
  */
 function node_reference_wysiwyg_fields_entity_update_alter($entity, $type) {
-  if ($type = 'node') {
+  if ($type == 'node') {
     $node = $entity;
     foreach (field_info_fields() as $field) {
       if ($field['type'] == 'node_reference' && isset($field['settings']['referenceable_types'][$node->type])) {

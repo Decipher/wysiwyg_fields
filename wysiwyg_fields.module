@@ -170,7 +170,7 @@ function _wysiwyg_fields_entity_form_after_build(&$form, $form_state) {
   }
 
   foreach ($tokens as $token => $token_data) {
-    unset($token_data['wf_nid'], $token_data['wf_cache']);
+    unset($token_data['wf_entity_id'], $token_data['wf_entity_type'], $token_data['wf_cache']);
     ksort($token_data);
     $wrapper_data = _formatter_setting_wrapper_data_array_to_string($token_data);
 
@@ -254,7 +254,9 @@ function wysiwyg_fields_elements_process($form_element) {
           $instance['display']['default']['type'] = drupal_array_get_nested_value($_POST, $parents);
         }
       }
-      $formatter_type = !empty($_POST) && isset($_POST[$form_element['#field_name']][$form_element['#language']][$form_element['#parents'][2]]['wysiwyg_fields']) ? $_POST[$form_element['#field_name']][$form_element['#language']][$form_element['#parents'][2]]['wysiwyg_fields']['formatter']['type'] : key($form_element['wysiwyg_fields']['formatter']['type']['#options']);
+      $formatter_type = !empty($_POST) && isset($_POST[$form_element['#field_name']][$form_element['#language']][$form_element['#parents'][2]]['wysiwyg_fields'])
+        ? $_POST[$form_element['#field_name']][$form_element['#language']][$form_element['#parents'][2]]['wysiwyg_fields']['formatter']['type']
+        : key($form_element['wysiwyg_fields']['formatter']['type']['#options']);
       $formatter = !is_null($formatter_type) ? field_info_formatter_types($formatter_type) : field_info_formatter_types($field_info['default_formatter']);
       $instance['display']['default']['settings'] = isset($formatter['settings']) ? $formatter['settings'] : array();
       $formatter_settings = _wysiwyg_fields_formatter_settings($formatter, $field, $instance);

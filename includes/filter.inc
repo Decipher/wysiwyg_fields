@@ -22,17 +22,24 @@ function wysiwyg_fields_filter_info() {
  * Wysiwyg Fields filter process callback.
  */
 function _wysiwyg_fields_filter_process($text, $filter, $format, $langcode, $cache, $cache_id, $entity = NULL) {
-  if ((isset($_SESSION['wf_filter_recurse']) && $_SESSION['wf_filter_recurse'] < REQUEST_TIME) || !isset($_SESSION['wf_filter_recurse'])) {
-    $_SESSION['wf_filter_recurse'] = REQUEST_TIME;
+  $filter_recurse = &drupal_static(__FUNCTION__, NULL);
+  if ((isset($filter_recurse) && $filter_recurse < REQUEST_TIME) || !isset($filter_recurse)) {
+    $filter_recurse = REQUEST_TIME;
     $fields = array();
     $instances = array();
     $tokens = _wysiwyg_fields_text_to_tokens($text);
 
     foreach ($tokens as $token => $token_data) {
-      if (isset($token_data['wf_field']) && isset($token_data['wf_deltas']) && isset($token_data['wf_formatter']) && (isset($token_data['wf_nid']) || !is_null($entity))) {
-        // @TODO - Move to Entities instead of Nodes.
-        $entity_type = 'node';
-        $entity = isset($entity) ? $entity : node_load($token_data['wf_nid']);
+      // @TODO - wf_nid is deprecated and will be removed in the future.
+      if (isset($token_data['wf_nid'])) {
+        watchdog('Wysiwyg Fields', 'Node !nid is using a deprecated Wysiwyg Fields token format, it needs to be updated or it will break in a future release.', array('!nid' => $token_data['wf_nid']));
+        $token_data['wf_entity_id'] = $token_data['wf_nid'];
+        $token_data['wf_entity_type'] = 'node';
+      }
+
+      if (isset($token_data['wf_field']) && isset($token_data['wf_deltas']) && isset($token_data['wf_formatter']) && (isset($token_data['wf_entity_id']) || !is_null($entity))) {
+        $entity_type = isset($token_data['wf_entity_type']) ? $token_data['wf_entity_type'] : $entity->type;
+        $entity = isset($entity) ? $entity : array_pop(entity_load($entity_type, array($token_data['wf_entity_id'])));
         $fields[$token_data['wf_field']] = isset($fields[$token_data['wf_field']]) ? $fields[$token_data['wf_field']] : field_info_field($token_data['wf_field']);
         $field = $fields[$token_data['wf_field']];
         $instances[$token_data['wf_field']] = isset($instances[$token_data['wf_field']]) ? $instances[$token_data['wf_field']] : field_info_instance($entity_type, $token_data['wf_field'], $entity->type);
@@ -93,7 +100,7 @@ function _wysiwyg_fields_filter_process($text, $filter, $format, $langcode, $cac
         $text = str_replace($token, $element, $text);
       }
     }
-    unset($_SESSION['wf_filter_recurse']);
+    drupal_static_reset(__FUNCTION__);
   }
 
   return $text;

@@ -288,7 +288,7 @@ function _field_ui_wysiwyg_fields_form_alter_alter_submit($form, &$form_state) {
 function _wysiwyg_fields_textfields($entity_type, $entity) {
   $textfields = array();
 
-  $bundle_name = field_extract_bundle($entity_type, $entity);
+  list($id, $vid, $bundle_name) = entity_extract_ids($entity_type, $entity);
   $fields = field_info_fields($entity_type, $bundle_name);
   foreach ($fields as $name => $field) {
     if ($field['module'] == 'text' && isset($entity->{$field['field_name']}) && is_array($entity->{$field['field_name']})) {
