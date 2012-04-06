@@ -96,7 +96,8 @@ function _wysiwyg_fields_filter_process($text, $filter, $format, $langcode, $cac
         }
 
         $function = "{$formatter['module']}_field_formatter_view";
-        $element = render($function($entity_type, $entity, $field, $instance, $langcode, $items, $display));
+        $output = $function($entity_type, $entity, $field, $instance, $langcode, $items, $display);
+        $element = render($output);
         $text = str_replace($token, $element, $text);
       }
     }
@@ -135,8 +136,11 @@ function filter_wysiwyg_fields_entity_insert_alter($entity, $type) {
     $tokens = _wysiwyg_fields_text_to_tokens($textfield['value']);
     foreach ($tokens as $token => $attributes) {
       $attributes['wf_cache'] = $entity->changed;
-      if (!isset($attributes['wf_nid'])) {
-        $attributes['wf_nid'] = $entity->nid;
+      if (!isset($attributes['wf_entity_id'])) {
+        $info = entity_get_info($type);
+        $attributes['wf_entity_id'] = $entity->{$info['entity keys']['id']};
+        $attributes['wf_entity_type'] = $type;
+
         $new_token = array();
         foreach ($attributes as $key => $value) {
           $new_token[] = "{$key}=\"{$value}\"";

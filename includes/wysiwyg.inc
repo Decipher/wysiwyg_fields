@@ -5,9 +5,9 @@
  */
 
 /**
- * Implements hook_wysiwyg_fields_init_alter() on behalf of wysiwyg.module.
+ * Implements hook_wysiwyg_fields_init() on behalf of wysiwyg.module.
  */
-function wysiwyg_wysiwyg_fields_init_alter($data) {
+function wysiwyg_wysiwyg_fields_init() {
   // Rebuild menu after module is enabled.
   if (variable_get('wysiwyg_fields_enable', FALSE)) {
     variable_del('wysiwyg_fields_enable');
