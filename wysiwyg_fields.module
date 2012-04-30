@@ -174,7 +174,8 @@ function _wysiwyg_fields_entity_form_after_build(&$form, $form_state) {
     ksort($token_data);
     $wrapper_data = _formatter_setting_wrapper_data_array_to_string($token_data);
 
-    $form['#attached']['js'][$js_delta]['data']['wysiwygFields']['fields'][$token_data['wf_field']]['replacements'][drupal_json_encode($token_data)] = "<wysiwyg_field {$wrapper_data}>" . _wysiwyg_fields_filter_process($token, array(), array(), NULL, NULL, NULL, $entity) . '</wysiwyg_field>';
+    $json_id = str_replace(' ', '', drupal_json_encode($token_data));
+    $form['#attached']['js'][$js_delta]['data']['wysiwygFields']['fields'][$token_data['wf_field']]['replacements'][$json_id] = "<wysiwyg_field {$wrapper_data}>" . _wysiwyg_fields_filter_process($token, array(), array(), NULL, NULL, NULL, $entity) . '</wysiwyg_field>';
   }
 
   return $form;

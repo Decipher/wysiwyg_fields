@@ -50,3 +50,23 @@ function wysiwyg_fields_enable() {
       ->execute();
   }
 }
+
+/**
+ * Implements hook_requirements().
+ */
+function wysiwyg_fields_requirements($phase) {
+  $requirements = array();
+  // Ensure translations don't break at install time
+  $t = get_t();
+
+  if (!variable_get('clean_url', TRUE)) {
+    $requirements['clean_urls'] = array(
+      'title' => t('Clean URLs'),
+      'severity' => REQUIREMENT_ERROR,
+      'value' => $t('Disabled'),
+      'description' => $t('Clean URLs is required for Wysiwyg Fields to function.'),
+    );
+  }
+
+  return $requirements;
+}
