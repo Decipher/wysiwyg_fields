@@ -22,16 +22,14 @@ function field_ui_wysiwyg_fields_wysiwyg_plugins($info) {
 }
 
 /**
- * Implements hook_wysiwyg_fields_theme_alter() on behalf of content.module.
+ * Implements hook_wysiwyg_fields_theme_alter() on behalf of field_ui.module.
  */
-//function content_wysiwyg_fields_theme_alter($items) {
-//  $items['wysiwyg_fields_widget_settings_alter'] = array(
-//    'arguments' => array(
-//      'element' => array(),
-//    ),
-//    'file' => 'modules/content.inc',
-//  );
-//}
+function field_ui_wysiwyg_fields_theme_alter(&$items) {
+ $items['wysiwyg_fields_widget_settings_alter'] = array(
+   'render element' => 'element',
+   'file' => 'includes/field_ui.inc',
+ );
+}
 
 /**
  * Implements hook_wysiwyg_fields_form_alter_alter() on behalf of field.module.
@@ -61,7 +59,7 @@ function field_ui_wysiwyg_fields_form_alter_alter(&$form, $form_state, $form_id)
         '#weight' => 21,
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
-        //'#theme' => 'wysiwyg_fields_widget_settings_alter',
+        '#theme' => 'wysiwyg_fields_widget_settings_alter',
         '#states' => array(
           'invisible' => array(
             'input[name="instance[settings][wysiwyg_fields][status]"]' => array('checked' => FALSE),
@@ -180,12 +178,14 @@ function _wysiwyg_fields_widget_settings_alter_formatters_validate($element, &$f
 /**
  * @TODO
  */
-function theme_wysiwyg_fields_widget_settings_alter($element) {
-  unset($element['wysiwyg_fields_upload']['#title']);
-  $element['wysiwyg_fields_icon'] = array('#value' => drupal_render($element['wysiwyg_fields_icon']));
-  $element['wysiwyg_fields_icon']['#value'] = str_replace(t('Upload'), drupal_render($element['wysiwyg_fields_upload']), $element['wysiwyg_fields_icon']['#value']);
+function theme_wysiwyg_fields_widget_settings_alter($variables) {
+  $element = $variables['element'];
 
-  return drupal_render($element);
+  unset($element['upload']['#title']);
+  $element['icon'] = array('#markup' => drupal_render($element['icon']));
+  $element['icon']['#markup'] = str_replace(t('Upload'), drupal_render($element['upload']), $element['icon']['#markup']);
+
+  return drupal_render_children($element);
 }
 
 /**

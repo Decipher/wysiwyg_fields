@@ -185,7 +185,7 @@ function _wysiwyg_fields_entity_form_after_build(&$form, $form_state) {
  * @TODO - Documentation.
  */
 function wysiwyg_fields_elements_process($form_element) {
-  if (isset($form_element['#field_name']) && isset($form_element['#entity_type'])) {
+  if (isset($form_element['#field_name']) && isset($form_element['#entity_type']) && !isset($form_element['#form_id'])) {
     $field = field_info_field($form_element['#field_name']);
     $field_info = field_info_field_types($field['type']);
     $instance = field_info_instance($form_element['#entity_type'], $form_element['#field_name'], $form_element['#bundle']);
@@ -575,7 +575,7 @@ function theme_wysiwyg_fields_element($variables) {
   unset($element['#old_theme']);
 
   $output = theme($element['#theme'], $variables);
-  if (!strstr($output, str_replace('_', '-', "edit-{$element['#field_name']}-{$element['#language']}-{$element['#parents'][2]}") . '-wysiwyg-fields')) {
+  if (!isset($element['#form_id']) && !strstr($output, str_replace('_', '-', "edit-{$element['#field_name']}-{$element['#language']}-{$element['#parents'][2]}") . '-wysiwyg-fields')) {
     $output .= render($element['wysiwyg_fields']);
   }
   return $output;
