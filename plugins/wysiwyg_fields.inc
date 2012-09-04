@@ -21,7 +21,8 @@ function wysiwyg_fields_wysiwyg_fields_plugin() {
     /**
      * Invoke hook_wysiwyg_fields_wysiwyg_plugins().
      */
-    foreach (module_invoke_all('wysiwyg_fields_wysiwyg_plugins', $_SESSION['wysiwyg_fields']) as $name => $settings) {
+    $wysiwyg_plugins = module_invoke_all('wysiwyg_fields_wysiwyg_plugins', $_SESSION['wysiwyg_fields']);
+    foreach ($wysiwyg_plugins as $name => $settings) {
       // Define Wysiwyg plugin.
       // @TODO - Wysiwyg plugins aren't being ordered by weight, fix.
       $plugins["wysiwyg_fields_{$name}"] = array(
@@ -29,6 +30,8 @@ function wysiwyg_fields_wysiwyg_fields_plugin() {
         'vendor url' => 'http://drupal.org/project/wysiwyg_fields',
         'icon file' => $settings['icon'],
         'icon title' => $settings['label'],
+        'js path' => drupal_get_path('module', 'wysiwyg_fields') . '/scripts',
+        'js file' => 'wysiwyg.js',
         'css path' => drupal_get_path('module', 'wysiwyg_fields') . '/plugins',
         'css file' => 'wysiwyg_fields.css',
         'settings' => array(),
@@ -58,6 +61,11 @@ function wysiwyg_fields_wysiwyg_fields_plugin() {
     //  }
     //  variable_set('javascript_parsed', $parsed);
     }
+
+    // Make Wysiwyg plugin field names available via javascript as the Wysiwyg
+    // plugin javascript is invoked before Drupal.settings are available.
+    drupal_add_js('var wysiwygFields = ' . drupal_json_encode(array_keys($wysiwyg_plugins)), 'inline');
+
     unset($_SESSION['wysiwyg_fields']);
   }
 

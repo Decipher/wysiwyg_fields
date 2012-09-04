@@ -216,7 +216,7 @@
     },
 
     /**
-     *
+     * Show the 'default' dialog window.
      */
     dialogShowDefault: function(field_name) {
       this.dialogClose(field_name);
@@ -253,17 +253,20 @@
     },
 
     /**
-     *
+     * Show the 'update' dialog window.
      */
     dialogShowUpdate: function(field_name) {
       this.dialogClose(field_name);
+      active = Drupal.settings.wysiwygFields.fields[field_name].active;
 
+      // Modify the dialog DOM structure when the field allows for more than one
+      // value.
       if (Drupal.settings.wysiwygFields.fields[field_name].cardinality == -1 || Drupal.settings.wysiwygFields.fields[field_name].cardinality > 0) {
         // deltas = Drupal.settings.wysiwygFields.fields[field_name].active.wf_deltas.toString().split(',');
 
         // if (deltas.length == 1) {
           field_name_dash = field_name.replace(/_/g, '-');
-          field_id = 'wysiwyg_fields-' + field_name + '-' + Drupal.settings.wysiwygFields.fields[field_name].active.wf_deltas;
+          field_id = 'wysiwyg_fields-' + field_name + '-' + active.wf_deltas;
 
           // if ($('.' + field_id).parents('table[id^="edit-' + field_name_dash + '"]').length == 1) {
           if ($('table[id^="edit-' + field_name_dash + '"], table[id^="' + field_name_dash + '-values"]').length == 1) {
@@ -271,8 +274,13 @@
             // if ($('.' + field_id).attr('id') == '') {
             //   $('.' + field_id).attr('id', field_id);
             // }
-            $('table[id^="edit-' + field_name_dash + '"], .' + field_id).siblings().addClass('wysiwyg_fields-temporary_hide').hide();
-            $('table[id^="edit-' + field_name_dash + '"] thead, table[id^="edit-' + field_name_dash + '"] .tabledrag-handle').addClass('wysiwyg_fields-temporary_hide').hide();
+            $('table[id^="edit-' + field_name_dash + '"], .' + field_id)
+              .siblings()
+              .addClass('wysiwyg_fields-temporary_hide')
+              .hide();
+            $('table[id^="edit-' + field_name_dash + '"] thead, table[id^="edit-' + field_name_dash + '"] .tabledrag-handle')
+              .addClass('wysiwyg_fields-temporary_hide')
+              .hide();
 
             // @TODO - This is a temporary workaround until I figure out a sane
             //   way to deal with 'Remove' button clicks.
@@ -290,6 +298,13 @@
         //     $('#edit-' + field_name.replace(/_/g, '-') + '-' + delta + '-wysiwyg-fields-select').attr('checked', 'checked');
         //   });
         // }
+      }
+
+      // Set formatter based on previous choice.
+      if (typeof active.wf_formatter !== 'undefined') {
+        dialog = '#wysiwyg_fields-' + field_name + '-dialog';
+        $(dialog + ' .wysiwyg_fields_formatters').val(active.wf_formatter);
+        $(dialog + ' .wysiwyg_fields_formatters').trigger('change');
       }
 
       // if ($('#wysiwyg_fields-' + field_name + '-dialog .wysiwyg_fields-widget-' + field_name + '-' + delta).length == 1) {
@@ -445,6 +460,16 @@
                 // Update
                 else {
                   Drupal.wysiwygFields.dialogShow(field_name, 'Update');
+
+                  // Set formatter settings based on previous choice.
+                  if (context.is('div[id$="formatter-settings-wrapper"]')) {
+                    $.each(Drupal.settings.wysiwygFields.fields[field_name].active, function(key, value) {
+                      key = key.split('-');
+                      if (key[0] == 'wf_settings') {
+                        $(dialog + ' .ui-dialog-buttonpane [name$="[' + key[1] + ']"]').val(value);
+                      }
+                    });
+                  }
                 }
 
                 // Drupal.wysiwygFields.dialogFocus(field_name, )
@@ -453,6 +478,19 @@
               //Drupal.wysiwygFields.dialogClose(field_name);
             //  Drupal.wysiwygFields.dialogShow(field_name, 'All');
             //}
+          }
+        });
+      }
+    },
+
+    detach: function(context) {
+      if (context.is('form')) {
+        $.each(Drupal.settings.wysiwygFields.fields, function(field_name) {
+          dialog = '#wysiwyg_fields-' + field_name + '-dialog';
+          if ($(dialog).css('display') == 'block') {
+            // Remove active field(s) formatter so that it doesn't override
+            // users choice.
+            delete Drupal.settings.wysiwygFields.fields[field_name].active.wf_formatter;
           }
         });
       }

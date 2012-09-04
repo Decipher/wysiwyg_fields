@@ -36,7 +36,7 @@ Features
 --------------------------------------------------------------------------------
 
 * Support for Wysiwyg module libraries:
-  * CKEditor/FCKEditor.
+  * CKEditor.
   * TinyMCE.
 * Supports for most CCK fields, including but not limited to:
   * CCK modules - Text, Number, Node reference and User reference.

@@ -84,15 +84,8 @@ function wysiwyg_fields_wysiwyg_fields_form_alter_alter(&$form, $form_state, $fo
           'delta' => isset($form["#{$form['#entity_type']}"]->{$field['field_name']}[LANGUAGE_NONE]) ? count($form["#{$form['#entity_type']}"]->{$field['field_name']}[LANGUAGE_NONE]): 0,
         );
 
-        // Add dynamically generated Wysiwyg plugin Javascript.
-        $js = drupal_get_path('module', 'wysiwyg_fields') . "/plugins/wysiwyg_fields_{$field['field_name']}/wysiwyg_fields_{$field['field_name']}.js";
-        $form['#attached']['js'][$js] = array(
-          'cache' => FALSE,
-          'preproces' => FALSE,
-        );
-
         // Attach field wrapper.
-        $form[$field['field_name']]['#prefix'] =  "<div id='wysiwyg_fields-{$field['field_name']}-wrapper'>" . (isset($form[$field['field_name']]['#prefix']) ? $form[$field['field_name']]['#prefix'] : '');
+        $form[$field['field_name']]['#prefix'] = "<div id='wysiwyg_fields-{$field['field_name']}-wrapper'>" . (isset($form[$field['field_name']]['#prefix']) ? $form[$field['field_name']]['#prefix'] : '');
         $form[$field['field_name']]['#suffix'] = (isset($form[$field['field_name']]['#suffix']) ? $form[$field['field_name']]['#suffix'] : '') . '</div>';
       }
     }

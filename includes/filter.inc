@@ -39,7 +39,10 @@ function _wysiwyg_fields_filter_process($text, $filter, $format, $langcode, $cac
 
       if (isset($token_data['wf_field']) && isset($token_data['wf_deltas']) && isset($token_data['wf_formatter']) && (isset($token_data['wf_entity_id']) || !is_null($entity))) {
         $entity_type = isset($token_data['wf_entity_type']) ? $token_data['wf_entity_type'] : $entity->type;
-        $entity = isset($entity) ? $entity : array_pop(entity_load($entity_type, array($token_data['wf_entity_id'])));
+        if (!isset($entity)) {
+          $entity = entity_load($entity_type, array($token_data['wf_entity_id']));
+          $entity = array_pop($entity);
+        }
         $fields[$token_data['wf_field']] = isset($fields[$token_data['wf_field']]) ? $fields[$token_data['wf_field']] : field_info_field($token_data['wf_field']);
         $field = $fields[$token_data['wf_field']];
         $instances[$token_data['wf_field']] = isset($instances[$token_data['wf_field']]) ? $instances[$token_data['wf_field']] : field_info_instance($entity_type, $token_data['wf_field'], $entity->type);

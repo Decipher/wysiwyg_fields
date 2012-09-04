@@ -106,6 +106,7 @@ function field_ui_wysiwyg_fields_form_alter_alter(&$form, $form_state, $form_id)
         '#element_validate' => array('_wysiwyg_fields_widget_settings_alter_formatters_validate'),
       );
 
+      // Advanced settings.
       $form['instance']['settings']['wysiwyg_fields']['settings']['advanced'] = array(
         '#title' => t('Advanced settings'),
         '#type' => 'fieldset',
@@ -113,12 +114,14 @@ function field_ui_wysiwyg_fields_form_alter_alter(&$form, $form_state, $form_id)
         '#collapsed' => 'TRUE',
       );
 
+      // Advanced setting - Set field display settings to <Hidden>.
       $form['instance']['settings']['wysiwyg_fields']['settings']['advanced']['hide'] = array(
         '#title' => t('Set field display settings to &lt;Hidden&gt;.'),
         '#type' => 'checkbox',
         '#default_value' => isset($wysiwyg_fields['settings']['advanced']['hide']) ? $wysiwyg_fields['settings']['advanced']['hide'] : TRUE,
       );
 
+      // Advanced setting - Delete field items not inserted on Node save.
       $form['instance']['settings']['wysiwyg_fields']['settings']['advanced']['delete'] = array(
         '#title' => t('Delete field items not inserted on Node save.'),
         '#type' => 'checkbox',
