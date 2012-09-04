@@ -487,7 +487,7 @@
       if (context.is('form')) {
         $.each(Drupal.settings.wysiwygFields.fields, function(field_name) {
           dialog = '#wysiwyg_fields-' + field_name + '-dialog';
-          if ($(dialog).css('display') == 'block') {
+          if ($(dialog).css('display') == 'block' && typeof Drupal.settings.wysiwygFields.fields[field_name].active !== 'undefined') {
             // Remove active field(s) formatter so that it doesn't override
             // users choice.
             delete Drupal.settings.wysiwygFields.fields[field_name].active.wf_formatter;
