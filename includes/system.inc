@@ -46,14 +46,21 @@ function wysiwyg_fields_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
- * Implements hook_node_insert().
+ * Implements hook_entity_presave().
+ */
+function wysiwyg_fields_entity_presave($entity, $type) {
+  drupal_alter('wysiwyg_fields_entity_presave', $entity, $type);
+}
+
+/**
+ * Implements hook_entity_insert().
  */
 function wysiwyg_fields_entity_insert($entity, $type) {
   drupal_alter('wysiwyg_fields_entity_insert', $entity, $type);
 }
 
 /**
- * Implements hook_node_insert().
+ * Implements hook_entity_insert().
  */
 function wysiwyg_fields_entity_update($entity, $type) {
   drupal_alter('wysiwyg_fields_entity_update', $entity, $type);

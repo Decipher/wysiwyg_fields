@@ -1,4 +1,5 @@
-name = "WIF 1.x to WF"
-description = "Wysiwyg ImageField 1.x to Wysiwyg Fields migration tool"
-dependencies[] = "wysiwyg_fields"
-core = "6.x"
+name = WIF 1.x to WF
+description = Wysiwyg ImageField 1.x to Wysiwyg Fields migration tool
+dependencies[] = wysiwyg_fields
+core = 7.x
+hidden = TRUE

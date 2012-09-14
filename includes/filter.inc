@@ -21,7 +21,7 @@ function wysiwyg_fields_filter_info() {
 /**
  * Wysiwyg Fields filter process callback.
  */
-function _wysiwyg_fields_filter_process($text, $filter, $format, $langcode, $cache, $cache_id, $entity = NULL) {
+function _wysiwyg_fields_filter_process($text, $filter, $format, $langcode, $cache, $cache_id, $entity = NULL, $entity_type = NULL) {
   $filter_recurse = &drupal_static(__FUNCTION__, NULL);
   if ((isset($filter_recurse) && $filter_recurse < REQUEST_TIME) || !isset($filter_recurse)) {
     $filter_recurse = REQUEST_TIME;
@@ -38,23 +38,23 @@ function _wysiwyg_fields_filter_process($text, $filter, $format, $langcode, $cac
       }
 
       if (isset($token_data['wf_field']) && isset($token_data['wf_deltas']) && isset($token_data['wf_formatter']) && (isset($token_data['wf_entity_id']) || !is_null($entity))) {
-        $entity_type = isset($token_data['wf_entity_type']) ? $token_data['wf_entity_type'] : $entity->type;
+        $entity_type = isset($token_data['wf_entity_type']) ? $token_data['wf_entity_type'] : $entity_type;
         if (!isset($entity)) {
           $entity = entity_load($entity_type, array($token_data['wf_entity_id']));
           $entity = array_pop($entity);
         }
         $fields[$token_data['wf_field']] = isset($fields[$token_data['wf_field']]) ? $fields[$token_data['wf_field']] : field_info_field($token_data['wf_field']);
         $field = $fields[$token_data['wf_field']];
+        $field_name = $field['field_name'];
         $instances[$token_data['wf_field']] = isset($instances[$token_data['wf_field']]) ? $instances[$token_data['wf_field']] : field_info_instance($entity_type, $token_data['wf_field'], $entity->type);
         $instance = $instances[$token_data['wf_field']];
         $langcode = field_language($entity_type, $entity, $field['field_name']);
 
         $token_data['wf_deltas'] = explode(',', $token_data['wf_deltas']);
         $items = array();
-        // @TODO - Multilingual handling.
         foreach ($token_data['wf_deltas'] as $delta) {
-          if (isset($entity->{$token_data['wf_field']}[LANGUAGE_NONE][$delta])) {
-            $items[] = $entity->{$token_data['wf_field']}[LANGUAGE_NONE][$delta];
+          if (isset($entity->{$field_name}[$langcode][$delta])) {
+            $items[] = $entity->{$field_name}[$langcode][$delta];
           }
         }
 
@@ -132,32 +132,40 @@ function _wysiwyg_fields_text_to_tokens($text) {
 /**
  * Implements hook_wysiwyg_fields_entity_insert_alter() on behalf of
  * filter.module.
+ *
+ * Add cache buster and contextual information to the Wysiwyg Fields token.
  */
 function filter_wysiwyg_fields_entity_insert_alter($entity, $type) {
   $textfields = _wysiwyg_fields_textfields($type, $entity);
   foreach ($textfields as &$textfield) {
     $tokens = _wysiwyg_fields_text_to_tokens($textfield['value']);
     foreach ($tokens as $token => $attributes) {
+      // Add cache buster (timestamp) to Wysiwyg Fields token.
       $attributes['wf_cache'] = $entity->changed;
+
+      // Ensure Wysiwyg Fields token has contextual information.
       if (!isset($attributes['wf_entity_id'])) {
         $info = entity_get_info($type);
         $attributes['wf_entity_id'] = $entity->{$info['entity keys']['id']};
         $attributes['wf_entity_type'] = $type;
-
-        $new_token = array();
-        foreach ($attributes as $key => $value) {
-          $new_token[] = "{$key}=\"{$value}\"";
-        }
-        $textfield['value'] = str_replace($token, '[wysiwyg_field ' . implode(' ', $new_token) . ']', $textfield['value']);
       }
+
+      // Rebuild Wysiwyg Fields token.
+      $new_token = array();
+      foreach ($attributes as $key => $value) {
+        $new_token[] = "{$key}=\"{$value}\"";
+      }
+      $textfield['value'] = str_replace($token, '[wysiwyg_field ' . implode(' ', $new_token) . ']', $textfield['value']);
     }
   }
 
+  // Store modified fields in the database.
   field_attach_update($type, $entity);
 }
 
 /**
- * Implements hook_wysiwyg_fields_entity_update_alter() on behalf of filter.module.
+ * Implements hook_wysiwyg_fields_entity_update_alter() on behalf of
+ * filter.module.
  */
 function filter_wysiwyg_fields_entity_update_alter($entity, $type) {
   filter_wysiwyg_fields_entity_insert_alter($entity, $type);
@@ -167,10 +175,11 @@ function filter_wysiwyg_fields_entity_update_alter($entity, $type) {
  * Implements hook_wysiwyg_fields_form_alter_alter() on behalf of filter.module.
  */
 function filter_wysiwyg_fields_form_alter_alter(&$form, $form_state, $form_id) {
-  if ($form_id == 'filter_admin_format_form') {
+  if ('filter_admin_format_form' == $form_id) {
     // Force the Wysiwyg Fields filter to be always on.
     $form['filters']['status']['wysiwyg_fields']['#default_value'] = TRUE;
     $form['filters']['status']['wysiwyg_fields']['#disabled'] = TRUE;
+
     // Set weight to 100 so that the Wysiwyg Fields filter processes after the
     // HTML filter (by default).
     $form['filters']['order']['wysiwyg_fields']['#weight'] = 50;

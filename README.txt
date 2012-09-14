@@ -8,6 +8,7 @@ Wysiwyg Fields was written and is maintained by Stuart Clark (deciphered).
 - http://stuar.tc/lark
 
 
+
 Testing
 --------------------------------------------------------------------------------
 
@@ -32,6 +33,7 @@ Notes:
     is required (this is enabled with the 'Wysiwyg Fields test' feature).
 
 
+
 Features
 --------------------------------------------------------------------------------
 
@@ -47,6 +49,7 @@ Features
   * Email Field module.
 
 
+
 Required modules
 --------------------------------------------------------------------------------
 
@@ -55,12 +58,14 @@ Required modules
 * Wysiwyg module.
 
 
+
 Recommended modules
 --------------------------------------------------------------------------------
 
 * Custom Formatters module.
 * jQuery Update module (in conjunction with jQuery UI 1.7).
 * Node Relationships.
+
 
 
 Configuration
@@ -77,10 +82,11 @@ Wysiwyg Fields settings can be found with the standard CCK field settings:
 - (optional) Expand and configure the 'Advanced settings'.
 
 
+
 Frequently asked questions
 --------------------------------------------------------------------------------
 
-Q. Where did my CCK field go?
+Q. Where did my field go?
 
 A. For usability purposes, Wysiwyg Fields consumes the fields that it is enabled
    on. If the field is required for use outside of the Wysiwyg it is recommended
@@ -93,10 +99,11 @@ A. While the Wysiwyg Fields dialog is active you will see a '+' icon to the left
    of the dialog title, simply click the '+' to display the full CCK field view.
 
 
+
 Known issues
 --------------------------------------------------------------------------------
 
-- Following CCK field modules aren't compatible: @TODO - write incompatibility detection code.
+- Following field modules aren't compatible: @TODO - write incompatibility detection code.
   - Embedded Media Field module.
 - Certain fields can't render the preview due to JavaScript or other reasons: @TODO - Write hook for alternative preview.
   - Embed Google Maps Field module.
@@ -105,12 +112,3 @@ Known issues
 - Recursive Node references = infinite loop.
 - Error message on non-multi insert doesn't work properly.
 - Formatters that use drupal_add_js() or drupal_add_css() don't don't render correctly in the Wysiwyg, nor in Node view when with filter caching.
-- jQuery 1.6:
-  - Overflow is hidden, should scroll or Dialog should grow.
-  - Firefox - Form elements unclickable.
-- Firefox issues:
-  - Images and DIVs are resizable.
-- Rubik theme:
-  - Description tooltip causes scrolling in dialog.
-- Chameleon and Marvin theme:
-  - jQuery UI 1.7 Dialog conflict.

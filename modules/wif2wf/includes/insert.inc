@@ -10,7 +10,7 @@
 function insert_wif2wf_style2formatter($item, $style, $widget) {
   if ($style['name'] == 'auto') {
     $info = @pathinfo($item['filepath']);
-    if (in_array(strtolower($info['extension']), array('png', 'jpg', 'jpeg', 'gif'))) {
+    if (in_array(drupal_strtolower($info['extension']), array('png', 'jpg', 'jpeg', 'gif'))) {
       $style['name'] = 'image';
     }
   }

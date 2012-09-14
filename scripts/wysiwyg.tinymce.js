@@ -30,7 +30,7 @@
     /**
      * @TODO - Remove IMG resize helper.
      */
-    wysiwygIsNode: function(element) {
+    wysiwygSelectNode: function(element) {
       editor = tinyMCE.activeEditor;
 
       // Create the range for the element.
@@ -46,7 +46,7 @@
     /**
      *
      */
-    divToWysiwygField: function() {
+    wysiwygAttach: function() {
       delete Drupal.settings.wysiwygFields.timer;
       if (typeof tinyMCE !== "undefined") {
         $.each(tinyMCE.editors, function(instance) {
@@ -70,7 +70,7 @@
               delete token_data['wf_entity_type'];
 
               replacement = Drupal.settings.wysiwygFields.fields[$(this).attr('wf_field')].replacements[JSON.stringify(token_data)];
-              Drupal.wysiwygFields.wysiwyg.tinymce.wysiwygIsNode(this);
+              Drupal.wysiwygFields.wysiwyg.tinymce.wysiwygSelectNode(this);
               $(this).replaceWith(replacement);
             });
           }

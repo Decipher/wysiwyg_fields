@@ -10,18 +10,10 @@
 function wysiwyg_fields_wysiwyg_fields_plugin() {
   $plugins = array();
 
-  /**
-   * $_SESSION['wysiwyg_fields'] contains active content type as
-   * hook_wysiwyg_fields_plugin() provides no context.
-   *
-   * @see wysiwyg_fields_after_build()
-   * @see wysiwyg_wysiwyg_fields_init()
-   */
-  if (isset($_SESSION['wysiwyg_fields'])) {
-    /**
-     * Invoke hook_wysiwyg_fields_wysiwyg_plugins().
-     */
-    $wysiwyg_plugins = module_invoke_all('wysiwyg_fields_wysiwyg_plugins', $_SESSION['wysiwyg_fields']);
+  $context = &drupal_static('wysiwyg_fields_context', NULL);
+  if (!is_null($context)) {
+    // Invoke hook_wysiwyg_fields_wysiwyg_plugins().
+    $wysiwyg_plugins = module_invoke_all('wysiwyg_fields_wysiwyg_plugins', $context);
     foreach ($wysiwyg_plugins as $name => $settings) {
       // Define Wysiwyg plugin.
       // @TODO - Wysiwyg plugins aren't being ordered by weight, fix.
@@ -52,21 +44,14 @@ function wysiwyg_fields_wysiwyg_fields_plugin() {
             ->execute();
         }
       }
-
-    //  // Prevent dynamic JavaScript files from being parsed through locale.
-    //  $parsed = variable_get('javascript_parsed', array());
-    //  $js = drupal_get_path('module', 'wysiwyg_fields') . "/plugins/wysiwyg_fields_{$name}/wysiwyg_fields_{$name}.js";
-    //  if (!in_array($js, $parsed)) {
-    //    $parsed[] = $js;
-    //  }
-    //  variable_set('javascript_parsed', $parsed);
     }
 
     // Make Wysiwyg plugin field names available via javascript as the Wysiwyg
     // plugin javascript is invoked before Drupal.settings are available.
     drupal_add_js('var wysiwygFields = ' . drupal_json_encode(array_keys($wysiwyg_plugins)), 'inline');
 
-    unset($_SESSION['wysiwyg_fields']);
+    // Clear the Wysiwyg Fields context static variable.
+    drupal_static_reset('wysiwyg_fields_context');
   }
 
   return $plugins;

@@ -14,7 +14,7 @@ function date_wysiwyg_fields_elements_alter($elements) {
 }
 
 /**
- *
+ * Process callback for the 'date_select' element.
  */
 function _date_wysiwyg_fields_element_alter_process($form_element) {
   $field = content_fields($form_element['#field']['field_name'], $form_element['#field']['type_name']);

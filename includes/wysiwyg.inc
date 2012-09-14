@@ -13,15 +13,6 @@ function wysiwyg_wysiwyg_fields_init() {
     variable_del('wysiwyg_fields_enable');
     menu_rebuild();
   }
-
-  // Store Content Type in $_SESSION['wysiwyg_fields'] to provide context.
-  // @TODO - Determine if this is necessary anymore.
-  // if (isset($_POST) && isset($_POST['form_id']) && strpos($_POST['form_id'], '_node_form') == strlen($_POST['form_id']) - 10) {
-  //   $_SESSION['wysiwyg_fields'] = array(
-  //     '#entity_type' => 'node',
-  //     '#bundle' => str_replace('_node_form', '', $_POST['form_id'])
-  //   );
-  // }
 }
 
 /**
@@ -38,6 +29,10 @@ function wysiwyg_wysiwyg_fields_menu_alter(&$items) {
 
 /**
  * Implements hook_wysiwyg_fields_form_alter_alter() on behalf of wysiwyg.module.
+ *
+ * Make Wyiwyg Fields Wysiwyg plugins congigurable by Wysiwyg profile.
+ *
+ * @TODO - Re-implement this.
  */
 //function wysiwyg_wysiwyg_fields_form_alter_alter($form, $form_state, $form_id) {
 //  if ($form_id == 'wysiwyg_profile_form') {

@@ -10,44 +10,12 @@
    */
   Drupal.wysiwygFields.wysiwyg.ckeditor = {
     /**
-     *
-     */
-    init: function(id) {
-    //  if (typeof CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId] !== "undefined" && typeof CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId].document !== "undefined") {
-    //    $(CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId].document.$).bind('mouseup keyup', function() {
-    //      Drupal.wysiwygFields.wysiwyg.ckeditor.isNode(id);
-    //    });
-    //  }
-    //  else {
-    //    setTimeout(
-    //      function() {
-    //        Drupal.wysiwygFields.wysiwyg.ckeditor.init(id);
-    //      },
-    //      10
-    //    );
-    //  }
-      // Prevent links being clickable inside Wysiwyg.
-      $.each(CKEDITOR.instances, function() {
-        $(this).delegate('a', 'click', function() {
-          return false;
-        });
-      });
-    },
-
-    /**
-     * @see http://drupal.org/node/1060552
-     */
-    //isNode: function(id) {
-    //  var node = CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId].getSelection().getSelectedElement();
-    //  var state = Drupal.wysiwygFields.wysiwygIsNode(id, node ? node.$ : null) ? CKEDITOR.TRISTATE_ON : CKEDITOR.TRISTATE_OFF;
-    //  CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId].getCommand('wysiwyg_fields_' + id).setState(state);
-    //},
-
-    /**
-     * Returns Text node.
+     * Returns Text node parent element.
      */
     wysiwygGetTextNode: function() {
-      return $(CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId].getSelection().getStartElement().$).get(0).firstChild;
+      editor = CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId];
+      selection = new CKEDITOR.dom.selection(editor.document);
+      return selection.getStartElement().$;
     },
 
     /**
@@ -55,7 +23,7 @@
      * @TODO - Remove IMG resize helper.
      * @TODO - Element path no longer works?
      */
-    wysiwygIsNode: function(element) {
+    wysiwygSelectNode: function(element) {
       editor = CKEDITOR.instances[Drupal.settings.wysiwygFields.activeId];
 
       // Create the range for the element.
@@ -63,22 +31,75 @@
       range.selectNode(element);
 
       // Select the range.
-      var sel = editor.getSelection().getNative();
-      sel.removeAllRanges();
-      sel.addRange(range);
+      var selection = editor.getSelection().getNative();
+      selection.removeAllRanges();
+      selection.addRange(range);
       editor.getSelection().reset();
     },
 
     /**
      *
      */
-    divToWysiwygField: function() {
+    wysiwygAttach: function() {
       delete Drupal.settings.wysiwygFields.timer;
       if (typeof CKEDITOR !== "undefined") {
         $.each(CKEDITOR.instances, function(instance) {
-          if (CKEDITOR.instances[instance].mode == 'wysiwyg' && typeof CKEDITOR.instances[instance].document !== "undefined") {
+          editor = CKEDITOR.instances[instance];
+
+          // $(editor.document.$).bind('keydown, mousedown', function(event) {
+          //   selection = new CKEDITOR.dom.selection(editor.document);
+          //   element = selection.getSelectedElement();
+          //   if (element == null) {
+          //     element = Drupal.wysiwygFields.wysiwyg.ckeditor.wysiwygGetTextNode();
+          //   }
+          //   if ($(element).is('wysiwyg_field')) {
+          //     Drupal.wysiwygFields.wysiwyg.ckeditor.wysiwygSelectNode(element);
+          //   }
+          // });
+
+          // // Attach keypress handling.
+          // $(editor.document.$).bind('keypress', function(event) {
+          //   // selection = new CKEDITOR.dom.selection(editor.document);
+          //   // element = selection.getSelectedElement();
+          //   // if (element != null) {
+          //   //   // If a Wyswiyg Field is currently selected we want to make sure
+          //   //   // that the keypress is placed at the end of the Wysiwyg Field.
+          //   //   if ($(element.$).parents('wysiwyg_field').length > 0) {
+          //   //     element = $(element.$).parents('wysiwyg_field').get(0);
+
+          //   //     range = editor.document.$.createRange();
+          //   //     range.selectNode(element);
+          //   //     // // // console.log(element);
+          //   //     // // // // console.log($(element.$).parents('wysiwyg_field').get(0));
+          //   //     // console.log(range);
+          //   //     // // // // range.setStart(range., 100);
+          //   //     range.collapse(false);
+
+          //   //     selection = selection.getNative();
+          //   //     selection.removeAllRanges();
+          //   //     selection.addRange(range);
+          //   //   }
+          //   // }
+
+          //   // selection = new CKEDITOR.dom.selection(editor.document);
+          //   // element = selection.getSelectedElement();
+
+          //   // startElement = selection.getStartElement();
+          //   // if (element == null && $(startElement.$).is('wysiwyg_field')) {
+          //   //   $(startElement.$).replaceWith(startElement.$.outerHTML + String.fromCharCode(event.which));
+          //   //   range = editor.document.$.createRange();
+          //   //   range.selectNode(element);
+          //   //   console.log(range);
+          //   //   return false;
+          //   // }
+
+          //   return true;
+          // });
+
+          // Replace placeholders with there rendered HTML counterparts.
+          if (editor.mode == 'wysiwyg' && typeof editor.document !== "undefined") {
             // @TODO - Handle items with no replacements.
-            $('.wysiwyg_fields-placeholder', CKEDITOR.instances[instance].document.$.body).each(function() {
+            $('.wysiwyg_fields-placeholder', editor.document.$.body).each(function() {
               // @TODO - Figure out a better way to sort the attributes.
               // @TODO - Move this logic into a more generic location.
               var keys = new Array();
@@ -98,7 +119,7 @@
 
               if (typeof Drupal.settings.wysiwygFields.fields[$(this).attr('wf_field')].replacements !== "undefined") {
                 replacement = Drupal.settings.wysiwygFields.fields[$(this).attr('wf_field')].replacements[JSON.stringify(token_data)];
-                Drupal.wysiwygFields.wysiwyg.ckeditor.wysiwygIsNode(this);
+                Drupal.wysiwygFields.wysiwyg.ckeditor.wysiwygSelectNode(this);
 
                 // This is required to slow down this function so that the insert
                 // doesn't get fired to early. It is hacky and needs fixing.

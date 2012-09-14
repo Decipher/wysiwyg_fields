@@ -17,9 +17,9 @@
 //   );
 // }
 
-// /**
-//  * Implements hook_features_export_options().
-//  */
+/**
+ * Implements hook_features_export_options().
+ */
 // function wysiwyg_fields_features_export_options() {
 //   $icons = array();
 //   foreach (wysiwyg_fields_icons() as $checksum => $file) {
@@ -30,9 +30,9 @@
 //   return $icons;
 // }
 
-// /**
-//  * Implements hook_features_export().
-//  */
+/**
+ * Implements hook_features_export().
+ */
 // function wysiwyg_fields_features_export($data, &$export, $module_name = '') {
 //   $export['dependencies']['wysiwyg_fields'] = 'wysiwyg_fields';
 //   foreach ($data as $checksum) {
@@ -40,9 +40,9 @@
 //   }
 // }
 
-// /**
-//  * Implements hook_features_export_render().
-//  */
+/**
+ * Implements hook_features_export_render().
+ */
 // function wysiwyg_fields_features_export_render($module_name = '', $data) {
 //   return array(
 //     'wysiwyg_fields_icons' => "  return array(
@@ -51,11 +51,11 @@
 //   );
 // }
 
-// /**
-//  * Implements hook_features_export_wysiwyg_fields_assets().
-//  *
-//  * @see http://drupal.org/node/1064340
-//  */
+/**
+ * Implements hook_features_export_wysiwyg_fields_assets().
+ *
+ * @see http://drupal.org/node/1064340
+ */
 // function wysiwyg_fields_features_export_wysiwyg_fields_assets($data, $export, $module_name) {
 //   $assets = array();
 
@@ -66,9 +66,9 @@
 //   return $assets;
 // }
 
-// /**
-//  * Implements hook_features_pipe_component_alter().
-//  */
+/**
+ * Implements hook_features_pipe_component_alter().
+ */
 // function wysiwyg_fields_features_pipe_content_alter(&$pipe, $data, $export, $module_name = '') {
 //   foreach ($data as $field) {
 //     $args = explode('-', $field);
