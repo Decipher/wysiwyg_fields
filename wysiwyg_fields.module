@@ -157,12 +157,14 @@ function _wysiwyg_fields_entity_form_after_build(&$form, $form_state) {
  * Pre render callback for 'text_format' element.
  */
 function wysiwyg_fields_elements_pre_render_text_format($element) {
-  // Store Entity type and Bundle as context for the Wysiwyg plugins.
-  $context = &drupal_static('wysiwyg_fields_context', NULL);
-  $context = array(
-    '#entity_type' => $element['#entity_type'],
-    '#bundle' => $element['#bundle'],
-  );
+  if (isset($element['#entity_type']) && isset($element['#bundle'])) {
+    // Store Entity type and Bundle as context for the Wysiwyg plugins.
+    $context = &drupal_static('wysiwyg_fields_context', NULL);
+    $context = array(
+      '#entity_type' => $element['#entity_type'],
+      '#bundle' => $element['#bundle'],
+    );
+  }
 
   return $element;
 }
