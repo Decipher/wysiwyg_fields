@@ -22,90 +22,94 @@ function wysiwyg_fields_filter_info() {
  * Wysiwyg Fields filter process callback.
  */
 function _wysiwyg_fields_filter_process($text, $filter, $format, $langcode, $cache, $cache_id, $entity = NULL, $entity_type = NULL) {
+  // Prevent a recursive loop caused when loading the entity for contextual
+  // information.
   $filter_recurse = &drupal_static(__FUNCTION__, NULL);
-  if ((isset($filter_recurse) && $filter_recurse < REQUEST_TIME) || !isset($filter_recurse)) {
-    $filter_recurse = REQUEST_TIME;
-    $fields = array();
-    $instances = array();
-    $tokens = _wysiwyg_fields_text_to_tokens($text);
+  if (isset($filter_recurse) && $filter_recurse >= REQUEST_TIME) {
+    return;
+  }
 
-    foreach ($tokens as $token => $token_data) {
-      // @TODO - wf_nid is deprecated and will be removed in the future.
-      if (isset($token_data['wf_nid'])) {
-        watchdog('Wysiwyg Fields', 'Node !nid is using a deprecated Wysiwyg Fields token format, it needs to be updated or it will break in a future release.', array('!nid' => $token_data['wf_nid']));
-        $token_data['wf_entity_id'] = $token_data['wf_nid'];
-        $token_data['wf_entity_type'] = 'node';
+  $filter_recurse = REQUEST_TIME;
+  $fields = array();
+  $instances = array();
+  $tokens = _wysiwyg_fields_text_to_tokens($text);
+
+  foreach ($tokens as $token => $token_data) {
+    // @TODO - wf_nid is deprecated and will be removed in the future.
+    if (isset($token_data['wf_nid'])) {
+      watchdog('Wysiwyg Fields', 'Node !nid is using a deprecated Wysiwyg Fields token format, it needs to be updated or it will break in a future release.', array('!nid' => $token_data['wf_nid']));
+      $token_data['wf_entity_id'] = $token_data['wf_nid'];
+      $token_data['wf_entity_type'] = 'node';
+    }
+
+    if (isset($token_data['wf_field']) && isset($token_data['wf_deltas']) && isset($token_data['wf_formatter']) && (isset($token_data['wf_entity_id']) || !is_null($entity))) {
+      $entity_type = isset($token_data['wf_entity_type']) ? $token_data['wf_entity_type'] : $entity_type;
+      if (!isset($entity)) {
+        $entity = entity_load($entity_type, array($token_data['wf_entity_id']));
+        $entity = array_pop($entity);
+      }
+      $fields[$token_data['wf_field']] = isset($fields[$token_data['wf_field']]) ? $fields[$token_data['wf_field']] : field_info_field($token_data['wf_field']);
+      $field = $fields[$token_data['wf_field']];
+      $field_name = $field['field_name'];
+      $instances[$token_data['wf_field']] = isset($instances[$token_data['wf_field']]) ? $instances[$token_data['wf_field']] : field_info_instance($entity_type, $token_data['wf_field'], $entity->type);
+      $instance = $instances[$token_data['wf_field']];
+      $langcode = field_language($entity_type, $entity, $field['field_name']);
+
+      $token_data['wf_deltas'] = explode(',', $token_data['wf_deltas']);
+      $items = array();
+      foreach ($token_data['wf_deltas'] as $delta) {
+        if (isset($entity->{$field_name}[$langcode][$delta])) {
+          $items[] = $entity->{$field_name}[$langcode][$delta];
+        }
       }
 
-      if (isset($token_data['wf_field']) && isset($token_data['wf_deltas']) && isset($token_data['wf_formatter']) && (isset($token_data['wf_entity_id']) || !is_null($entity))) {
-        $entity_type = isset($token_data['wf_entity_type']) ? $token_data['wf_entity_type'] : $entity_type;
-        if (!isset($entity)) {
-          $entity = entity_load($entity_type, array($token_data['wf_entity_id']));
-          $entity = array_pop($entity);
-        }
-        $fields[$token_data['wf_field']] = isset($fields[$token_data['wf_field']]) ? $fields[$token_data['wf_field']] : field_info_field($token_data['wf_field']);
-        $field = $fields[$token_data['wf_field']];
-        $field_name = $field['field_name'];
-        $instances[$token_data['wf_field']] = isset($instances[$token_data['wf_field']]) ? $instances[$token_data['wf_field']] : field_info_instance($entity_type, $token_data['wf_field'], $entity->type);
-        $instance = $instances[$token_data['wf_field']];
-        $langcode = field_language($entity_type, $entity, $field['field_name']);
-
-        $token_data['wf_deltas'] = explode(',', $token_data['wf_deltas']);
-        $items = array();
-        foreach ($token_data['wf_deltas'] as $delta) {
-          if (isset($entity->{$field_name}[$langcode][$delta])) {
-            $items[] = $entity->{$field_name}[$langcode][$delta];
-          }
-        }
-
-        // Prepare field view.
-        $functions = array("{$field['module']}_field_prepare_view", "{$field['module']}_field_load");
-        foreach ($functions as $function) {
-          if (function_exists($function)) {
-            $items = array($items);
-            $function($entity_type, array($entity), $field, array($instance), $langcode, $items, FIELD_LOAD_CURRENT);
-            $items = $items[0];
-          }
-        }
-
-        // @TODO - Cache the Formatters.
-        $formatter = field_info_formatter_types($token_data['wf_formatter']);
-
-        // Formatter settings.
-        $formatter_settings = array();
-        foreach ($token_data as $key => $value) {
-          if (drupal_substr($key, 0, 11) == 'wf_settings') {
-            $formatter_settings[drupal_substr($key, 12)] = $value;
-          }
-        }
-
-        $display = array(
-          'label' => 'hidden',
-          'type' => $token_data['wf_formatter'],
-          'module' => $formatter['module'],
-          'settings' => $formatter_settings,
-          // @TODO - Move this to includes/custom_formatters.inc and determine
-          // a way to allow contextual links without exposing to anonymous user.
-          'cf_options' => array(
-            '#contextual_links' => FALSE,
-          ),
-        );
-
-        // Prepare field formatter view.
-        if (function_exists($function = "{$field['module']}_field_formatter_prepare_view")) {
+      // Prepare field view.
+      $functions = array("{$field['module']}_field_prepare_view", "{$field['module']}_field_load");
+      foreach ($functions as $function) {
+        if (function_exists($function)) {
           $items = array($items);
-          $function($entity_type, array($entity), $field, array($instance), $langcode, $items, array($display));
+          $function($entity_type, array($entity), $field, array($instance), $langcode, $items, FIELD_LOAD_CURRENT);
           $items = $items[0];
         }
-
-        $function = "{$formatter['module']}_field_formatter_view";
-        $output = $function($entity_type, $entity, $field, $instance, $langcode, $items, $display);
-        $element = render($output);
-        $text = str_replace($token, $element, $text);
       }
+
+      // @TODO - Cache the Formatters.
+      $formatter = field_info_formatter_types($token_data['wf_formatter']);
+
+      // Formatter settings.
+      $formatter_settings = array();
+      foreach ($token_data as $key => $value) {
+        if (drupal_substr($key, 0, 11) == 'wf_settings') {
+          $formatter_settings[drupal_substr($key, 12)] = $value;
+        }
+      }
+
+      $display = array(
+        'label' => 'hidden',
+        'type' => $token_data['wf_formatter'],
+        'module' => $formatter['module'],
+        'settings' => $formatter_settings,
+        // @TODO - Move this to includes/custom_formatters.inc and determine
+        // a way to allow contextual links without exposing to anonymous user.
+        'cf_options' => array(
+          '#contextual_links' => FALSE,
+        ),
+      );
+
+      // Prepare field formatter view.
+      if (function_exists($function = "{$field['module']}_field_formatter_prepare_view")) {
+        $items = array($items);
+        $function($entity_type, array($entity), $field, array($instance), $langcode, $items, array($display));
+        $items = $items[0];
+      }
+
+      $function = "{$formatter['module']}_field_formatter_view";
+      $output = $function($entity_type, $entity, $field, $instance, $langcode, $items, $display);
+      $element = render($output);
+      $text = str_replace($token, $element, $text);
     }
-    drupal_static_reset(__FUNCTION__);
   }
+  drupal_static_reset(__FUNCTION__);
 
   return $text;
 }
