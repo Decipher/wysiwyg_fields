@@ -63,123 +63,94 @@ function _field_wysiwyg_fields_form_alter_alter_submit($form, &$form_state) {
 }
 
 /**
- * Implements hook_wysiwyg_fields_entity_presave_alter() on behalf of field.module.
+ * Implements hook_wysiwyg_fields_entity_presave_alter() on behalf of
+ * field.module.
+ *
+ * This will delete any un-referenced Wysiwyg Fields items and re-number the
+ * deltas accordingly.
  */
-// function field_wysiwyg_fields_entity_presave_alter($entity, $entity_type) {
-//   list($id, $vid, $bundle_name) = entity_extract_ids($entity_type, $entity);
-//   $instances = field_info_instances($entity_type, $bundle_name);
+function field_wysiwyg_fields_entity_presave_alter($entity, $entity_type) {
+  list($id, $vid, $bundle_name) = entity_extract_ids($entity_type, $entity);
+  $instances = field_info_instances($entity_type, $bundle_name);
 
-//   // Check if Wysiwyg Fields is enabled on any fields on this entity type.
-//   $enabled = FALSE;
-//   foreach ($instances as $instance) {
-//     if (isset($instance['settings']['wysiwyg_fields']) && $instance['settings']['wysiwyg_fields']['status']) {
-//       $enabled = TRUE;
-//       break;
-//     }
-//   }
+  foreach ($instances as $instance) {
+    if (isset($instance['settings']['wysiwyg_fields']) && $instance['settings']['wysiwyg_fields']['status']) {
+      $field_name = $instance['field_name'];
+      $settings = $instance['settings'];
+      $langcode = field_language($entity_type, $entity, $field_name);
+      $items = field_get_items($entity_type, $entity, $field_name, $langcode);
 
-//   if ($enabled) {
-//     $tokens = array();
-//     $textfields = _wysiwyg_fields_textfields($entity_type, $entity);
-//     foreach ($textfields as &$textfield) {
-//       $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
-//     }
+      // First run, get require information.
+      if (!isset($tokens)) {
+        $tokens = array();
+        $textfields = _wysiwyg_fields_textfields($entity_type, $entity);
+        foreach ($textfields as &$textfield) {
+          $tokens = array_merge(_wysiwyg_fields_text_to_tokens($textfield['value']), $tokens);
+        }
 
-//     // Build info array.
-//     $info = array();
-//     foreach ($tokens as $token => $data) {
-//       $deltas = explode(',', $tokens[$token]['wf_deltas']);
-//       $tokens[$token]['wf_deltas'] = array();
-//       foreach ($deltas as $delta) {
-//         $tokens[$token]['wf_deltas'][$delta] = $delta;
-//       }
-//       foreach ($tokens[$token]['wf_deltas'] as $delta) {
-//         $info['fields'][$tokens[$token]['wf_field']]['deltas'][$delta][] = &$tokens[$token]['wf_deltas'][$delta];
-//       }
-//       ksort($info['fields'][$tokens[$token]['wf_field']]['deltas']);
-//       $info['tokens'][$token] = &$tokens[$token];
-//     }
+        // Build info array.
+        $info = array();
+        foreach ($tokens as $token => $data) {
+          $deltas = explode(',', $tokens[$token]['wf_deltas']);
+          $tokens[$token]['wf_deltas'] = array();
+          foreach ($deltas as $delta) {
+            $tokens[$token]['wf_deltas'][$delta] = $delta;
+          }
+          foreach ($tokens[$token]['wf_deltas'] as $delta) {
+            $info['fields'][$tokens[$token]['wf_field']]['deltas'][$delta][] = &$tokens[$token]['wf_deltas'][$delta];
+          }
+          ksort($info['fields'][$tokens[$token]['wf_field']]['deltas']);
+          $info['tokens'][$token] = &$tokens[$token];
+        }
+      }
 
-//     if (is_array($info['fields'])) {
-//       foreach (array_keys($info['fields']) as $field_name) {
-//         $settings = $instances[$field_name]['settings'];
-//         $langcode = field_language($entity_type, $entity, $field_name);
-//         $items = field_get_items($entity_type, $entity, $field_name, $langcode);
+      // Delete un-referenced field.
+      if ($settings['wysiwyg_fields']['settings']['advanced']['delete']) {
+        foreach (array_keys($items) as $delta) {
+          if (empty($info) || (isset($info['fields'][$field_name]['deltas']) && !isset($info['fields'][$field_name]['deltas'][$delta]))) {
+            unset($entity->{$field_name}[$langcode][$delta]);
 
-//         // Re-assign deltas to match Field changes.
-//         dpm($items);
-//         dpm($info['fields'][$field_name]);
-//         // foreach (array_keys($items) as $delta) {
-//         //   dpM($)
-//         // }
-//       }
-//     }
+            // Re-number deltas to compensate for the deleted field.
+            if (!empty($info)) {
+              foreach (array_keys($info['fields'][$field_name]['deltas']) as $value) {
+                if ($value > $delta) {
+                  foreach ($info['fields'][$field_name]['deltas'][$value] as &$reference) {
+                    $reference = $value - 1;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 
-//     // Re-assign deltas to match Field changes.
+  if (isset($info['tokens'])) {
+    // Set new deltas.
+    foreach (array_keys($info['tokens']) as $token) {
+      $info['tokens'][$token]['wf_deltas'] = array_flip($info['tokens'][$token]['wf_deltas']);
+      foreach (array_keys($info['tokens'][$token]['wf_deltas']) as $delta) {
+        $info['tokens'][$token]['wf_deltas'][$delta] = $delta;
+      }
+      ksort($info['tokens'][$token]['wf_deltas']);
+    }
 
-//     //   foreach ($info['fields'] as $field_name => $field) {
-//     //   //   foreach (array_keys($field['deltas']) as $delta) {
-//     //   //     foreach ($node->{$field_name} as $field_delta => $item) {
-//     //   //       if ($item['wysiwyg_fields']['wysiwyg_fields_delta'] == $delta && $delta != $field_delta) {
-//     //   //         foreach ($info['fields'][$field_name]['deltas'][$delta] as &$reference) {
-//     //   //           $reference = $field_delta;
-//     //   //         }
-//     //   //         break;
-//     //   //       }
-//     //   //     }
-//     //   //   }
-//     //   }
-
-//     // Delete any Wysiwyg Fields that weren't inserted.
-//     //   if (isset($settings['wysiwyg_fields']) && $settings['wysiwyg_fields']['status'] && $settings['wysiwyg_fields']['settings']['advanced']['delete']) {
-//     //     $field_name = $instance['field_name'];
-//     //     $langcode = field_language($entity_type, $entity, $field_name);
-//     //     $items = field_get_items($entity_type, $entity, $field_name, $langcode);
-//     //     foreach (array_keys($items) as $delta) {
-//     //       if (isset($info['fields'][$field_name]['deltas']) && !isset($info['fields'][$field_name]['deltas'][$delta])) {
-//     //         // Delete un-referenced field.
-//     //         unset($entity->{$field_name}[$langcode][$delta]);
-
-//     //         // Re-number deltas to compensate for delete field.
-//     //         foreach (array_keys($info['fields'][$field_name]['deltas']) as $value) {
-//     //           if ($value > $delta) {
-//     //             foreach ($info['fields'][$field_name]['deltas'][$value] as &$reference) {
-//     //               $reference = $value - 1;
-//     //             }
-//     //           }
-//     //         }
-//     //       }
-//     //     }
-//     //   }
-
-//     if (is_array($info['tokens'])) {
-//       // Set new deltas.
-//       foreach (array_keys($info['tokens']) as $token) {
-//         $info['tokens'][$token]['wf_deltas'] = array_flip($info['tokens'][$token]['wf_deltas']);
-//         foreach (array_keys($info['tokens'][$token]['wf_deltas']) as $delta) {
-//           $info['tokens'][$token]['wf_deltas'][$delta] = $delta;
-//         }
-//         ksort($info['tokens'][$token]['wf_deltas']);
-//       }
-
-//       // Replace tokens.
-//       foreach ($info['tokens'] as $token => $attributes) {
-//         foreach ($textfields as &$textfield) {
-//           $attributes['wf_deltas'] = is_array($attributes['wf_deltas'])
-//             ? implode(',', array_keys($attributes['wf_deltas']))
-//             : $attributes['wf_deltas'];
-//           $new_token = array();
-//           foreach ($attributes as $key => $value) {
-//             $new_token[] = "{$key}=\"{$value}\"";
-//           }
-//           dpm($token);
-//           dpm('[wysiwyg_field ' . implode(' ', $new_token) . ']');
-//           $textfield['value'] = str_replace($token, '[wysiwyg_field ' . implode(' ', $new_token) . ']', $textfield['value']);
-//         }
-//       }
-//     }
-//   }
-// }
+    // Replace tokens.
+    foreach ($info['tokens'] as $token => $attributes) {
+      foreach ($textfields as &$textfield) {
+        $attributes['wf_deltas'] = is_array($attributes['wf_deltas'])
+          ? implode(',', array_keys($attributes['wf_deltas']))
+          : $attributes['wf_deltas'];
+        $new_token = array();
+        foreach ($attributes as $key => $value) {
+          $new_token[] = "{$key}=\"{$value}\"";
+        }
+        $textfield['value'] = str_replace($token, '[wysiwyg_field ' . implode(' ', $new_token) . ']', $textfield['value']);
+      }
+    }
+  }
+}
 
 /**
  * Helper functon;
