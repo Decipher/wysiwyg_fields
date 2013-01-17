@@ -117,7 +117,8 @@
               delete token_data['wf_entity_id'];
               delete token_data['wf_entity_type'];
 
-              if (typeof Drupal.settings.wysiwygFields.fields[$(this).attr('wf_field')].replacements !== "undefined") {
+              $(this).removeClass('wysiwyg_fields-placeholder');
+              if (typeof Drupal.settings.wysiwygFields.fields[$(this).attr('wf_field')].replacements !== "undefined" && typeof Drupal.settings.wysiwygFields.fields[$(this).attr('wf_field')].replacements[JSON.stringify(token_data)] !== "undefined") {
                 replacement = Drupal.settings.wysiwygFields.fields[$(this).attr('wf_field')].replacements[JSON.stringify(token_data)];
                 Drupal.wysiwygFields.wysiwyg.ckeditor.wysiwygSelectNode(this);
 

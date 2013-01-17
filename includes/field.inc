@@ -115,7 +115,7 @@ function field_wysiwyg_fields_entity_presave_alter($entity, $entity_type) {
               foreach (array_keys($info['fields'][$field_name]['deltas']) as $value) {
                 if ($value > $delta) {
                   foreach ($info['fields'][$field_name]['deltas'][$value] as &$reference) {
-                    $reference = $value - 1;
+                    $reference--;
                   }
                 }
               }
