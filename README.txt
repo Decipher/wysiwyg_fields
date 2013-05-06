@@ -1,36 +1,11 @@
-The Wysiwyg Fields module is bridge between CCK Fields and the Wysiwyg module,
-allowing most (if not all) CCK fields to be turned into a Wysiwyg button for a
+The Wysiwyg Fields module is bridge between Fields and the Wysiwyg module,
+allowing most (if not all) fields to be turned into a Wysiwyg button for a
 convenient inline solution.
 
 Wysiwyg Fields is the successor to the Wysiwyg ImageField module.
 
 Wysiwyg Fields was written and is maintained by Stuart Clark (deciphered).
 - http://stuar.tc/lark
-
-
-
-Testing
---------------------------------------------------------------------------------
-
-Setup a test site with all dependencies (plus some extra modules for testing
-purposes) with the following Drush Make command:
-
-  drush make http://dl.dropbox.com/u/1804559/wysiwyg_fields.make [destination]
-
-
-A feature is also included with the make file - 'Wysiwyg Fields test' - which if
-enabled will install the the necessary module, setup a Content Type, create an
-ImageField preconfigured for use with Wysiwyg Fields, setup your Input Formats
-and attach Wysiwyg libraries to them and have you ready to start testing in a
-matter of seconds. The feature will be at the very top of you module list so you
-can't miss it.
-
-Notes:
-  * [destination] should be replaced with the directory you wish the site to
-    live in, e.g. wysiwyg_fields)
-
-  * The jQuery UI 1.7 library is downloaded in this make file, so jQuery Update
-    is required (this is enabled with the 'Wysiwyg Fields test' feature).
 
 
 
@@ -41,9 +16,7 @@ Features
   * CKEditor.
   * TinyMCE.
 * Supports for most CCK fields, including but not limited to:
-  * CCK modules - Text, Number, Node reference and User reference.
-  * FileField module.
-  * ImageField module.
+  * Fields modules - File, Image, Text, Number, etc.
   * Date module.
   * Link module.
   * Email Field module.
@@ -53,8 +26,6 @@ Features
 Required modules
 --------------------------------------------------------------------------------
 
-* Content Construction Kit (CCK) module.
-* jQuery UI module.
 * Wysiwyg module.
 
 
@@ -63,8 +34,6 @@ Recommended modules
 --------------------------------------------------------------------------------
 
 * Custom Formatters module.
-* jQuery Update module (in conjunction with jQuery UI 1.7).
-* Node Relationships.
 
 
 
@@ -112,3 +81,24 @@ Known issues
 - Recursive Node references = infinite loop.
 - Error message on non-multi insert doesn't work properly.
 - Formatters that use drupal_add_js() or drupal_add_css() don't don't render correctly in the Wysiwyg, nor in Node view when with filter caching.
+
+
+
+Makefile entries
+--------------------------------------------------------------------------------
+
+For easy downloading of Wysiwyg Fields and it's required modules and/or
+libraries, you can use the following entries in your makefile:
+
+
+  projects[libraries][subdir] = contrib
+  projects[libraries][version] = 2.0
+
+  projects[wysiwyg][subdir] = contrib
+  projects[wysiwyg][version] = 2.2
+
+  libraries[ckeditor][download][type] = file
+  libraries[ckeditor][download][url] = http://download.cksource.com/CKEditor/CKEditor/CKEditor%203.6.6.1/ckeditor_3.6.6.1.zip
+
+  libraries[famfamfam_silk_icons][download][type] = file
+  libraries[famfamfam_silk_icons][download][url] = http://www.famfamfam.com/lab/icons/silk/famfamfam_silk_icons_v013.zip

@@ -137,17 +137,26 @@ function field_wysiwyg_fields_entity_presave_alter($entity, $entity_type) {
     }
 
     // Replace tokens.
-    foreach ($info['tokens'] as $token => $attributes) {
-      foreach ($textfields as &$textfield) {
+    $tempstamp = 'wf_temp="' . REQUEST_TIME . '"';
+    foreach ($textfields as &$textfield) {
+      foreach ($info['tokens'] as $token => $attributes) {
         $attributes['wf_deltas'] = is_array($attributes['wf_deltas'])
           ? implode(',', array_keys($attributes['wf_deltas']))
           : $attributes['wf_deltas'];
-        $new_token = array();
+        // A tempstamp (temporary timestamp) is attached as an attribute to the
+        // new token so that the token can't match an existing, soon to be
+        // replaced token.
+        $new_token = array($tempstamp);
         foreach ($attributes as $key => $value) {
           $new_token[] = "{$key}=\"{$value}\"";
         }
-        $textfield['value'] = str_replace($token, '[wysiwyg_field ' . implode(' ', $new_token) . ']', $textfield['value']);
+        $new_token = '[wysiwyg_field ' . implode(' ', $new_token) . ']';
+
+        $textfield['value'] = str_replace($token, $new_token, $textfield['value']);
       }
+      // Remove the tempstamp now that all tokens have been repalced on this
+      // textfield.
+      $textfield['value'] = str_replace($tempstamp, '', $textfield['value']);
     }
   }
 }

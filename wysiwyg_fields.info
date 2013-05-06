@@ -1,7 +1,7 @@
 name = Wysiwyg Fields
 description = Field support for the WYSIWYG module
 package = User interface
-dependencies[] = field_ui
+dependencies[] = field
 dependencies[] = filter
 dependencies[] = wysiwyg
 core = 7.x
