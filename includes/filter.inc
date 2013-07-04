@@ -45,8 +45,13 @@ function _wysiwyg_fields_filter_process($text, $filter, $format, $langcode, $cac
     if (isset($token_data['wf_field']) && isset($token_data['wf_deltas']) && isset($token_data['wf_formatter']) && (isset($token_data['wf_entity_id']) || !is_null($entity))) {
       $entity_type = isset($token_data['wf_entity_type']) ? $token_data['wf_entity_type'] : $entity_type;
       if (!isset($entity)) {
-        $entity = entity_load($entity_type, array($token_data['wf_entity_id']));
-        $entity = array_pop($entity);
+        $conditions = array();
+        if (isset($token_data['wf_entity_vid'])) {
+          $conditions['vid'] = $token_data['wf_entity_vid'];
+        }
+
+        $entity = entity_load($entity_type, array($token_data['wf_entity_id']), $conditions);
+        $entity = reset($entity);
       }
       $fields[$token_data['wf_field']] = isset($fields[$token_data['wf_field']]) ? $fields[$token_data['wf_field']] : field_info_field($token_data['wf_field']);
       $field = $fields[$token_data['wf_field']];
@@ -149,8 +154,12 @@ function filter_wysiwyg_fields_entity_insert_alter($entity, $type) {
 
       // Ensure Wysiwyg Fields token has contextual information.
       if (!isset($attributes['wf_entity_id'])) {
-        $info = entity_get_info($type);
-        $attributes['wf_entity_id'] = $entity->{$info['entity keys']['id']};
+        list($entity_id, $entity_vid, $bundle) = entity_extract_ids($type, $entity);
+
+        $attributes['wf_entity_id'] = $entity_id;
+        if (!empty($entity_vid)) {
+          $attributes['wf_entity_vid'] = $entity_vid;
+        }
         $attributes['wf_entity_type'] = $type;
       }
 
