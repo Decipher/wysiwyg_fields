@@ -86,10 +86,17 @@ function wysiwyg_fields_wysiwyg_plugin_callback() {
 
 /**
  * Implements hook_wysiwyg_editor_settings_alter().
+ */
+function wysiwyg_fields_wysiwyg_editor_settings_alter(&$settings, $context) {
+  drupal_alter('wysiwyg_fields_wysiwyg_editor_settings', $settings, $context);
+}
+
+/**
+ * Implements hook_wysiwyg_fields_wysiwyg_editor_settings_alter().
  *
  * @See http://drupal.org/node/1010534
  */
-function wysiwyg_fields_wysiwyg_editor_settings_alter(&$settings, $context) {
+function wysiwyg_wysiwyg_fields_wysiwyg_editor_settings_alter(&$settings, $context) {
   if ($context['profile']->editor == 'tinymce') {
     $settings['extended_valid_elements'] = !empty($settings['extended_valid_elements'])
       ? $settings['extended_valid_elements'] . ','

@@ -109,8 +109,23 @@ function _wysiwyg_fields_filter_process($text, $filter, $format, $langcode, $cac
       }
 
       $function = "{$formatter['module']}_field_formatter_view";
+
+      // Load JS prior to rendering the formatter.
+      $js_old = drupal_add_js();
+
       $output = $function($entity_type, $entity, $field, $instance, $langcode, $items, $display);
       $element = render($output);
+
+      // Determine newly added JS and attach to element.
+      $js_new = drupal_add_js();
+      $js = array();
+      foreach (array_diff(array_keys($js_new), array_keys($js_old)) as $key) {
+        $js[$key] = $js_new[$key];
+      }
+      if (!empty($js)) {
+        $element .= drupal_get_js('header', $js);
+      }
+
       $text = str_replace($token, $element, $text);
     }
   }
