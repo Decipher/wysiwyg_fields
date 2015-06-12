@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Install, update and uninstall functions for the Wysiwyg Fields module.
@@ -13,22 +14,18 @@ function wysiwyg_fields_enable() {
   // Enable Wysiwyg Fields filter on all Input formats.
   // Can't use filter_formats() as it fails to return all values when called via
   // Drush.
-  db_delete('filter')
-    ->condition('name', 'wysiwyg_fields')
-    ->execute();
+  db_delete('filter')->condition('name', 'wysiwyg_fields')->execute();
   $formats = db_select('filter_format', 'f')
     ->fields('f')
     ->execute()
     ->fetchAll();
   foreach ($formats as $format) {
-    db_insert('filter')
-      ->fields(array(
-        'format' => $format->format,
-        'module' => 'wyswyg_fields',
-        'name' => 'wysiwyg_fields',
-        'status' => 1,
+    db_insert('filter')->fields(array(
+        'format'   => $format->format,
+        'module'   => 'wyswyg_fields',
+        'name'     => 'wysiwyg_fields',
+        'status'   => 1,
         'settings' => serialize(array()),
-      ))
-      ->execute();
+      ))->execute();
   }
 }

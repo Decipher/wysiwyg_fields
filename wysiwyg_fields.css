@@ -1,0 +1,7 @@
+/**
+ * @file
+ */
+
+.cke_dialog_ui_html div.messages ul li {
+  white-space: normal;
+}
