@@ -23,20 +23,21 @@ function wysiwyg_fields_theme() {
  * Implements hook_field_widget_info().
  */
 function wysiwyg_fields_field_widget_info() {
+  $field_types = field_info_field_types();
+
   $widget['wysiwyg_fields'] = array(
     'label'       => t('Wysiwyg field'),
     'description' => t('Attach the field to the Wysiwyg'),
-    // @TODO - Make this support all field types?
-    'field types' => array('image', 'text', 'entityreference'),
+    'field types' => array_keys($field_types),
     'settings'    => array(
-      'wysiwyg_fields' => array(
-        'label'      => '',
-        'icon'       => array(
-          'bundle' => 'lullacons_pack1',
-          'icon'   => 'doc-option-add',
-        ),
-        'formatters' => array(),
+      'widget_type'     => '',
+      'widget_settings' => array(),
+      'label'           => '',
+      'icon'            => array(
+        'bundle' => 'lullacons_pack1',
+        'icon'   => 'doc-option-add',
       ),
+      'formatters'      => array(),
     ),
     'behaviors'   => array(
       'multiple values' => FIELD_BEHAVIOR_CUSTOM,
@@ -50,47 +51,87 @@ function wysiwyg_fields_field_widget_info() {
  * Implements hook_field_widget_settings_form().
  */
 function wysiwyg_fields_field_widget_settings_form($field, $instance) {
-  $settings = $instance['widget']['settings'];
+  $field_info = field_info_field_types($field['type']);
+  $settings   = $instance['widget']['settings'];
+
+  // Sub-widget type.
+  $widget_types = field_ui_widget_type_options($field['type']);
+  unset($widget_types['wysiwyg_fields']);
+
+  $widget_type = isset($settings['widget_type']) && !empty($settings['widget_type']) ? $settings['widget_type'] : $field_info['default_widget'];
+  // Get widget type from AJAX request if available..
+  if (isset($_POST['instance']['widget']['settings']['widget_type'])) {
+    $widget_type = filter_xss($_POST['instance']['widget']['settings']['widget_type']);
+  }
+
+  $form['widget_type'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Sub widget type'),
+    '#required'      => TRUE,
+    '#options'       => $widget_types,
+    '#default_value' => $widget_type,
+    '#description'   => t('The subtype of form element you would like to present to the user when using this Wysiwyg Field.'),
+    '#ajax'          => array(
+      'callback' => 'wysiwyg_fields_field_widget_settings_ajax',
+      'wrapper'  => 'sub_widget_settings-wrapper',
+    ),
+  );
+
+  $form['widget_settings'] = array(
+    '#type'        => 'fieldset',
+    '#title'       => t('Sub widget settings'),
+    '#tree'        => TRUE,
+    '#prefix'      => '<div id="sub_widget_settings-wrapper">',
+    '#suffix'      => '</div>',
+  );
 
   // Pass through to field default widget.
-  $field_info                     = field_info_field_types($field['type']);
-  $instance['widget']             = field_info_widget_types($field_info['default_widget']);
-  $instance['widget']['type']     = $field_info['default_widget'];
-  $instance['widget']['settings'] = $settings + $instance['widget']['settings'];
+  $instance['widget']             = field_info_widget_types($widget_type);
+  $instance['widget']['type']     = $widget_type;
+  $instance['widget']['settings'] = $settings['widget_settings'] + $instance['widget']['settings'];
 
   $function = "{$instance['widget']['module']}_field_widget_settings_form";
   if (function_exists($function)) {
-    $form = $function($field, $instance);
+    $widget_form = $function($field, $instance);
+    if (is_array($widget_form)) {
+      $form['widget_settings'] += $widget_form;
+    }
   }
 
-  $form['wysiwyg_fields'] = array(
-    '#type' => 'container',
-    '#tree' => TRUE,
-  );
-
-  $form['wysiwyg_fields']['label'] = array(
+  $form['label'] = array(
     '#title'         => t('Label'),
     '#type'          => 'textfield',
-    '#default_value' => $settings['wysiwyg_fields']['label'],
+    '#default_value' => $settings['label'],
   );
 
-  $form['wysiwyg_fields']['icon'] = array(
+  $form['icon'] = array(
     '#title'          => t('Icon'),
     '#type'           => 'icon_selector',
-    '#default_bundle' => $settings['wysiwyg_fields']['icon']['bundle'],
-    '#default_icon'   => $settings['wysiwyg_fields']['icon']['icon'],
+    '#default_bundle' => $settings['icon']['bundle'],
+    '#default_icon'   => $settings['icon']['icon'],
   );
 
-  $form['wysiwyg_fields']['formatters'] = array(
+  $form['formatters'] = array(
     '#title'         => t('Formatters'),
     '#type'          => 'select',
     '#options'       => field_ui_formatter_options($field['type']),
-    '#default_value' => !empty($settings['wysiwyg_fields']['formatters']) ? $settings['wysiwyg_fields']['formatters'] : $field_info['default_formatter'],
+    '#default_value' => !empty($settings['formatters']) ? $settings['formatters'] : $field_info['default_formatter'],
     '#multiple'      => TRUE,
     '#required'      => TRUE,
   );
 
   return $form;
+}
+
+/**
+ * AJAX callback for Wysiwyg Fields field widget settings form sub widget.
+ *
+ * @param $form
+ *
+ * @return mixed
+ */
+function wysiwyg_fields_field_widget_settings_ajax($form) {
+  return $form['instance']['widget']['settings']['widget_settings'];
 }
 
 /**
@@ -116,22 +157,24 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
   // widget.
   $settings = $instance['widget']['settings'];
 
-  $field_info                     = field_info_field_types($field['type']);
-  $instance['widget']             = field_info_widget_types($field_info['default_widget']);
-  $instance['widget']['type']     = $field_info['default_widget'];
-  $instance['widget']['settings'] = $settings + $instance['widget']['settings'];
-  $field['cardinality']           = $form_state['field'][$field_name][$langcode]['field']['cardinality'] = 1;
+  $field_info                        = field_info_field_types($field['type']);
+  $widget_type                       = isset($settings['widget_type']) && !empty($settings['widget_type']) ? $settings['widget_type'] : $field_info['default_widget'];
+  $subinstance                       = $instance;
+  $subinstance['widget']             = field_info_widget_types($widget_type);
+  $subinstance['widget']['type']     = $widget_type;
+  $subinstance['widget']['settings'] = $settings['widget_settings'] + $subinstance['widget']['settings'];
+  $field['cardinality']              = $form_state['field'][$field_name][$langcode]['field']['cardinality'] = 1;
 
-  $function = $instance['widget']['module'] . '_field_widget_form';
+  $function = $subinstance['widget']['module'] . '_field_widget_form';
   if (function_exists($function)) {
     for ($delta = 0; $delta <= $max; $delta++) {
       $form_state['field'][$field_name][$langcode]['items'] = isset($original_form_state['field'][$field_name][$langcode]['items'][$delta]) ? array($original_form_state['field'][$field_name][$langcode]['items'][$delta]) : NULL;
       $item                                                 = isset($items[$delta]) ? array($items[$delta]) : array();
 
       $element = array(
-        '#entity_type'   => $instance['entity_type'],
+        '#entity_type'   => $subinstance['entity_type'],
         '#entity'        => isset($form['#entity']) ? $form['#entity'] : NULL,
-        '#bundle'        => $instance['bundle'],
+        '#bundle'        => $subinstance['bundle'],
         '#field_name'    => $field_name,
         '#language'      => $langcode,
         '#field_parents' => $parents,
@@ -143,7 +186,7 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
         '#weight'        => $delta,
       );
 
-      if ($element = $function($form, $form_state, $field, $instance, $langcode, $item, $delta, $element)) {
+      if ($element = $function($form, $form_state, $field, $subinstance, $langcode, $item, $delta, $element)) {
         if (count($element) == 1 && isset($element[0]) && is_array($element[0])) {
           $element = $element[0];
         }
@@ -152,14 +195,14 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
         $context = array(
           'form'     => $form,
           'field'    => $field,
-          'instance' => $instance,
+          'instance' => $subinstance,
           'langcode' => $langcode,
           'items'    => $items,
           'delta'    => $delta,
         );
         drupal_alter(array(
           'field_widget_form',
-          'field_widget_' . $instance['widget']['type'] . '_form'
+          'field_widget_' . $subinstance['widget']['type'] . '_form'
         ), $element, $form_state, $context);
 
         $field_elements[$delta] = $element;
@@ -198,7 +241,7 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
         );
 
         $formatters = array();
-        foreach ($instance['widget']['settings']['wysiwyg_fields']['formatters'] as $formatter_name) {
+        foreach ($instance['widget']['settings']['formatters'] as $formatter_name) {
           $formatter = field_info_formatter_types($formatter_name);
           if (isset($formatter)) {
             $formatters[$formatter_name] = $formatter['label'];
@@ -429,11 +472,11 @@ function wysiwyg_fields_ckeditor_plugin() {
     foreach ($wysiwyg_fields as $id => $field) {
       $settings = $field['widget']['settings'];
 
-      $bundle = icon_bundle_load($settings['wysiwyg_fields']['icon']['bundle']);
+      $bundle = icon_bundle_load($settings['icon']['bundle']);
       if (!isset($bundle['settings']['extension'])) {
         $bundle['settings']['extension'] = 'png';
       }
-      $icon = $bundle['path'] . '/' . $settings['wysiwyg_fields']['icon']['icon'] . '.' . $bundle['settings']['extension'];
+      $icon = $bundle['path'] . '/' . $settings['icon']['icon'] . '.' . $bundle['settings']['extension'];
 
       $plugins['wysiwyg_fields']['buttons'][$id] = array(
         // 'icon' needs to be a relative path from the path of this plugin.
