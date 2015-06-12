@@ -450,8 +450,73 @@ function wysiwyg_fields_field_update_instance($instance, $prior_instance) {
       }
     }
 
+    // Check if Field instance button is enabled on any CKEditor profiles, and
+    // if not, then display a message to the user.
+    $profiles = ckeditor_profile_load();
+    $id       = "wysiwyg_fields-{$instance['entity_type']}-{$instance['bundle']}-{$instance['field_name']}";
+    $button   = FALSE;
+    foreach ($profiles as $profile) {
+      if (isset($profile->settings['toolbar']) && strstr($profile->settings['toolbar'], "'{$id}'")) {
+        $button = TRUE;
+        break;
+      }
+    }
+    if (!$button) {
+      drupal_set_message(t('The %label Wysiwyg field isn\'t assigned to any CKEditor profiles.<br /><br />Before this field can be used as a Wysiwyg field you will need to edit your <a href="!profiles">CKEditor profile(s)</a> and add the %label button to the Toolbar.<br /><br />Refer to the <a href="!documentation">Wysiwyg Fields documentation</a> for more details.', array(
+        '%label'         => $instance['label'],
+        '!profiles'      => url('admin/config/content/ckeditor'),
+        '!documentation' => 'https://www.drupal.org/node/2505129',
+      )), 'warning', FALSE);
+    }
+
     if ($update) {
       field_update_instance($instance);
+    }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function wysiwyg_fields_form_ckeditor_admin_profile_form_alter(&$form, &$form_state, $form_id) {
+  // Remove the Wysiwyg Fields plugin for the Plugins list as we will control
+  // the state based on whether or not any Wysiwyg Fields buttons are in use.
+  unset($form['appearance']['loadPlugins']['#options']['wysiwyg_fields']);
+
+  array_unshift($form['#submit'], 'wysiwyg_fields_ckeditor_admin_profile_form_submit');
+}
+
+/**
+ * @param $form
+ * @param $form_state
+ */
+function wysiwyg_fields_ckeditor_admin_profile_form_submit($form, &$form_state) {
+  if (strstr($form_state['values']['toolbar'], "'wysiwyg_fields-")) {
+    // If a Wysiwyg Fields button is in use, enable the Wysiwyg Fields plugin.
+    // @TODO - If this is not a hosted version of CKEditor, we should also be
+    // dealing with the widget and lineutils plugins.
+    $form_state['values']['loadPlugins']['wysiwyg_fields'] = 'wysiwyg_fields';
+
+    // Enable the Token filter on specified input formats.
+    $form_state['values']['input_formats'] = array_filter($form_state['values']['input_formats']);
+    foreach ($form_state['values']['input_formats'] as $format_id) {
+      db_merge('filter_format')
+        ->key(array('format' => $format_id))
+        ->fields(array(
+          'cache' => (int) FALSE,
+        ))
+        ->execute();
+      db_merge('filter')->key(array(
+        'format' => $format_id,
+        'name'   => 'filter_tokens',
+      ))->fields(array(
+        'module'   => 'token_filter',
+        'weight'   => 100,
+        'status'   => 1,
+        'settings' => serialize(array()),
+      ))->execute();
+      cache_clear_all($format_id . ':', 'cache_filter', TRUE);
+      filter_formats_reset();
     }
   }
 }
