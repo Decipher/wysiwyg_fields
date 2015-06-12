@@ -157,13 +157,15 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
   // widget.
   $settings = $instance['widget']['settings'];
 
-  $field_info                        = field_info_field_types($field['type']);
-  $widget_type                       = isset($settings['widget_type']) && !empty($settings['widget_type']) ? $settings['widget_type'] : $field_info['default_widget'];
-  $subinstance                       = $instance;
-  $subinstance['widget']             = field_info_widget_types($widget_type);
-  $subinstance['widget']['type']     = $widget_type;
-  $subinstance['widget']['settings'] = $settings['widget_settings'] + $subinstance['widget']['settings'];
-  $field['cardinality']              = $form_state['field'][$field_name][$langcode]['field']['cardinality'] = 1;
+  $field_info                                              = field_info_field_types($field['type']);
+  $widget_type                                             = isset($settings['widget_type']) && !empty($settings['widget_type']) ? $settings['widget_type'] : $field_info['default_widget'];
+  $subinstance                                             = $instance;
+  $subinstance['widget']                                   = field_info_widget_types($widget_type);
+  $subinstance['widget']['type']                           = $widget_type;
+  $subinstance['widget']['settings']                       = $settings['widget_settings'] + $subinstance['widget']['settings'];
+  $form_state['field'][$field_name][$langcode]['instance'] = $subinstance;
+
+  $field['cardinality'] = $form_state['field'][$field_name][$langcode]['field']['cardinality'] = 1;
 
   $function = $subinstance['widget']['module'] . '_field_widget_form';
   if (function_exists($function)) {
