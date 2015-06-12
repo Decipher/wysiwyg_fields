@@ -354,6 +354,8 @@ function wysiwyg_fields_form_field_ui_field_edit_form_alter(&$form, &$form_state
 function wysiwyg_fields_form_field_ui_display_overview_form_alter(&$form, &$form_state, $form_id) {
   foreach ($form['#fields'] as $delta => $field_name) {
     $instance = field_info_instance($form['#entity_type'], $field_name, $form['#bundle']);
+    // Field instances using Wysiwyg Fields widget must be hidden from standard
+    // display.
     if ('wysiwyg_fields' == $instance['widget']['type']) {
       unset($form['fields'][$field_name]);
       unset($form['#fields'][$delta]);
@@ -393,11 +395,13 @@ function wysiwyg_fields_field_update_instance($instance, $prior_instance) {
       $update               = TRUE;
     }
 
-    // Field instances using Wysiwyg Fields widget must hide the field display.
+    // Field instances using Wysiwyg Fields widget must be hidden from standard
+    // display.
     foreach ($instance['display'] as &$view_mode) {
-      if ('hidden' != $view_mode['type']) {
-        $view_mode['type'] = 'hidden';
-        $update            = TRUE;
+      if ('hidden' != $view_mode['type'] || 'hidden' != $view_mode['label']) {
+        $view_mode['type']  = 'hidden';
+        $view_mode['label'] = 'hidden';
+        $update             = TRUE;
       }
     }
 
