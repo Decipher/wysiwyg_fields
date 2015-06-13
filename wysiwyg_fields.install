@@ -1,0 +1,66 @@
+<?php
+
+/**
+ * @file
+ * Install functions for the Wysiwyg Fields module.
+ */
+
+/**
+ * Implements hook_requirements.
+ *
+ * @param $phase
+ */
+function wysiwyg_fields_requirements($phase) {
+  $requirements = array();
+  // Ensure translations don't break during installation.
+  $t = get_t();
+
+  // Ensure that CKEditor is instaled before we continue.
+  if (!module_exists('ckeditor')) {
+    module_enable(array('ckeditor'));
+  }
+
+  module_load_include('inc', 'ckeditor', 'includes/ckeditor.lib');
+  $ckeditor = ckeditor_profile_load('CKEditor Global Profile');
+
+  // If we aren't dealing with a remotely hosted version of CKEditor we need to
+  // ensure that the 'widget' and 'lineutils' plugins are available.
+  if (!valid_url($ckeditor->settings['ckeditor_path'])) {
+    $required_plugins  = array(
+      'widget'    => array(
+        'title' => 'Widget',
+        'href'  => 'http://ckeditor.com/addon/widget',
+      ),
+      'lineutils' => array(
+        'title' => 'Line Utilities',
+        'href'  => 'http://ckeditor.com/addon/lineutils',
+      ),
+    );
+    $available_plugins = ckeditor_load_plugins();
+    $missing_plugins   = array_diff(array_keys($required_plugins), array_keys($available_plugins));
+    if (!empty($missing_plugins)) {
+      $plugins = theme('links', array('links' => $required_plugins));
+      if (drupal_is_cli()) {
+        $plugins = "";
+        foreach ($required_plugins as $plugin) {
+          $plugins .= "\r\n- {$plugin['title']}: {$plugin['href']}";
+        }
+      }
+
+      $requirements['wysiwyg_fields'] = array(
+        'title'       => $t('Wysiwyg Fields'),
+        'severity'    => REQUIREMENT_ERROR,
+        'description' => $t("Wysiwyg Fields requires the following CKEditor plugins installed in your CKEditor plugins diretory (@directory): !plugins", array(
+          '@directory' => ckeditor_plugins_path(),
+          '!plugins'   => $plugins,
+        )),
+      );
+
+      if ('runtime' == $phase) {
+        $requirements['wysiwyg_fields']['value'] = $t('Missing plugins: @plugins', array('@plugins' => implode(', ', $missing_plugins)));
+      }
+    }
+  }
+
+  return $requirements;
+}

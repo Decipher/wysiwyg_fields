@@ -1,16 +1,21 @@
+# Wysiwyg Fields
+----------------
+
 The Wysiwyg Fields module is bridge between Fields and the CKEditor module,
 allowing most (if not all) fields to be turned into a Wysiwyg button for a
 convenient inline solution.
 
 
 
-## Features ##
+## Features
+-----------
 
 
 
 
 
-## Required modules ##
+## Required modules
+-------------------
 
 - [CKEditor - WYSIWYG HTML editor](https://drupal.org/project/ckeditor)
 - [Formatted Field tokens](https://drupal.org/project/formatted_field_tokens)
@@ -20,50 +25,64 @@ convenient inline solution.
 
 
 
-## Recommended modules ##
+## Recommended modules
+----------------------
 
 - [Custom Formatters](https://drupal.org/project/custom_formatters)
 
 
 
-## Configuration ##
+## Installation
+---------------
+
+Install required modules as per module installation instructions.
+
+Install Wysiwyg Fields as per standard Drupal instructions:
+https://www.drupal.org/documentation/install/modules-themes/modules-7
+
+Add a new field or set an existing field with the Wysiwyg Fields **widget** and
+configure field settings.
+
+Add Wysiwyg Fields buttons to CKEditor Profiles.
+
+
+**Note:** If you are using a local installation of the CKEditor javascript
+library you will need to install the following plugins into your CKEditor
+plugins directory (e.g., sites/all/modules/ckeditor/plugins):
+  
+  - [Widget](http://ckeditor.com/addons/widget)
+  - [Line Utilities](http://ckeditor.com/addons/lineutils)
 
 
 
-
-## Frequently asked questions ##
-
-
-
-
-## Known issues ##
-
-- Following field modules aren't compatible: @TODO - write incompatibility detection code.
-    - Embedded Media Field module.
-- Certain fields can't render the preview due to JavaScript or other reasons: @TODO - Write hook for alternative preview.
-    - Embed Google Maps Field module.
-    - Video module.
-- Inserted ViewField doesn't respect querystring variables.
-- Recursive Node references = infinite loop.
-- Error message on non-multi insert doesn't work properly.
-- Formatters that use drupal_add_js() or drupal_add_css() don't don't render
-  correctly in the Wysiwyg, nor in Node view when with filter caching.
-
-
-## Roadmap ##
-
-- !Add ability to choose sub-widget.
-- Add javascript caching of token values.
-- Add better error/validation handling.
-- Add CKEditor classes to field elements.
-
-
-
-## Makefile entries ##
+## Makefile
+-----------
 
 For easy downloading of Wysiwyg Fields and it's required modules and/or
 libraries, you can use the following entries in your makefile:
 
+```
+projects[] = ckeditor
 
+projects[] = formatted_field_tokens
+
+projects[] = icon
+
+projects[] = token_filter
+
+projects[] = token_replace_ajax
+
+projects[] = wysiwyg_fields
 ```
-```
+
+**Note:** It is highly recommended to specify the version of your projects, the
+above format is only for the sake of simplicity.
+
+
+
+## Roadmap
+----------
+
+- Add javascript caching of token values.
+- Add better error/validation handling.
+- Add CKEditor classes to field elements.

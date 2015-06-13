@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Core functionality for the Wysiwyg Fields module.
+ * Core functions for the Wysiwyg Fields module.
  */
 
 /**
@@ -49,6 +49,11 @@ function wysiwyg_fields_field_widget_info() {
 
 /**
  * Implements hook_field_widget_settings_form().
+ *
+ * @param $field
+ * @param $instance
+ *
+ * @return mixed
  */
 function wysiwyg_fields_field_widget_settings_form($field, $instance) {
   $field_info = field_info_field_types($field['type']);
@@ -78,11 +83,11 @@ function wysiwyg_fields_field_widget_settings_form($field, $instance) {
   );
 
   $form['widget_settings'] = array(
-    '#type'        => 'fieldset',
-    '#title'       => t('Sub widget settings'),
-    '#tree'        => TRUE,
-    '#prefix'      => '<div id="sub_widget_settings-wrapper">',
-    '#suffix'      => '</div>',
+    '#type'   => 'fieldset',
+    '#title'  => t('Sub widget settings'),
+    '#tree'   => TRUE,
+    '#prefix' => '<div id="sub_widget_settings-wrapper">',
+    '#suffix' => '</div>',
   );
 
   // Pass through to field default widget.
@@ -136,8 +141,17 @@ function wysiwyg_fields_field_widget_settings_ajax($form) {
 
 /**
  * Implements hook_field_widget_form().
+ *
+ * @param $form
+ * @param $form_state
+ * @param $field
+ * @param $instance
+ * @param $langcode
+ * @param $items
+ *
+ * @return array
  */
-function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items) {
   $field_name = $field['field_name'];
   $parents    = $form['#parents'];
 
@@ -323,6 +337,11 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
 
 /**
  * AJAX callback for Wysiwyg Fields formatters settings select box.
+ *
+ * @param $form
+ * @param $form_state
+ *
+ * @return array|null
  */
 function wysiwyg_fields_formatters_settings_ajax($form, &$form_state) {
   // Go three levels up in the form, to the widgets container.
@@ -342,7 +361,10 @@ function wysiwyg_fields_formatters_settings_ajax($form, &$form_state) {
  * This returns the new page content to replace the page content made obsolete
  * by the form submission.
  *
- * @see field_add_more_submit()
+ * @param $form
+ * @param $form_state
+ *
+ * @return array|null
  */
 function wysiwyg_fields_field_add_more_js($form, $form_state) {
   $button = $form_state['triggering_element'];
@@ -365,8 +387,10 @@ function wysiwyg_fields_field_add_more_js($form, $form_state) {
 
 /**
  * Implements hook_form_FORM_ID_alter().
+ *
+ * @param $form
  */
-function wysiwyg_fields_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
+function wysiwyg_fields_form_field_ui_field_edit_form_alter(&$form) {
   $is_wysiwyg_field = FALSE;
   $wysiwyg_fields   = wysiwyg_fields_get_fields();
   foreach ($wysiwyg_fields as $instance) {
@@ -395,8 +419,10 @@ function wysiwyg_fields_form_field_ui_field_edit_form_alter(&$form, &$form_state
 
 /**
  * Implements hook_form_FORM_ID_alter().
+ *
+ * @param $form
  */
-function wysiwyg_fields_form_field_ui_display_overview_form_alter(&$form, &$form_state, $form_id) {
+function wysiwyg_fields_form_field_ui_display_overview_form_alter(&$form) {
   foreach ($form['#fields'] as $delta => $field_name) {
     $instance = field_info_instance($form['#entity_type'], $field_name, $form['#bundle']);
     // Field instances using Wysiwyg Fields widget must be hidden from standard
@@ -410,8 +436,10 @@ function wysiwyg_fields_form_field_ui_display_overview_form_alter(&$form, &$form
 
 /**
  * Implements hook_field_update_field().
+ *
+ * @param $field
  */
-function wysiwyg_fields_field_update_field($field, $prior_field, $has_data) {
+function wysiwyg_fields_field_update_field($field) {
   $is_wysiwyg_field = FALSE;
   $wysiwyg_fields   = wysiwyg_fields_get_fields();
   foreach ($wysiwyg_fields as $instance) {
@@ -430,6 +458,11 @@ function wysiwyg_fields_field_update_field($field, $prior_field, $has_data) {
 
 /**
  * Implements hook_field_update_instance().
+ *
+ * @param $instance
+ * @param $prior_instance
+ *
+ * @throws FieldException
  */
 function wysiwyg_fields_field_update_instance($instance, $prior_instance) {
   $update = FALSE;
@@ -565,6 +598,8 @@ function wysiwyg_fields_ckeditor_plugin() {
  * @param bool $reset
  *
  * @return mixed
+ *
+ * @TODO - Rewrite this function?
  */
 function wysiwyg_fields_get_fields($entity_type = NULL, $bundle_name = NULL, $reset = FALSE) {
   $wysiwyg_fields =& drupal_static(__FUNCTION__, array());
