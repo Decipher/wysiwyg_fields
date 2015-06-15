@@ -130,7 +130,11 @@
           dialog: id,
           button: button.label,
           mask: true,
-          inline: true,
+          // @TODO: Setting inline gives a better visual representation of how
+          // the output will look, but it also throws javascript errors and
+          // breaks when other buttons are invoked (left, right, bold, etc).
+          // Issue may be with Widget or Line Utilities CKEditor plugin.
+          // inline: true,
 
           // Upcast; triggered when Wysiwyg is attached (on load, switch to rich
           // text editor, etc).
