@@ -108,10 +108,10 @@
       var formatterSettings = [];
       var formData = $(':input[name^="' + this.fieldName.underscore + '[wysiwyg_fields][formatter][settings]"]').serializeArray();
 
-      $.each(formData, function () {
-        if ($(this).val()) {
-          var parts = $(this).attr('name').replace(/]/g, '').split('[');
-          formatterSettings.push(parts[4] + "-" + $(this).val());
+      $.each(formData, function (index, field) {
+        if (field.value !== "") {
+          var parts = field.name.replace(/]/g, '').split('[');
+          formatterSettings.push(parts[4] + "-" + field.value);
         }
       });
       if (formatterSettings.length > 0) {
