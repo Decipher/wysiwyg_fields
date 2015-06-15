@@ -141,7 +141,7 @@
           //
           // Determine if an element is part of this plugin instance.
           upcast: function (element, data) {
-            var token_regex = new RegExp("(\\[" + components[1] + ":" + components[3] + ":\\d.*?\\])", 'g');
+            var token_regex = new RegExp("(\\[" + components[1] + ":" + components[3] + "-formatted:\\d.*?\\])", 'g');
 
             // If we have a Wysiwyg Fields pseudo-field with the correct token
             // format, then we upcast.
