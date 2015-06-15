@@ -576,7 +576,7 @@ function wysiwyg_fields_form_filter_admin_format_form_alter(&$form, &$form_state
   if ($active) {
     $form['filters']['status']['filter_tokens']['#attributes']['disabled'] = TRUE;
     $form['filters']['status']['filter_tokens']['#value']                  = TRUE;
-    $form['filters']['status']['filter_tokens']['#description'] .= '<br />' . t('<strong>Note:</strong> This filter required as a the %text_format is being used by a CKEditor profile with a Wysiwyg field.', array('%text_format' => $form['#format']->name));
+    $form['filters']['status']['filter_tokens']['#description'] .= '<br />' . t('<strong>Note:</strong> This filter is required as the %text_format is being used by a CKEditor profile with a Wysiwyg field.', array('%text_format' => $form['#format']->name));
   }
 }
 
