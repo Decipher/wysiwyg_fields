@@ -126,35 +126,28 @@
 
         // Register the widget.
         editor.widgets.add(id, {
-          template: '<wysiwyg_fields token=""></wysiwyg_fields>',
+          template: '<wysiwyg_fields data-token=""></wysiwyg_fields>',
           dialog: id,
           button: button.label,
           mask: true,
-          // @TODO: Setting inline gives a better visual representation of how
-          // the output will look, but it also throws javascript errors and
-          // breaks when other buttons are invoked (left, right, bold, etc).
-          // Issue may be with Widget or Line Utilities CKEditor plugin.
-          // inline: true,
 
           // Upcast; triggered when Wysiwyg is attached (on load, switch to rich
           // text editor, etc).
           //
           // Determine if an element is part of this plugin instance.
           upcast: function (element, data) {
-            var token_regex = new RegExp("(\\[" + components[1] + ":" + components[3] + "-formatted:\\d.*?\\])", 'g');
-
             // If we have a Wysiwyg Fields pseudo-field with the correct token
             // format, then we upcast.
-            if (element.name == 'wysiwyg_fields' && typeof element.attributes.token !== "undefined" && element.attributes.token.match(token_regex)) {
-              data.token = element.attributes.token;
+            if (element.name == 'wysiwyg_fields' && typeof element.attributes['data-token'] !== "undefined" && element.attributes['data-token'].match(Drupal.settings.wysiwygFields[id].regExpToken)) {
+              data.token = element.attributes['data-token'];
               data.upcast = true;
 
               return true;
             }
 
             // Wrap plain text tokens Wysiwyg Fields pseudo-field.
-            else if (element.getHtml().match(token_regex)) {
-              element.setHtml(element.getHtml().replace(token_regex, "<wysiwyg_fields token='$1'>$1</wysiwyg_fields>"));
+            else if (element.getHtml().match(Drupal.settings.wysiwygFields[id].regExpToken)) {
+              element.setHtml(element.getHtml().replace(Drupal.settings.wysiwygFields[id].regExpToken, "<wysiwyg_fields data-token='$1'>$1</wysiwyg_fields>"));
             }
 
             return false;
@@ -180,7 +173,7 @@
               $.post(Drupal.settings.basePath + 'token_replace/ajax/' + this.data.token, $('form').serialize(), function (result) {
                 $.each(editor.widgets.instances, function () {
                   if (this.data.token == result.token) {
-                    this.element.setHtml(result.value);
+                    this.setData('value', result.value);
                   }
                 });
               }, 'json');

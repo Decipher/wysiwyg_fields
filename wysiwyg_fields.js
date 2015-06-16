@@ -37,6 +37,7 @@
 
     // Regular expressions.
     regExpDelta: null,
+    regExpToken: null,
 
     /**
      *
@@ -63,6 +64,7 @@
 
       // Regular expressions.
       this.regExpDelta = new RegExp("wysiwyg_fields-" + this.fieldName.underscore + "-delta-(\\d+)");
+      this.regExpToken = new RegExp("(\\[" + components[1] + ":" + components[3] + "-formatted:\\d.*?\\])", 'g');
     },
 
     /**
