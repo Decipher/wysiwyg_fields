@@ -607,9 +607,9 @@ function wysiwyg_fields_ckeditor_plugin() {
       $plugins['wysiwyg_fields']['buttons'][$id] = array(
         // 'icon' needs to be a relative path from the path of this plugin.
         'icon'     => str_repeat('../', count(explode('/', $plugins['wysiwyg_fields']['path']))) . $icon,
-        // 'icon_url' is an absolute url in case a hosted instance of CKEDITOR
-        // is used.
-        'icon_url' => url($icon, array('absolute' => TRUE)),
+        // 'icon_raw' is used to generate a absolute URL of the icon path in via
+        // javascript.
+        'icon_raw' => $icon,
         'label'    => !empty($settings['label']) ? $settings['wysiwyg_fields']['label'] : $field['label'],
       );
     }

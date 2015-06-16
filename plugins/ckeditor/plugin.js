@@ -27,7 +27,7 @@
           label: button.label,
           command: id,
           toolbar: 'wysiwyg_fields',
-          icon: button.icon_url
+          icon: window.location.protocol + "//" + window.location.host + Drupal.settings.basePath + button.icon_raw
         });
 
         // Register the dialog.
