@@ -194,7 +194,7 @@
     setFormatter: function (formatter, settings) {
       // Set formatter if required.
       var $formatterField = $(':input[name="' + this.fieldName.underscore + '[wysiwyg_fields][formatter][type]"]');
-      if (formatter != null && $formatterField.val() != formatter) {
+      if (formatter != null) {
         // Store settings to be set after AJAX callback.
         this.formatterSettings = settings;
 
