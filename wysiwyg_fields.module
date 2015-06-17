@@ -610,7 +610,7 @@ function wysiwyg_fields_ckeditor_plugin() {
         // 'icon_raw' is used to generate a absolute URL of the icon path in via
         // javascript.
         'icon_raw' => $icon,
-        'label'    => !empty($settings['label']) ? $settings['wysiwyg_fields']['label'] : $field['label'],
+        'label'    => !empty($settings['label']) ? $settings['label'] : $field['label'],
       );
     }
   }
