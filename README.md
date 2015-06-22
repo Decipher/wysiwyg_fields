@@ -1,16 +1,13 @@
 # Wysiwyg Fields
 ----------------
 
-The Wysiwyg Fields module is bridge between Fields and the CKEditor module,
-allowing most (if not all) fields to be turned into a Wysiwyg button for a
-convenient inline solution.
+Wysiwyg Fields is an Inline field management system, a module that bridges the
+gap between Drupal fields and CKEditor, giving the power of Drupal's field
+system via the simple usability of a CKEditor dialog.
 
-
-
-## Features
------------
-
-
+What that means is that Wysiwyg Fields allows for any Drupal field to be
+embedded directly into CKEditor and behave as a native CKEditor plugin, removing
+unnecessary clutter from your Drupal entity forms.
 
 
 
@@ -35,15 +32,12 @@ convenient inline solution.
 ## Installation
 ---------------
 
-Install required modules as per module installation instructions.
+1. Install the module and dependencies as per
+   [standard Drupal instructions](https://www.drupal.org/documentation/install/modules-themes/modules-7).
 
-Install Wysiwyg Fields as per standard Drupal instructions:
-https://www.drupal.org/documentation/install/modules-themes/modules-7
+2. Create or update a field so that it uses the Wysiwyg field widget.
 
-Add a new field or set an existing field with the Wysiwyg Fields **widget** and
-configure field settings.
-
-Add Wysiwyg Fields buttons to CKEditor Profiles.
+3. Add your Wysiwyg field button to a CKEditor profile.
 
 
 **Note:** If you are using a local installation of the CKEditor javascript
@@ -86,3 +80,4 @@ above format is only for the sake of simplicity.
 - Add javascript caching of token values.
 - Add better error/validation handling.
 - Add CKEditor classes to field elements.
+- Add multi-insert functionality.
