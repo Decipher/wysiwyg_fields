@@ -155,6 +155,14 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
   $field_name = $field['field_name'];
   $parents    = $form['#parents'];
 
+  if (isset($form_state['values'][$field_name][$langcode])) {
+    $items = array();
+    foreach ($form_state['values'][$field_name][$langcode] as $item) {
+      $items[$item['wysiwyg_fields_delta']] = $item;
+    }
+    $form_state['field'][$field_name][$langcode]['items'] = $items;
+  }
+
   // Determine the number of widgets to display.
   $field_state = field_form_get_state($parents, $field_name, $langcode, $form_state);
   $max         = $field_state['items_count'];
@@ -222,6 +230,12 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
         ), $element, $form_state, $context);
 
         $field_elements[$delta] = $element;
+
+        // Store the current delta so we can compensate for removed deltas.
+        $field_elements[$delta]['wysiwyg_fields_delta'] = array(
+          '#type'  => 'value',
+          '#value' => $delta,
+        );
       }
     }
 
@@ -385,21 +399,89 @@ function wysiwyg_fields_field_add_more_js($form, $form_state) {
   return $element;
 }
 
+
+/**
+ * Implements hook_field_attach_presave().
+ */
+function wysiwyg_fields_field_attach_presave($entity_type, $entity) {
+  list($id, $vid, $bundle_name) = entity_extract_ids($entity_type, $entity);
+  $instances = field_info_instances($entity_type, $bundle_name);
+
+  $text_fields    = array();
+  $wysiwyg_fields = array();
+  $deltas_map     = array();
+
+  // Build lists of text fields with text processing enabled and other fields
+  // using the Wysiwyg Fields widget.
+  foreach ($instances as $field_name => $instance) {
+    if ($instance['widget']['module'] == 'text' && isset($instance['settings']['text_processing']) && $instance['settings']['text_processing']) {
+      $text_fields[] = $field_name;
+    }
+    elseif ($instance['widget']['module'] == 'wysiwyg_fields') {
+      $wysiwyg_fields[$field_name] = $field_name;
+    }
+  }
+
+  // Determine if any deltas are changed on each Wysiwyg Fields enabled field.
+  foreach ($wysiwyg_fields as $wysiwyg_field) {
+    $items = field_get_items($entity_type, $entity, $wysiwyg_field);
+    if (!empty($items)) {
+      foreach ($items as $delta => $item) {
+        if ($delta !== $item['wysiwyg_fields_delta']) {
+          $deltas_map[$wysiwyg_field][$item['wysiwyg_fields_delta']] = $delta;
+        }
+      }
+    }
+    if (!isset($deltas_map[$wysiwyg_field]) || empty($deltas_map[$wysiwyg_field])) {
+      unset($wysiwyg_fields[$wysiwyg_field]);
+    }
+  }
+
+  // Scan through each textfield and find Wysiwyg Fields tokens that need to be
+  // updated.
+  foreach ($text_fields as $text_field) {
+    $change   = FALSE;
+    $langcode = field_language($entity_type, $entity, $text_field);
+    $items    = field_get_items($entity_type, $entity, $text_field, $langcode);
+    if (!empty($items)) {
+      foreach ($items as &$item) {
+        foreach (array('value', 'summary') as $col) {
+          if (isset($item[$col])) {
+            $tokens = token_scan($item[$col]);
+            if (isset($tokens[$entity_type])) {
+              foreach ($wysiwyg_fields as $wysiwyg_field) {
+                $wysiwyg_field_tokens = token_find_with_prefix($tokens[$entity_type], "{$wysiwyg_field}-formatted");
+                if (!empty($wysiwyg_field_tokens)) {
+                  $change = TRUE;
+                  foreach ($wysiwyg_field_tokens as $wsywiyg_field_token => $original) {
+                    $parts      = explode(':', $wsywiyg_field_token);
+                    $old_deltas = explode(',', $parts[0]);
+                    $new_deltas = array();
+                    foreach ($old_deltas as $old_delta) {
+                      $new_deltas[] = $deltas_map[$wysiwyg_field][$old_delta];
+                    }
+                    $replace    = str_replace($parts[0], implode(',', $new_deltas), $original);
+                    $item[$col] = str_replace($original, $replace, $item[$col]);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      if ($change) {
+        $entity->{$text_field}[$langcode] = $items;
+      }
+    }
+  }
+}
+
 /**
  * Implements hook_form_FORM_ID_alter().
  *
  * @param $form
  */
 function wysiwyg_fields_form_field_ui_field_edit_form_alter(&$form) {
-  $is_wysiwyg_field = FALSE;
-  $wysiwyg_fields   = wysiwyg_fields_get_fields();
-  foreach ($wysiwyg_fields as $instance) {
-    if ($instance['field_name'] == $form['#field']['field_name']) {
-      $is_wysiwyg_field = TRUE;
-      break;
-    }
-  }
-
   if (isset($form['#instance']['widget']['type']) && 'wysiwyg_fields' == $form['#instance']['widget']['type']) {
     // Field instances using Wysiwyg Fields widget must not be required.
     $form['instance']['required'] = array(
@@ -408,7 +490,7 @@ function wysiwyg_fields_form_field_ui_field_edit_form_alter(&$form) {
     );
   }
 
-  if ($is_wysiwyg_field) {
+  if (wysiwyg_fields_is_wysiwyg_field($form['#field']['field_name'])) {
     // Fields that are used with Wysiwyg Fields must have unlimited cardinality.
     $form['field']['cardinality'] = array(
       '#type'  => 'value',
@@ -440,17 +522,8 @@ function wysiwyg_fields_form_field_ui_display_overview_form_alter(&$form) {
  * @param $field
  */
 function wysiwyg_fields_field_update_field($field) {
-  $is_wysiwyg_field = FALSE;
-  $wysiwyg_fields   = wysiwyg_fields_get_fields();
-  foreach ($wysiwyg_fields as $instance) {
-    if ($instance['field_name'] == $field['field_name']) {
-      $is_wysiwyg_field = TRUE;
-      break;
-    }
-  }
-
   // Fields that are used with Wysiwyg Fields must have unlimited cardinality.
-  if ($is_wysiwyg_field && FIELD_CARDINALITY_UNLIMITED != $field['cardinality']) {
+  if (wysiwyg_fields_is_wysiwyg_field($field['field_name']) && FIELD_CARDINALITY_UNLIMITED != $field['cardinality']) {
     $field['cardinality'] = FIELD_CARDINALITY_UNLIMITED;
     field_update_field($field);
   }
@@ -584,68 +657,59 @@ function wysiwyg_fields_form_filter_admin_format_form_alter(&$form, &$form_state
  * Implements hook_ckeditor_plugin().
  */
 function wysiwyg_fields_ckeditor_plugin() {
-  $plugins = array();
+  $plugins['wysiwyg_fields'] = array(
+    'name'    => 'wysiwyg_fields',
+    'desc'    => t('Wysiwyg Fields plugin'),
+    'path'    => drupal_get_path('module', 'wysiwyg_fields') . '/plugins/ckeditor/',
+    'default' => 't',
+  );
 
-  $wysiwyg_fields = wysiwyg_fields_get_fields();
-  if (!empty($wysiwyg_fields)) {
-    $plugins['wysiwyg_fields'] = array(
-      'name'    => 'wysiwyg_fields',
-      'desc'    => t('Wysiwyg Fields plugin'),
-      'path'    => drupal_get_path('module', 'wysiwyg_fields') . '/plugins/ckeditor/',
-      'default' => 't',
-    );
+  $instances = field_info_instances();
+  foreach ($instances as $entity_type => $bundles) {
+    foreach ($bundles as $bundle_name => $fields) {
+      foreach ($fields as $field_name => $instance) {
+        if ($instance['widget']['module'] == 'wysiwyg_fields') {
+          $id       = "wysiwyg_fields-{$entity_type}-{$bundle_name}-{$field_name}";
+          $settings = $instance['widget']['settings'];
 
-    foreach ($wysiwyg_fields as $id => $field) {
-      $settings = $field['widget']['settings'];
-
-      $bundle = icon_bundle_load($settings['icon']['bundle']);
-      if (!isset($bundle['settings']['extension'])) {
-        $bundle['settings']['extension'] = 'png';
-      }
-      $icon = $bundle['path'] . '/' . $settings['icon']['icon'] . '.' . $bundle['settings']['extension'];
-
-      $plugins['wysiwyg_fields']['buttons'][$id] = array(
-        // 'icon' needs to be a relative path from the path of this plugin.
-        'icon'     => str_repeat('../', count(explode('/', $plugins['wysiwyg_fields']['path']))) . $icon,
-        // 'icon_raw' is used to generate a absolute URL of the icon path in via
-        // javascript.
-        'icon_raw' => $icon,
-        'label'    => !empty($settings['label']) ? $settings['label'] : $field['label'],
-      );
-    }
-  }
-
-  return $plugins;
-}
-
-/**
- * @param null $entity_type
- * @param null $bundle_name
- * @param bool $reset
- *
- * @return mixed
- *
- * @TODO - Rewrite this function?
- */
-function wysiwyg_fields_get_fields($entity_type = NULL, $bundle_name = NULL, $reset = FALSE) {
-  $wysiwyg_fields =& drupal_static(__FUNCTION__, array());
-
-  // @TODO - If we do need to get fields by $entity_type/$bundle_name then this
-  //    will need work.
-  if (empty($wysiwyg_fields) || $reset) {
-    $instances = field_info_instances(NULL, NULL);
-    foreach ($instances as $entity_name => $bundles) {
-      foreach ($bundles as $bundle_name => $fields) {
-        foreach ($fields as $field_name => $instance) {
-          if ($instance['widget']['type'] == 'wysiwyg_fields') {
-            $wysiwyg_fields["wysiwyg_fields-{$entity_name}-{$bundle_name}-{$field_name}"] = $instance;
+          $bundle = icon_bundle_load($settings['icon']['bundle']);
+          if (!isset($bundle['settings']['extension'])) {
+            $bundle['settings']['extension'] = 'png';
           }
+          $icon = $bundle['path'] . '/' . $settings['icon']['icon'] . '.' . $bundle['settings']['extension'];
+
+          $plugins['wysiwyg_fields']['buttons'][$id] = array(
+            // 'icon' needs to be a relative path from the path of this plugin.
+            'icon'     => str_repeat('../', count(explode('/', $plugins['wysiwyg_fields']['path']))) . $icon,
+            // 'icon_raw' is used to generate a absolute URL of the icon path in via
+            // javascript.
+            'icon_raw' => $icon,
+            'label'    => !empty($settings['label']) ? $settings['label'] : $instance['label'],
+          );
         }
       }
     }
   }
 
-  return $wysiwyg_fields;
+  return isset($plugins['wysiwyg_fields']['buttons']) ? $plugins : array();
+}
+
+/**
+ * @param $field_name
+ *
+ * @return bool
+ */
+function wysiwyg_fields_is_wysiwyg_field($field_name) {
+  $instances = field_info_instances();
+  foreach ($instances as $bundles) {
+    foreach ($bundles as $fields) {
+      if (isset($fields[$field_name]) && $fields[$field_name]['widget']['module'] == 'wysiwyg_fields') {
+        return TRUE;
+      }
+    }
+  }
+
+  return FALSE;
 }
 
 /**
