@@ -5,7 +5,9 @@
     attach: function (context) {
       if (typeof Drupal.settings.wysiwygFields.activeId != 'undefined') {
         var wysiwygField = Drupal.settings.wysiwygFields[Drupal.settings.wysiwygFields.activeId];
-        wysiwygField.show(wysiwygField.getDeltas());
+        if (wysiwygField.activeMode == 'basic') {
+          wysiwygField.show(wysiwygField.getDeltas());
+        }
 
         if (typeof wysiwygField.formatterSettings != 'undefined') {
           wysiwygField.setFormatter(null, wysiwygField.formatterSettings);
@@ -34,6 +36,7 @@
 
     // Active information.
     activeDeltas: [],
+    activeMode: 'basic',
 
     // Regular expressions.
     regExpDelta: null,
@@ -81,7 +84,7 @@
       var wysiwygField = this;
 
       // If no delta specified, show all and return.
-      if (typeof deltas == 'undefined') {
+      if (typeof deltas == 'undefined' || deltas.length == 0) {
         $(this.classDeltas).show();
         this.setDeltas();
         return;
@@ -103,7 +106,6 @@
      * @returns {string}
      */
     buildToken: function () {
-      // @TODO - Build deltas.
       var deltas = this.getDeltas();
 
       // Build formatter settings.
@@ -165,10 +167,24 @@
      * @returns {*}
      */
     getDeltas: function () {
+      // Return activeDeltas if set.
       if (typeof this.activeDeltas != 'undefined' && this.activeDeltas.length > 0) {
         return this.activeDeltas;
       }
 
+      // Return deltas list based on 'select' checkboxes.
+      var $selects = $(this.idInner).find(':checkbox[name$="[wysiwyg_fields][select]"]:checked');
+      if ($selects.length > 0) {
+        var selected = [];
+        $selects.each(function(index, item) {
+          var parts = $(item).attr('name').split('[');
+          var delta = parts[2].substring(0, parts[2].length - 1);
+          selected.push(delta);
+        });
+        return selected;
+      }
+
+      // Return last delta.
       var match = $(this.classDeltas).last().attr('class').match(this.regExpDelta);
       return [match[1]];
     },
@@ -178,11 +194,30 @@
      * @param deltas
      */
     setDeltas: function (deltas) {
-      if (typeof deltas == 'undefined') {
+      if (typeof deltas == 'undefined' || deltas.length == 0) {
         this.activeDeltas = [];
       }
 
       this.activeDeltas = deltas;
+    },
+
+    /**
+     *
+     * @param deltas
+     */
+    selectDeltas: function (deltas) {
+      // If not deltas provided, un-check all 'select' checkboxes.
+      if (typeof deltas == 'undefined' || deltas.length == 0) {
+        $(this.idInner).find(':checkbox[name$="[wysiwyg_fields][select]"]').removeAttr('checked');
+      }
+
+      // Check 'select' checkboxes as per provided deltas.
+      else {
+        var wysiwygField = this;
+        $.each(deltas, function(index, delta) {
+          $(wysiwygField.idInner).find(':checkbox[name$="[' + delta + '][wysiwyg_fields][select]"]').attr('checked', 'checked');
+        });
+      }
     },
 
     /**
@@ -203,7 +238,7 @@
       }
 
       else {
-        wysiwygField = this;
+        var wysiwygField = this;
 
         // Reset all settings to default.
         $(':input[name^="' + this.fieldName.underscore + '[wysiwyg_fields][formatter][settings]"]').val(function() {

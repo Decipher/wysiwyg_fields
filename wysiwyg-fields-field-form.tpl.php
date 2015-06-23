@@ -10,5 +10,5 @@
     <?php echo $field ?>
   </div>
 <?php endforeach ?>
-<?php echo $wysiwyg_fields ?>
 <?php echo $add_more ?>
+<?php echo $wysiwyg_fields ?>

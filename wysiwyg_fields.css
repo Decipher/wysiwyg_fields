@@ -5,3 +5,12 @@
 .cke_dialog_ui_html div.messages ul li {
   white-space: normal;
 }
+
+.wysiwyg_fields-dialog-basic div[class$="wysiwyg-fields-select"],
+.wysiwyg_fields-dialog-basic .field-add-more-submit {
+  position: absolute !important;
+  clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
+  clip: rect(1px, 1px, 1px, 1px);
+  overflow: hidden;
+  height: 1px;
+}

@@ -36,26 +36,71 @@
             title: button.label,
             contents: [
               {
+                id: 'basic',
+                label: 'Basic',
+                title: 'Basic',
                 elements: [
                   {
                     type: 'html',
-                    html: '<div id="' + id + '"></div>'
+                    html: '',
+                    className: 'wysiwyg_fields-dialog-basic'
+                  }
+                ]
+              },
+              {
+                id: 'advanced',
+                label: 'Advanced',
+                title: 'Advanced',
+                elements: [
+                  {
+                    type: 'html',
+                    html: '',
+                    className: 'wysiwyg_fields-dialog-advanced'
                   }
                 ]
               }
             ],
 
+            // On load; store dialog definition in Wysiwyg Fields object.
+            onLoad: function (evt) {
+              Drupal.settings.wysiwygFields[id].dialog = this;
+            },
+
             // On show; place dialog within the bounds of the entity
             // form and move field into the dialog.
             onShow: function (evt) {
-              // Store dialog definition in Wysiwyg Fields object.
-              Drupal.settings.wysiwygFields[id].dialog = this;
-
               $(this.parts.dialog.$.parentElement).appendTo($(this._.editor.container.$).parents('form'));
-              $(Drupal.settings.wysiwygFields[id].idInner).appendTo('#' + id);
+              $(Drupal.settings.wysiwygFields[id].idInner).appendTo('.wysiwyg_fields-dialog-basic', this.parts.contents.$);
 
               // Store active Wysiwyg Fields id.
               Drupal.settings.wysiwygFields.activeId = id;
+
+              // Attach tab change event listener.
+              Drupal.settings.wysiwygFields[id].tabEvent = this.on('selectPage', function (evt) {
+                // Set active dialog mode.
+                Drupal.settings.wysiwygFields[id].activeMode = evt.data.page;
+
+                var deltas = [];
+                var activeDeltas = [];
+
+                // Get deltas and activeDeltas per tab.
+                if (evt.data.page == 'basic') {
+                  deltas = Drupal.settings.wysiwygFields[id].getDeltas();
+                  activeDeltas = deltas;
+                }
+                else {
+                  activeDeltas = Drupal.settings.wysiwygFields[id].getDeltas();
+                }
+
+                // Show deltas.
+                Drupal.settings.wysiwygFields[id].show(deltas);
+
+                // Select active delta checkboxes.
+                Drupal.settings.wysiwygFields[id].selectDeltas(activeDeltas);
+
+                // Move form to new tab.
+                $(Drupal.settings.wysiwygFields[id].idInner).appendTo('.wysiwyg_fields-dialog-' + evt.data.page, this.parts.contents.$);
+              });
             },
 
             // On hide; reset dialog and field back to their original
@@ -67,8 +112,14 @@
               // Reset hidden deltas.
               Drupal.settings.wysiwygFields[id].show();
 
+              // Reset dialog mode.
+              Drupal.settings.wysiwygFields[id].activeMode = 'basic';
+
               // Delete active Wysiwyg Fields id.
               delete Drupal.settings.wysiwygFields.activeId;
+
+              // Remove tab change event listener.
+              Drupal.settings.wysiwygFields[id].tabEvent.removeListener();
             },
 
             // On ok; initiate AJAX callback for rendered token value and

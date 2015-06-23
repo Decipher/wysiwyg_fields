@@ -158,7 +158,7 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
   if (isset($form_state['values'][$field_name][$langcode])) {
     $items = array();
     foreach ($form_state['values'][$field_name][$langcode] as $item) {
-      $items[$item['wysiwyg_fields_delta']] = $item;
+      $items[$item['wysiwyg_fields']['delta']] = $item;
     }
     $form_state['field'][$field_name][$langcode]['items'] = $items;
   }
@@ -232,9 +232,19 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
         $field_elements[$delta] = $element;
 
         // Store the current delta so we can compensate for removed deltas.
-        $field_elements[$delta]['wysiwyg_fields_delta'] = array(
+        $field_elements[$delta]['wysiwyg_fields'] = array(
+          '#type' => 'container',
+          '#tree' => TRUE,
+        );
+
+        $field_elements[$delta]['wysiwyg_fields']['delta'] = array(
           '#type'  => 'value',
           '#value' => $delta,
+        );
+
+        $field_elements[$delta]['wysiwyg_fields']['select'] = array(
+          '#type'          => 'checkbox',
+          '#default_value' => !empty($item[0]['wyswiyg_fields']['select']),
         );
       }
     }
@@ -257,6 +267,31 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
       // Add formatter fields and 'add more' button, if not working with a
       // programmed form.
       if (empty($form_state['programmed'])) {
+        // Add more button.
+        $field_elements['add_more'] = array(
+          '#type'                    => 'submit',
+          '#name'                    => strtr(implode('-', array_merge($parents, array($field_name))), '-', '_') . '_add_more',
+          '#value'                   => t('Add another item'),
+          '#attributes'              => array(
+            'class' => array(
+              'field-add-more-submit',
+            )
+          ),
+          '#limit_validation_errors' => array(
+            array_merge($parents, array(
+              $field_name,
+              $langcode
+            ))
+          ),
+          '#submit'                  => array('field_add_more_submit'),
+          '#ajax'                    => array(
+            'callback' => 'wysiwyg_fields_field_add_more_js',
+            'wrapper'  => "{$id}-inner",
+            'effect'   => 'fade',
+          ),
+          '#weight'                  => 105,
+          '#parents'                 => array($field_name, 'add_more'),
+        );
 
         // Wysiwyg Fields setting form.
         $field_elements['wysiwyg_fields'] = array(
@@ -315,33 +350,6 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
           );
           $field_elements['wysiwyg_fields']['formatter']['settings'] += $function($field, $instance, 'default', $form, $form_state);
         }
-
-        // Add more button.
-        $field_elements['add_more'] = array(
-          '#type'                    => 'submit',
-          '#name'                    => strtr(implode('-', array_merge($parents, array($field_name))), '-', '_') . '_add_more',
-          '#value'                   => t('Add another item'),
-          '#attributes'              => array(
-            'class' => array(
-              'field-add-more-submit',
-              'element-invisible',
-            )
-          ),
-          '#limit_validation_errors' => array(
-            array_merge($parents, array(
-              $field_name,
-              $langcode
-            ))
-          ),
-          '#submit'                  => array('field_add_more_submit'),
-          '#ajax'                    => array(
-            'callback' => 'wysiwyg_fields_field_add_more_js',
-            'wrapper'  => "{$id}-inner",
-            'effect'   => 'fade',
-          ),
-          '#weight'                  => 105,
-          '#parents'                 => array($field_name, 'add_more'),
-        );
       }
     }
   }
@@ -399,7 +407,6 @@ function wysiwyg_fields_field_add_more_js($form, $form_state) {
   return $element;
 }
 
-
 /**
  * Implements hook_field_attach_presave().
  */
@@ -427,8 +434,8 @@ function wysiwyg_fields_field_attach_presave($entity_type, $entity) {
     $items = field_get_items($entity_type, $entity, $wysiwyg_field);
     if (!empty($items)) {
       foreach ($items as $delta => $item) {
-        if ($delta !== $item['wysiwyg_fields_delta']) {
-          $deltas_map[$wysiwyg_field][$item['wysiwyg_fields_delta']] = $delta;
+        if ($delta !== $item['wysiwyg_fields']['delta']) {
+          $deltas_map[$wysiwyg_field][$item['wysiwyg_fields']['delta']] = $delta;
         }
       }
     }
