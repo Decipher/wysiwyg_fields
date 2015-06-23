@@ -79,5 +79,3 @@ above format is only for the sake of simplicity.
 
 - Add javascript caching of token values.
 - Add better error/validation handling.
-- Add CKEditor classes to field elements.
-- Add multi-insert functionality.

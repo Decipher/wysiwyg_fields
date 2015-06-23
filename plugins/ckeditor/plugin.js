@@ -8,8 +8,6 @@
       var ckeditor = Drupal.settings.ckeditor;
       var buttons = ckeditor.input_formats[ckeditor.elements[editor.name]].loadPlugins.wysiwyg_fields.buttons;
       $.each(buttons, function (id, button) {
-        var components = id.split('-');
-
         // Ensure field exists, otherwise skip this plugin.
         var $wrapper = $('#' + id + '-wrapper');
         if ($wrapper.length == 0) {

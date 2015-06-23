@@ -10,13 +10,34 @@
  */
 function wysiwyg_fields_theme() {
   $items = array();
+  $file  = 'wysiwyg_fields.theme.inc';
 
-  $items['wysiwyg_fields_field_form'] = array(
+  $items['wysiwyg_fields'] = array(
     'render element' => 'element',
-    'template'       => 'wysiwyg-fields-field-form',
+    'template'       => 'wysiwyg_fields',
+    'file'           => $file,
+  );
+
+  $items['wysiwyg_fields_form_element'] = array(
+    'render element' => 'element',
+    'file'           => $file,
   );
 
   return $items;
+}
+
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function wysiwyg_fields_theme_registry_alter(&$theme_registry) {
+  module_load_include('theme.inc', 'wysiwyg_fields');
+  $fields = wysiwyg_fields_ckeditor_elements();
+  foreach (array_keys($fields) as $field) {
+    if (isset($theme_registry[$field])) {
+      $theme_registry[$field]['preprocess functions'][] = 'wysiwyg_fields_preprocess_wysiwyg_fields_field';
+    }
+  }
+  $theme_registry['form_element']['preprocess functions'][] = 'wysiwyg_fields_preprocess_form_element';
 }
 
 /**
@@ -158,7 +179,9 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
   if (isset($form_state['values'][$field_name][$langcode])) {
     $items = array();
     foreach ($form_state['values'][$field_name][$langcode] as $item) {
-      $items[$item['wysiwyg_fields']['delta']] = $item;
+      if (isset($item['wysiwyg_fields'])) {
+        $items[$item['wysiwyg_fields']['delta']] = $item;
+      }
     }
     $form_state['field'][$field_name][$langcode]['items'] = $items;
   }
@@ -233,8 +256,9 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
 
         // Store the current delta so we can compensate for removed deltas.
         $field_elements[$delta]['wysiwyg_fields'] = array(
-          '#type' => 'container',
-          '#tree' => TRUE,
+          '#type'   => 'container',
+          '#tree'   => TRUE,
+          '#weight' => -100,
         );
 
         $field_elements[$delta]['wysiwyg_fields']['delta'] = array(
@@ -255,7 +279,7 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
           'js'  => array(drupal_get_path('module', 'wysiwyg_fields') . '/wysiwyg_fields.js'),
           'css' => array(drupal_get_path('module', 'wysiwyg_fields') . '/wysiwyg_fields.css'),
         ),
-        '#theme'       => 'wysiwyg_fields_field_form',
+        '#theme'       => 'wysiwyg_fields',
         '#field_name'  => $field['field_name'],
         '#cardinality' => FIELD_CARDINALITY_UNLIMITED,
         '#description' => $description,
@@ -717,20 +741,4 @@ function wysiwyg_fields_is_wysiwyg_field($field_name) {
   }
 
   return FALSE;
-}
-
-/**
- * @param $variables
- */
-function template_preprocess_wysiwyg_fields_field_form(&$variables) {
-  $element = $variables['element'];
-
-  foreach (element_children($element) as $delta) {
-    if (is_numeric($delta)) {
-      $variables['deltas'][$delta] = render($element[$delta]);
-    }
-  }
-
-  $variables['add_more']       = render($element['add_more']);
-  $variables['wysiwyg_fields'] = render($element['wysiwyg_fields']);
 }
