@@ -723,6 +723,7 @@ function wysiwyg_fields_ckeditor_plugin() {
             // javascript.
             'icon_raw' => $icon,
             'label'    => !empty($settings['label']) ? $settings['label'] : $instance['label'],
+            'row'      => 'wysiwyg_fields',
           );
         }
       }
