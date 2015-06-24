@@ -614,6 +614,10 @@ function wysiwyg_fields_field_update_instance($instance, $prior_instance) {
 
 /**
  * Implements hook_form_FORM_ID_alter().
+ *
+ * @param $form
+ * @param $form_state
+ * @param $form_id
  */
 function wysiwyg_fields_form_ckeditor_admin_profile_form_alter(&$form, &$form_state, $form_id) {
   // Remove the Wysiwyg Fields plugin for the Plugins list as we will control
@@ -629,10 +633,13 @@ function wysiwyg_fields_form_ckeditor_admin_profile_form_alter(&$form, &$form_st
  */
 function wysiwyg_fields_ckeditor_admin_profile_form_submit($form, &$form_state) {
   if (strstr($form_state['values']['toolbar'], "'wysiwyg_fields-")) {
-    // If a Wysiwyg Fields button is in use, enable the Wysiwyg Fields plugin.
-    // @TODO - If this is not a hosted version of CKEditor, we should also be
-    // dealing with the widget and lineutils plugins.
+    // If a Wysiwyg Fields button is in use, enable the required plugins.
     $form_state['values']['loadPlugins']['wysiwyg_fields'] = 'wysiwyg_fields';
+    foreach (array('widget', 'lineutils') as $plugin) {
+      if (isset($form_state['values']['loadPlugins'][$plugin])) {
+        $form_state['values']['loadPlugins'][$plugin] = $plugin;
+      }
+    }
 
     // Enable the Token filter on specified input formats.
     $form_state['values']['input_formats'] = array_filter($form_state['values']['input_formats']);
