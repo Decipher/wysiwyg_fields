@@ -64,3 +64,25 @@ function wysiwyg_fields_requirements($phase) {
 
   return $requirements;
 }
+
+/**
+ * Change the structure of the Wysiwyg Fields widget settings.
+ */
+function wysiwyg_fields_update_7200() {
+  $entities = field_info_instances();
+  foreach ($entities as $bundles) {
+    foreach ($bundles as $instances) {
+      foreach ($instances as $instance) {
+        if ($instance['widget']['module'] == 'wysiwyg_fields' && isset($instance['widget']['settings']['widget_settings'])) {
+          $wysiwyg_fields_settings = $instance['widget']['settings'];
+          unset($wysiwyg_fields_settings['widget_settings']);
+
+          $instance['widget']['settings']                   = $instance['widget']['settings']['widget_settings'];
+          $instance['widget']['settings']['wysiwyg_fields'] = $wysiwyg_fields_settings;
+
+          field_update_instance($instance);
+        }
+      }
+    }
+  }
+}
