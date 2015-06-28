@@ -298,6 +298,12 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
       // Add formatter fields and 'add more' button, if not working with a
       // programmed form.
       if (empty($form_state['programmed'])) {
+        // Add Token replace AJAX authorisation.
+        $form['token_replace_ajax'] = array(
+          '#type'  => 'value',
+          '#value' => TRUE,
+        );
+
         // Add more button.
         $field_elements['add_more'] = array(
           '#type'                    => 'submit',
