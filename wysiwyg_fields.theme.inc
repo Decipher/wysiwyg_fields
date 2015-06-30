@@ -28,7 +28,7 @@ function wysiwyg_fields_ckeditor_elements() {
  * @param $variables
  */
 function template_preprocess_wysiwyg_fields(&$variables) {
-  $field   =& drupal_static('wysiwyg_field_form_element_field', TRUE);
+  $field   =& drupal_static('wysiwyg_field_form_element_field', NULL);
   $element = $variables['element'];
 
   $field = TRUE;
@@ -50,8 +50,8 @@ function template_preprocess_wysiwyg_fields(&$variables) {
  * @param $variables
  */
 function wysiwyg_fields_preprocess_form_element(&$variables) {
-  $field =& drupal_static('wysiwyg_field_form_element_field', FALSE);
-  if ($field) {
+  $field =& drupal_static('wysiwyg_field_form_element_field', NULL);
+  if (!is_null($field)) {
     $element = &$variables['element'];
     $fields  = wysiwyg_fields_ckeditor_elements();
     if (isset($element['#type']) && isset($fields[$element['#type']])) {
