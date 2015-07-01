@@ -99,7 +99,7 @@ function theme_wysiwyg_fields_form_element($variables) {
   }
 
   // Add element's #type and #name as class to aid with JS/CSS selectors.
-  $attributes['class'] = array();
+  $attributes['class'] = array('form-item');
   if (!empty($element['#type'])) {
     $attributes['class'][] = 'form-type-' . strtr($element['#type'], '_', '-');
   }
