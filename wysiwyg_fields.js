@@ -125,7 +125,7 @@
         formatterSettings = '';
       }
 
-      return "[node:" + this.fieldName.underscore + "-formatted:" + deltas + ":" + $(':input[name="' + this.fieldName.underscore + '[wysiwyg_fields][formatter][type]"]').val() + formatterSettings + "]";
+      return "[" + this.entityType + ":" + this.fieldName.underscore + "-formatted:" + deltas + ":" + $(':input[name="' + this.fieldName.underscore + '[wysiwyg_fields][formatter][type]"]').val() + formatterSettings + "]";
     },
 
     /**
