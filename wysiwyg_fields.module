@@ -183,26 +183,29 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
   $field_name = $field['field_name'];
   $parents    = $form['#parents'];
 
-  if (isset($form_state['values'][$field_name][$langcode])) {
-    $items = array();
-    foreach ($form_state['values'][$field_name][$langcode] as $item) {
-      if (isset($item['wysiwyg_fields'])) {
-        $items[$item['wysiwyg_fields']['delta']] = $item;
-      }
-    }
-    $form_state['field'][$field_name][$langcode]['items'] = $items;
-  }
-
   // Determine the number of widgets to display.
   $field_state = field_form_get_state($parents, $field_name, $langcode, $form_state);
   $max         = $field_state['items_count'];
 
+  // Get '$items' form $form_state['values'] if available and renumber based on
+  // the original delta.
+  $value_parents    = _field_form_state_parents($parents, $field_name, $langcode);
+  $value_parents[0] = 'values';
+  if (drupal_array_nested_key_exists($form_state, $value_parents)) {
+    $values = drupal_array_get_nested_value($form_state, $value_parents);
+    foreach ($values as $item) {
+      if (isset($item['wysiwyg_fields'])) {
+        $items[$item['wysiwyg_fields']['delta']] = $item;
+      }
+    }
+    $field_state['items'] = $items;
+  }
+
   $description = field_filter_xss($instance['description']);
+  $id          = "wysiwyg_fields-{$instance['entity_type']}-{$instance['bundle']}-{$field_name}";
 
-  $id = "wysiwyg_fields-{$instance['entity_type']}-{$instance['bundle']}-{$field_name}";
-
-  $original_form_state = $form_state;
-  $field_elements      = array();
+  $original_field_state = $field_state;
+  $field_elements       = array();
 
   // Modify field and instance settings before passing through to the default
   // widget form function to ensure each widget is treated as a single value
@@ -215,15 +218,15 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
   $subinstance['widget']         = field_info_widget_types($widget_type);
   $subinstance['widget']['type'] = $widget_type;
   $subinstance['widget']['settings'] += $subinstance['widget']['settings'];
-  $form_state['field'][$field_name][$langcode]['instance'] = $subinstance;
-
-  $field['cardinality'] = $form_state['field'][$field_name][$langcode]['field']['cardinality'] = 1;
+  $field_state['instance'] = $subinstance;
+  $field['cardinality']    = $field_state['field']['cardinality'] = 1;
 
   $function = $subinstance['widget']['module'] . '_field_widget_form';
   if (function_exists($function)) {
     for ($delta = 0; $delta <= $max; $delta++) {
-      $form_state['field'][$field_name][$langcode]['items'] = isset($original_form_state['field'][$field_name][$langcode]['items'][$delta]) ? array($original_form_state['field'][$field_name][$langcode]['items'][$delta]) : NULL;
-      $item                                                 = isset($items[$delta]) ? array($items[$delta]) : array();
+      $field_state['items'] = isset($original_field_state['items'][$delta]) ? array($original_field_state['items'][$delta]) : NULL;
+      $item                 = isset($items[$delta]) ? array($items[$delta]) : array();
+      field_form_set_state($parents, $field_name, $langcode, $form_state, $field_state);
 
       $element = array(
         '#entity_type'   => $subinstance['entity_type'],
