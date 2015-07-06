@@ -26,6 +26,7 @@
     id: '',
     fieldName: {},
     entityType: '',
+    entityTokenType: '',
     bundleName: '',
 
     // CSS selectors.
@@ -53,6 +54,7 @@
       // Field info.
       this.id = id;
       this.entityType = components[1];
+      this.entityTokenType = Drupal.settings.wysiwygFields.token_types[components[1]];
       this.bundleName = components[2];
       this.fieldName = {
         underscore: components[3].replace(/-/g, '_'),
@@ -125,7 +127,7 @@
         formatterSettings = '';
       }
 
-      return "[" + this.entityType + ":" + this.fieldName.underscore + "-formatted:" + deltas + ":" + $(':input[name="' + this.fieldName.underscore + '[wysiwyg_fields][formatter][type]"]').val() + formatterSettings + "]";
+      return "[" + this.entityTokenType + ":" + this.fieldName.underscore + "-formatted:" + deltas + ":" + $(':input[name="' + this.fieldName.underscore + '[wysiwyg_fields][formatter][type]"]').val() + formatterSettings + "]";
     },
 
     /**

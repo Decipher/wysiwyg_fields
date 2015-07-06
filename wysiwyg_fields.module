@@ -221,6 +221,9 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
   $field_state['instance'] = $subinstance;
   $field['cardinality']    = $field_state['field']['cardinality'] = 1;
 
+  $entity_info = entity_get_info($subinstance['entity_type']);
+  $token_type  = isset($entity_info['token type']) ? $entity_info['token type'] : $subinstance['entity_type'];
+
   $function = $subinstance['widget']['module'] . '_field_widget_form';
   if (function_exists($function)) {
     for ($delta = 0; $delta <= $max; $delta++) {
@@ -286,8 +289,16 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
     if ($field_elements) {
       $field_elements += array(
         '#attached'    => array(
-          'js'  => array(drupal_get_path('module', 'wysiwyg_fields') . '/wysiwyg_fields.js'),
-          'css' => array(drupal_get_path('module', 'wysiwyg_fields') . '/wysiwyg_fields.css'),
+          'js'  => array(
+            array(
+              'data' => array('wysiwygFields' => array('token_types' => array($subinstance['entity_type'] => $token_type))),
+              'type' => 'setting'
+            ),
+            array('data' => drupal_get_path('module', 'wysiwyg_fields') . '/wysiwyg_fields.js'),
+          ),
+          'css' => array(
+            array('data' => drupal_get_path('module', 'wysiwyg_fields') . '/wysiwyg_fields.css')
+          ),
         ),
         '#theme'       => 'wysiwyg_fields',
         '#field_name'  => $field['field_name'],
