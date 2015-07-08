@@ -179,6 +179,7 @@
           dialog: id,
           button: button.label,
           mask: true,
+          upcastPriority: 1,
 
           // Upcast; triggered when Wysiwyg is attached (on load, switch to rich
           // text editor, etc).
