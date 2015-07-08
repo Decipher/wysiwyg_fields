@@ -462,7 +462,7 @@ function wysiwyg_fields_field_add_more_js($form, $form_state) {
  * Implements hook_field_attach_presave().
  */
 function wysiwyg_fields_field_attach_presave($entity_type, $entity) {
-  list($id, $vid, $bundle_name) = entity_extract_ids($entity_type, $entity);
+  list(, , $bundle_name) = entity_extract_ids($entity_type, $entity);
   $instances = field_info_instances($entity_type, $bundle_name);
 
   $text_fields    = array();
@@ -485,7 +485,7 @@ function wysiwyg_fields_field_attach_presave($entity_type, $entity) {
     $items = field_get_items($entity_type, $entity, $wysiwyg_field);
     if (!empty($items)) {
       foreach ($items as $delta => $item) {
-        if ($delta !== $item['wysiwyg_fields']['delta']) {
+        if (isset($item['wysiwyg_fields']) && $delta !== $item['wysiwyg_fields']['delta']) {
           $deltas_map[$wysiwyg_field][$item['wysiwyg_fields']['delta']] = $delta;
         }
       }
