@@ -8,12 +8,9 @@
        style="width: 100%; float: none;" align="left">
   <?php foreach ($deltas as $delta => $field) : ?>
     <tr>
-      <td role="presentation" class="cke_dialog_ui_vbox_child">
-        <div
-          role="presentation"
-          class="wysiwyg_fields-<?php echo $element['#field_name'] ?>-delta wysiwyg_fields-<?php echo $element['#field_name'] ?>-delta-<?php echo $delta ?>">
-          <?php echo $field ?>
-        </div>
+      <td role="presentation"
+          class="cke_dialog_ui_vbox_child wysiwyg_fields-<?php echo $element['#field_name'] ?>-delta wysiwyg_fields-<?php echo $element['#field_name'] ?>-delta-<?php echo $delta ?>">
+        <?php echo $field ?>
       </td>
     </tr>
   <?php endforeach ?>
