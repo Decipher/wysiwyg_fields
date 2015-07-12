@@ -52,13 +52,14 @@ function wysiwyg_fields_field_widget_info() {
     'field types' => array_keys($field_types),
     'settings'    => array(
       'wysiwyg_fields' => array(
-        'widget_type' => '',
-        'label'       => '',
-        'icon'        => array(
+        'widget_type'  => '',
+        'label'        => '',
+        'icon'         => array(
           'bundle' => 'lullacons_pack1',
           'icon'   => 'doc-option-add',
         ),
-        'formatters'  => array(),
+        'formatters'   => array(),
+        'advanced_tab' => TRUE,
       ),
     ),
     'behaviors'   => array(
@@ -135,6 +136,7 @@ function wysiwyg_fields_field_widget_settings_form($field, $instance) {
     '#title'         => t('Label'),
     '#type'          => 'textfield',
     '#default_value' => $settings['wysiwyg_fields']['label'],
+    '#description'   => t('The label you wish to use for the Wysiwyg field plugin. Leave blank to use current field label.'),
   );
 
   $form['wysiwyg_fields']['icon'] = array(
@@ -142,6 +144,7 @@ function wysiwyg_fields_field_widget_settings_form($field, $instance) {
     '#type'           => 'icon_selector',
     '#default_bundle' => $settings['wysiwyg_fields']['icon']['bundle'],
     '#default_icon'   => $settings['wysiwyg_fields']['icon']['icon'],
+    '#description'    => t('Choose an icon for the Wysiwyg field plugin.'),
   );
 
   $form['wysiwyg_fields']['formatters'] = array(
@@ -149,8 +152,16 @@ function wysiwyg_fields_field_widget_settings_form($field, $instance) {
     '#type'          => 'select',
     '#options'       => field_ui_formatter_options($field['type']),
     '#default_value' => !empty($settings['wysiwyg_fields']['formatters']) ? $settings['wysiwyg_fields']['formatters'] : $field_info['default_formatter'],
+    '#description'   => t('Choose one or more Field formatters you wish to use for in the Wysiwyg field. If you choose more than one a select box will be displayed to the user.'),
     '#multiple'      => TRUE,
     '#required'      => TRUE,
+  );
+
+  $form['wysiwyg_fields']['advanced_tab'] = array(
+    '#title'         => t('Show advanced tab?'),
+    '#type'          => 'checkbox',
+    '#default_value' => $settings['wysiwyg_fields']['advanced_tab'],
+    '#description'   => t('The advanced tab is used to manage all existing field items and for multi-insert selection.'),
   );
 
   return $form;
@@ -287,11 +298,15 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
     }
 
     if ($field_elements) {
+      $js_settings                                 = array('tokenTypes' => array($subinstance['entity_type'] => $token_type));
+      $js_settings[$id]['settings']['advancedTab'] = isset($settings['wysiwyg_fields']['advanced_tab']) ? $settings['wysiwyg_fields']['advanced_tab'] : TRUE;
+      $js_settings[$id]['settings']['icon'] = url(wysiwyg_fields_get_icon($settings['wysiwyg_fields']), array('absolute' => TRUE));
+
       $field_elements += array(
         '#attached'    => array(
           'js'  => array(
             array(
-              'data' => array('wysiwygFields' => array('token_types' => array($subinstance['entity_type'] => $token_type))),
+              'data' => array('wysiwygFields' => $js_settings),
               'type' => 'setting'
             ),
             array('data' => drupal_get_path('module', 'wysiwyg_fields') . '/wysiwyg_fields.js'),
@@ -737,18 +752,9 @@ function wysiwyg_fields_ckeditor_plugin() {
           $id       = "wysiwyg_fields-{$entity_type}-{$bundle_name}-{$field_name}";
           $settings = $instance['widget']['settings']['wysiwyg_fields'];
 
-          $bundle = icon_bundle_load($settings['icon']['bundle']);
-          if (!isset($bundle['settings']['extension'])) {
-            $bundle['settings']['extension'] = 'png';
-          }
-          $icon = $bundle['path'] . '/' . $settings['icon']['icon'] . '.' . $bundle['settings']['extension'];
-
           $plugins['wysiwyg_fields']['buttons'][$id] = array(
             // 'icon' needs to be a relative path from the path of this plugin.
-            'icon'     => str_repeat('../', count(explode('/', $plugins['wysiwyg_fields']['path']))) . $icon,
-            // 'icon_raw' is used to generate a absolute URL of the icon path in via
-            // javascript.
-            'icon_raw' => $icon,
+            'icon'     => str_repeat('../', count(explode('/', $plugins['wysiwyg_fields']['path']))) . wysiwyg_fields_get_icon($settings),
             'label'    => !empty($settings['label']) ? $settings['label'] : $instance['label'],
             'row'      => 'wysiwyg_fields',
           );
@@ -776,4 +782,17 @@ function wysiwyg_fields_is_wysiwyg_field($field_name) {
   }
 
   return FALSE;
+}
+
+/**
+ * @param $settings
+ *
+ * @return string
+ */
+function wysiwyg_fields_get_icon($settings) {
+  $bundle = icon_bundle_load($settings['icon']['bundle']);
+  if (!isset($bundle['settings']['extension'])) {
+    $bundle['settings']['extension'] = 'png';
+  }
+  return $bundle['path'] . '/' . $settings['icon']['icon'] . '.' . $bundle['settings']['extension'];
 }

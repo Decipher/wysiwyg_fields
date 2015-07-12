@@ -22,12 +22,20 @@
   };
 
   Drupal.wysiwygFields.prototype = {
+    inited: true,
+
     // Field info.
     id: '',
     fieldName: {},
     entityType: '',
     entityTokenType: '',
     bundleName: '',
+
+    // Wysiwyg settings.
+    settings: {
+      advancedTab: true,
+      icon: ''
+    },
 
     // CSS selectors.
     classFieldName: '',
@@ -54,12 +62,20 @@
       // Field info.
       this.id = id;
       this.entityType = components[1];
-      this.entityTokenType = Drupal.settings.wysiwygFields.token_types[components[1]];
+      this.entityTokenType = Drupal.settings.wysiwygFields.tokenTypes[components[1]];
       this.bundleName = components[2];
       this.fieldName = {
         underscore: components[3].replace(/-/g, '_'),
         dash: components[3].replace(/_/g, '-')
       };
+
+      // Wysiwyg settings.
+      if (typeof Drupal.settings.wysiwygFields[id].settings !== 'undefined') {
+        var _this = this;
+        $.each(Drupal.settings.wysiwygFields[id].settings, function(setting, value) {
+          _this.settings[setting] = value;
+        });
+      }
 
       // CSS selectors.
       this.classFieldName = '.field-name-' + this.fieldName.dash;
@@ -178,7 +194,7 @@
       var $selects = $(this.idInner).find(':checkbox[name$="[wysiwyg_fields][select]"]:checked');
       if ($selects.length > 0) {
         var selected = [];
-        $selects.each(function(index, item) {
+        $selects.each(function (index, item) {
           var parts = $(item).attr('name').split('[');
           var delta = parts[2].substring(0, parts[2].length - 1);
           selected.push(delta);
@@ -216,7 +232,7 @@
       // Check 'select' checkboxes as per provided deltas.
       else {
         var wysiwygField = this;
-        $.each(deltas, function(index, delta) {
+        $.each(deltas, function (index, delta) {
           $(wysiwygField.idInner).find(':checkbox[name$="[' + delta + '][wysiwyg_fields][select]"]').attr('checked', 'checked');
         });
       }
@@ -243,12 +259,12 @@
         var wysiwygField = this;
 
         // Reset all settings to default.
-        $(':input[name^="' + this.fieldName.underscore + '[wysiwyg_fields][formatter][settings]"]').val(function() {
+        $(':input[name^="' + this.fieldName.underscore + '[wysiwyg_fields][formatter][settings]"]').val(function () {
           return this.defaultValue;
         });
 
         // Set each setting as specified.
-        $.each(settings, function(name, value) {
+        $.each(settings, function (name, value) {
           selector = ':input[name="' + wysiwygField.fieldName.underscore + '[wysiwyg_fields][formatter][settings][' + name + ']"]';
           if ($(selector).is(':radio')) {
             $(selector + '[value=' + value + ']').attr('checked', 'checked');

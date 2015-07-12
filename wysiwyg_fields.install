@@ -86,3 +86,20 @@ function wysiwyg_fields_update_7200() {
     }
   }
 }
+
+/**
+ * Add the 'advanced_tab' Wysiwyg Fields widget setting.
+ */
+function wysiwyg_fields_update_7201() {
+  $entities = field_info_instances();
+  foreach ($entities as $bundles) {
+    foreach ($bundles as $instances) {
+      foreach ($instances as $instance) {
+        if ($instance['widget']['module'] == 'wysiwyg_fields' && !isset($instance['widget']['settings']['wysiwyg_fields']['advanced_tab'])) {
+          $instance['widget']['settings']['wysiwyg_fields']['advanced_tab'] = TRUE;
+          field_update_instance($instance);
+        }
+      }
+    }
+  }
+}

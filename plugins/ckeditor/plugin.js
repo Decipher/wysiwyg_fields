@@ -15,7 +15,9 @@
         }
 
         // Create instance of Wysiwyg Fields helper class.
-        Drupal.settings.wysiwygFields[id] = new Drupal.wysiwygFields(id);
+        if (typeof Drupal.settings.wysiwygFields[id].inited == 'undefined') {
+          Drupal.settings.wysiwygFields[id] = new Drupal.wysiwygFields(id);
+        }
 
         // Add command.
         editor.addCommand(id, new CKEDITOR.dialogCommand(id));
@@ -25,7 +27,7 @@
           label: button.label,
           command: id,
           toolbar: 'wysiwyg_fields',
-          icon: window.location.protocol + "//" + window.location.host + Drupal.settings.basePath + button.icon_raw
+          icon: Drupal.settings.wysiwygFields[id].settings.icon
         });
 
         // Register the dialog.
@@ -59,8 +61,13 @@
               }
             ],
 
-            // On load; store dialog definition in Wysiwyg Fields object.
+            // On load; toggle the advanced tab and store dialog definition in
+            // Wysiwyg Fields object.
             onLoad: function (evt) {
+              if (Drupal.settings.wysiwygFields[id].settings.advancedTab == 0) {
+                delete this.hidePage('advanced');
+              }
+
               Drupal.settings.wysiwygFields[id].dialog = this;
             },
 
