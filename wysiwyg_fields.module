@@ -299,8 +299,8 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
 
     if ($field_elements) {
       $js_settings                                 = array('tokenTypes' => array($subinstance['entity_type'] => $token_type));
-      $js_settings[$id]['settings']['advancedTab'] = isset($settings['wysiwyg_fields']['advanced_tab']) ? $settings['wysiwyg_fields']['advanced_tab'] : TRUE;
-      $js_settings[$id]['settings']['icon'] = url(wysiwyg_fields_get_icon($settings['wysiwyg_fields']), array('absolute' => TRUE));
+      $js_settings['settings'][$id]['advancedTab'] = isset($settings['wysiwyg_fields']['advanced_tab']) ? $settings['wysiwyg_fields']['advanced_tab'] : TRUE;
+      $js_settings['settings'][$id]['icon']        = url(wysiwyg_fields_get_icon($settings['wysiwyg_fields']), array('absolute' => TRUE));
 
       $field_elements += array(
         '#attached'    => array(

@@ -22,8 +22,6 @@
   };
 
   Drupal.wysiwygFields.prototype = {
-    inited: true,
-
     // Field info.
     id: '',
     fieldName: {},
@@ -70,9 +68,9 @@
       };
 
       // Wysiwyg settings.
-      if (typeof Drupal.settings.wysiwygFields[id].settings !== 'undefined') {
+      if (typeof Drupal.settings.wysiwygFields.settings[id] !== 'undefined') {
         var _this = this;
-        $.each(Drupal.settings.wysiwygFields[id].settings, function(setting, value) {
+        $.each(Drupal.settings.wysiwygFields.settings[id], function (setting, value) {
           _this.settings[setting] = value;
         });
       }
