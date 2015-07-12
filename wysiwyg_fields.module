@@ -474,6 +474,35 @@ function wysiwyg_fields_field_add_more_js($form, $form_state) {
 }
 
 /**
+ * Implements hook_token_replace_ajax_response_alter().
+ */
+function wysiwyg_fields_token_replace_ajax_response_alter($value, $token, $data) {
+  if ($token == $value && preg_match('/\[(.*?):(.*?)-formatted:(.*?):.*?\]/', $token, $parts)) {
+    $entity_type = $parts[1];
+    if (isset($data[$entity_type])) {
+      $entity = $data[$entity_type];
+      list($id, $vid, $bundle_name) = entity_extract_ids($entity_type, $entity);
+
+      $field_name = $parts[2];
+      $deltas     = explode(',', $parts[3]);
+      $items      = field_get_items($entity_type, $entity, $field_name);
+      $field      = field_info_field($field_name);
+      $instance   = field_info_instance($entity_type, $field_name, $bundle_name);
+      $function   = "{$field['module']}_field_is_empty";
+      if (function_exists($function)) {
+        foreach ($deltas as $delta) {
+          if (!isset($items[$delta]) || $function($items[$delta], $field)) {
+            drupal_set_message(t('!name field is empty.', array('!name' => $instance['label'])), 'error', FALSE);
+
+            return;
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
  * Implements hook_field_attach_presave().
  */
 function wysiwyg_fields_field_attach_presave($entity_type, $entity) {
@@ -754,9 +783,9 @@ function wysiwyg_fields_ckeditor_plugin() {
 
           $plugins['wysiwyg_fields']['buttons'][$id] = array(
             // 'icon' needs to be a relative path from the path of this plugin.
-            'icon'     => str_repeat('../', count(explode('/', $plugins['wysiwyg_fields']['path']))) . wysiwyg_fields_get_icon($settings),
-            'label'    => !empty($settings['label']) ? $settings['label'] : $instance['label'],
-            'row'      => 'wysiwyg_fields',
+            'icon'  => str_repeat('../', count(explode('/', $plugins['wysiwyg_fields']['path']))) . wysiwyg_fields_get_icon($settings),
+            'label' => !empty($settings['label']) ? $settings['label'] : $instance['label'],
+            'row'   => 'wysiwyg_fields',
           );
         }
       }
@@ -794,5 +823,6 @@ function wysiwyg_fields_get_icon($settings) {
   if (!isset($bundle['settings']['extension'])) {
     $bundle['settings']['extension'] = 'png';
   }
+
   return $bundle['path'] . '/' . $settings['icon']['icon'] . '.' . $bundle['settings']['extension'];
 }

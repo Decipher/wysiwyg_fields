@@ -275,6 +275,18 @@
     },
 
     /**
+     * Display messages in Wysiwyg field.
+     *
+     * @param messages
+     */
+    setMessages: function (messages) {
+      $(this.idInner).find('.messages').remove();
+      if (typeof messages !== 'undefined') {
+        $(this.idInner).prepend(messages);
+      }
+    },
+
+    /**
      * Triggers the invisible 'Add another' button.
      *
      * @TODO: Don't add another if latest delta is empty?

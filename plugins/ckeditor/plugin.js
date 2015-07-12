@@ -74,6 +74,9 @@
             // On show; place dialog within the bounds of the entity
             // form and move field into the dialog.
             onShow: function (evt) {
+              // Reset messages.
+              Drupal.settings.wysiwygFields[id].setMessages();
+
               $(this.parts.dialog.$.parentElement).appendTo($(this._.editor.container.$).parents('form'));
               $(Drupal.settings.wysiwygFields[id].idInner).appendTo('.wysiwyg_fields-dialog-basic', this.parts.contents.$);
 
@@ -146,11 +149,19 @@
                 // If the returned value is the token then something has gone
                 // wrong; unset the widget value data if set.
                 if (result.token == result.value) {
+                  // Show messages.
+                  Drupal.settings.wysiwygFields[id].setMessages(result.messages.html);
+
+                  // Reset data.
                   widget.setData('value', undefined);
                 }
 
                 // Set value data and close dialog.
                 else {
+                  // Reset messages.
+                  Drupal.settings.wysiwygFields[id].setMessages();
+
+                  // Set data.
                   widget.setData('value', result.value);
 
                   // @TODO - Only trigger this after widget creation, not edit.
