@@ -54,6 +54,10 @@
                 elements: [
                   {
                     type: 'html',
+                    html: 'Select one or more fields to be inserted.'
+                  },
+                  {
+                    type: 'html',
                     html: '',
                     className: 'wysiwyg_fields-dialog-advanced'
                   }
