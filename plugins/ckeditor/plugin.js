@@ -203,69 +203,6 @@
           mask: true,
           upcastPriority: 1,
 
-          //insert: function() {
-          //  var defaults = typeof widgetDef.defaults == 'function' ? widgetDef.defaults() : widgetDef.defaults,
-          //    element = CKEDITOR.dom.element.createFromHtml( widgetDef.template.output( defaults ) ),
-          //    instance,
-          //    wrapper = editor.widgets.wrapElement( element, widgetDef.name ),
-          //    temp = new CKEDITOR.dom.documentFragment( wrapper.getDocument() );
-          //
-          //  console.log(defaults);
-          //  console.log(element);
-          //  console.log(instance);
-          //  console.log(wrapper);
-          //  console.log(temp);
-          //
-          //  // Append wrapper to a temporary document. This will unify the environment
-          //  // in which #data listeners work when creating and editing widget.
-          //  temp.append( wrapper );
-          //  instance = editor.widgets.initOn( element, widgetDef );
-          //
-          //  // Instance could be destroyed during initialization.
-          //  // In this case finalize creation if some new widget
-          //  // was left in temporary document fragment.
-          //  if ( !instance ) {
-          //    finalizeCreation();
-          //    return;
-          //  }
-          //
-          //  // Listen on edit to finalize widget insertion.
-          //  //
-          //  // * If dialog was set, then insert widget after dialog was successfully saved or destroy this
-          //  // temporary instance.
-          //  // * If dialog wasn't set and edit wasn't canceled, insert widget.
-          //  var editListener = instance.once( 'edit', function( evt ) {
-          //    if ( evt.data.dialog ) {
-          //      instance.once( 'dialog', function( evt ) {
-          //        var dialog = evt.data,
-          //          okListener,
-          //          cancelListener;
-          //
-          //        // Finalize creation AFTER (20) new data was set.
-          //        okListener = dialog.once( 'ok', finalizeCreation, null, null, 20 );
-          //
-          //        cancelListener = dialog.once( 'cancel', function() {
-          //          editor.widgets.destroy( instance, true );
-          //        } );
-          //
-          //        dialog.once( 'hide', function() {
-          //          okListener.removeListener();
-          //          cancelListener.removeListener();
-          //        } );
-          //      } );
-          //    } else {
-          //      // Dialog hasn't been set, so insert widget now.
-          //      finalizeCreation();
-          //    }
-          //  }, null, null, 999 );
-          //
-          //  instance.edit();
-          //
-          //  // Remove listener in case someone canceled it before this
-          //  // listener was executed.
-          //  editListener.removeListener();
-          //},
-
           // Upcast; triggered when Wysiwyg is attached (on load, switch to rich
           // text editor, etc).
           //
@@ -295,22 +232,6 @@
             // If no value data, set the token as a placeholder.
             if (typeof this.data.value != 'undefined') {
               this.element.setHtml(this.data.value);
-
-              // Re-wrap if necessary.
-              //var wrapper = this.element.getParent();
-              //if (wrapper && wrapper.type == CKEDITOR.NODE_ELEMENT && wrapper.data('cke-widget-wrapper')) {
-              //  console.log('test');
-              //  this.editor.widgets.instances[this.id].inline = true;
-              //  this.downcast(this);
-              //  this.upcast(this.element, this.data);
-              ////  //this.editor.widgets.instances[widget.id].inline = true;
-              ////  var isInline = true;
-              ////
-              ////  wrapper.renameNode(isInline ? 'span' : 'div');
-              ////  wrapper.removeClass('cke_widget_' + ( isInline ? 'block' : 'inline' ));
-              ////  wrapper.addClass('cke_widget_' + ( isInline ? 'inline' : 'block' ));
-              //}
-
             }
             else if (typeof this.data.token != 'undefined') {
               this.element.setHtml(this.data.token);
