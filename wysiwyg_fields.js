@@ -30,10 +30,7 @@
     bundleName: '',
 
     // Wysiwyg settings.
-    settings: {
-      advancedTab: true,
-      icon: ''
-    },
+    settings: {},
 
     // CSS selectors.
     classFieldName: '',
@@ -68,12 +65,7 @@
       };
 
       // Wysiwyg settings.
-      if (typeof Drupal.settings.wysiwygFields.settings[id] !== 'undefined') {
-        var _this = this;
-        $.each(Drupal.settings.wysiwygFields.settings[id], function (setting, value) {
-          _this.settings[setting] = value;
-        });
-      }
+      this.settings = Drupal.settings.wysiwygFields.settings[id];
 
       // CSS selectors.
       this.classFieldName = '.field-name-' + this.fieldName.dash;
