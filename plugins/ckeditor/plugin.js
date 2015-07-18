@@ -82,7 +82,7 @@
               Drupal.settings.wysiwygFields[id].setMessages();
 
               $(this.parts.dialog.$.parentElement).appendTo($(this._.editor.container.$).parents('form'));
-              $(Drupal.settings.wysiwygFields[id].idInner).appendTo('.wysiwyg_fields-dialog-basic', this.parts.contents.$);
+              $(Drupal.settings.wysiwygFields[id].idInner).appendTo(this.parts.contents.findOne('.wysiwyg_fields-dialog-basic').$);
 
               // Store active Wysiwyg Fields id.
               Drupal.settings.wysiwygFields.activeId = id;
@@ -111,7 +111,7 @@
                 Drupal.settings.wysiwygFields[id].selectDeltas(activeDeltas);
 
                 // Move form to new tab.
-                $(Drupal.settings.wysiwygFields[id].idInner).appendTo('.wysiwyg_fields-dialog-' + evt.data.page, this.parts.contents.$);
+                $(Drupal.settings.wysiwygFields[id].idInner).appendTo(this.parts.contents.findOne('.wysiwyg_fields-dialog-' + evt.data.page).$);
               });
             },
 
