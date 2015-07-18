@@ -31,7 +31,7 @@
         });
 
         // Register the dialog.
-        CKEDITOR.dialog.add(id, function (editor) {
+        CKEDITOR.dialog.add(id, function () {
           return {
             title: button.label,
             contents: [
@@ -67,7 +67,7 @@
 
             // On load; toggle the advanced tab and store dialog definition in
             // Wysiwyg Fields object.
-            onLoad: function (evt) {
+            onLoad: function () {
               if (Drupal.settings.wysiwygFields[id].settings.advancedTab == 0) {
                 delete this.hidePage('advanced');
               }
@@ -77,7 +77,7 @@
 
             // On show; place dialog within the bounds of the entity
             // form and move field into the dialog.
-            onShow: function (evt) {
+            onShow: function () {
               // Reset messages.
               Drupal.settings.wysiwygFields[id].setMessages();
 
@@ -117,7 +117,7 @@
 
             // On hide; reset dialog and field back to their original
             // placement.
-            onHide: function (evt) {
+            onHide: function () {
               $(this.parts.dialog.$.parentElement).appendTo('body');
               $(Drupal.settings.wysiwygFields[id].idInner).appendTo(Drupal.settings.wysiwygFields[id].idWrapper);
 
@@ -136,13 +136,13 @@
 
             // On ok; initiate AJAX callback for rendered token value and
             // validate said callback.
-            onOk: function (evt) {
-              dialog = this;
-              token = Drupal.settings.wysiwygFields[id].buildToken();
+            onOk: function () {
+              var dialog = this;
+              var token = Drupal.settings.wysiwygFields[id].buildToken();
 
               // Send data to Wysiwyg Fields AJAX callback.
               $.post(Drupal.settings.basePath + 'token_replace/ajax/' + token, $('form').serialize(), function (result) {
-                widget = dialog._.editor.widgets.focused;
+                var widget = dialog._.editor.widgets.focused;
 
                 // Re-enable 'ok' button.
                 dialog.enableButton('ok');
@@ -185,8 +185,8 @@
             },
 
             // On cancel; cleanup empty widgets.
-            onCancel: function (evt) {
-              widget = this._.editor.widgets.focused;
+            onCancel: function () {
+              var widget = this._.editor.widgets.focused;
               if (widget != null && typeof widget.data.value == 'undefined') {
                 widget.destroy();
                 widget.element.remove();
@@ -256,23 +256,23 @@
           // Switch to rich text editor, etc).
           //
           // Transform widget markup into filter format.
-          downcast: function (widgetElement) {
+          downcast: function () {
             return new CKEDITOR.htmlParser.text(this.data.token);
           },
 
           // Edit; Triggers when a dialog is opened (button click, double click
           // on existing widget).
-          edit: function (evt) {
+          edit: function () {
             // If no token data is present then this is a new widget instance.
             if (typeof this.data.token == "undefined") {
-              deltas = Drupal.settings.wysiwygFields[id].getDeltas();
+              var deltas = Drupal.settings.wysiwygFields[id].getDeltas();
               Drupal.settings.wysiwygFields[id].show(deltas);
             }
 
             // If token data is present, we are updating an existing widget
             // instance.
             else {
-              tokenData = Drupal.settings.wysiwygFields[id].getTokenData(this.data.token);
+              var tokenData = Drupal.settings.wysiwygFields[id].getTokenData(this.data.token);
               Drupal.settings.wysiwygFields[id].setFormatter(tokenData.formatter, tokenData.formatter_settings);
               Drupal.settings.wysiwygFields[id].show(tokenData.deltas);
             }

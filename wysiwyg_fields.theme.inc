@@ -62,6 +62,8 @@ function wysiwyg_fields_preprocess_form_element(&$variables) {
 
 /**
  * Preprocess callback for all generic HTML field elements.
+ *
+ * @param $variables
  */
 function wysiwyg_fields_preprocess_wysiwyg_fields_field(&$variables) {
   $field =& drupal_static('wysiwyg_field_form_element_field', FALSE);

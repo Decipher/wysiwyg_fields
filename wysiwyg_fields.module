@@ -28,6 +28,8 @@ function wysiwyg_fields_theme() {
 
 /**
  * Implements hook_theme_registry_alter().
+ *
+ * @param $theme_registry
  */
 function wysiwyg_fields_theme_registry_alter(&$theme_registry) {
   module_load_include('theme.inc', 'wysiwyg_fields');
@@ -475,13 +477,19 @@ function wysiwyg_fields_field_add_more_js($form, $form_state) {
 
 /**
  * Implements hook_token_replace_ajax_response_alter().
+ *
+ * @param $value
+ * @param $token
+ * @param $data
+ *
+ * @throws EntityMalformedException
  */
 function wysiwyg_fields_token_replace_ajax_response_alter($value, $token, $data) {
   if ($token == $value && preg_match('/\[(.*?):(.*?)-formatted:(.*?):.*?\]/', $token, $parts)) {
     $entity_type = $parts[1];
     if (isset($data[$entity_type])) {
       $entity = $data[$entity_type];
-      list($id, $vid, $bundle_name) = entity_extract_ids($entity_type, $entity);
+      list(, , $bundle_name) = entity_extract_ids($entity_type, $entity);
 
       $field_name = $parts[2];
       $deltas     = explode(',', $parts[3]);
@@ -504,6 +512,11 @@ function wysiwyg_fields_token_replace_ajax_response_alter($value, $token, $data)
 
 /**
  * Implements hook_field_attach_presave().
+ *
+ * @param $entity_type
+ * @param $entity
+ *
+ * @throws EntityMalformedException
  */
 function wysiwyg_fields_field_attach_presave($entity_type, $entity) {
   list(, , $bundle_name) = entity_extract_ids($entity_type, $entity);
@@ -527,7 +540,7 @@ function wysiwyg_fields_field_attach_presave($entity_type, $entity) {
   // Determine if any deltas are changed on each Wysiwyg Fields enabled field.
   foreach ($wysiwyg_fields as $wysiwyg_field) {
     $items = field_get_items($entity_type, $entity, $wysiwyg_field);
-    if (!empty($items)) {
+    if (!empty($items) && is_array($items)) {
       foreach ($items as $delta => $item) {
         if (isset($item['wysiwyg_fields']) && $delta !== $item['wysiwyg_fields']['delta']) {
           $deltas_map[$wysiwyg_field][$item['wysiwyg_fields']['delta']] = $delta;
@@ -545,7 +558,7 @@ function wysiwyg_fields_field_attach_presave($entity_type, $entity) {
     $change   = FALSE;
     $langcode = field_language($entity_type, $entity, $text_field);
     $items    = field_get_items($entity_type, $entity, $text_field, $langcode);
-    if (!empty($items)) {
+    if (!empty($items) && is_array($items)) {
       foreach ($items as &$item) {
         foreach (array('value', 'summary') as $col) {
           if (isset($item[$col])) {
@@ -643,11 +656,10 @@ function wysiwyg_fields_field_update_field($field) {
  * Implements hook_field_update_instance().
  *
  * @param $instance
- * @param $prior_instance
  *
  * @throws FieldException
  */
-function wysiwyg_fields_field_update_instance($instance, $prior_instance) {
+function wysiwyg_fields_field_update_instance($instance) {
   $update = FALSE;
   if ('wysiwyg_fields' == $instance['widget']['type']) {
     // Field instances using Wysiwyg Fields widget must not be required.
@@ -669,20 +681,22 @@ function wysiwyg_fields_field_update_instance($instance, $prior_instance) {
     // Check if Field instance button is enabled on any CKEditor profiles, and
     // if not, then display a message to the user.
     $profiles = ckeditor_profile_load();
-    $id       = "wysiwyg_fields-{$instance['entity_type']}-{$instance['bundle']}-{$instance['field_name']}";
-    $button   = FALSE;
-    foreach ($profiles as $profile) {
-      if (isset($profile->settings['toolbar']) && strstr($profile->settings['toolbar'], "'{$id}'")) {
-        $button = TRUE;
-        break;
+    if (is_array($profiles)) {
+      $id     = "wysiwyg_fields-{$instance['entity_type']}-{$instance['bundle']}-{$instance['field_name']}";
+      $button = FALSE;
+      foreach ($profiles as $profile) {
+        if (isset($profile->settings['toolbar']) && strstr($profile->settings['toolbar'], "'{$id}'")) {
+          $button = TRUE;
+          break;
+        }
       }
-    }
-    if (!$button) {
-      drupal_set_message(t('The %label Wysiwyg field isn\'t assigned to any CKEditor profiles.<br /><br />Before this field can be used as a Wysiwyg field you will need to edit your <a href="!profiles">CKEditor profile(s)</a> and add the %label button to the Toolbar.<br /><br />Refer to the <a href="!documentation">Wysiwyg Fields documentation</a> for more details.', array(
-        '%label'         => $instance['label'],
-        '!profiles'      => url('admin/config/content/ckeditor'),
-        '!documentation' => 'https://www.drupal.org/node/2505129',
-      )), 'warning', FALSE);
+      if (!$button) {
+        drupal_set_message(t('The %label Wysiwyg field isn\'t assigned to any CKEditor profiles.<br /><br />Before this field can be used as a Wysiwyg field you will need to edit your <a href="!profiles">CKEditor profile(s)</a> and add the %label button to the Toolbar.<br /><br />Refer to the <a href="!documentation">Wysiwyg Fields documentation</a> for more details.', array(
+          '%label'         => $instance['label'],
+          '!profiles'      => url('admin/config/content/ckeditor'),
+          '!documentation' => 'https://www.drupal.org/node/2505129',
+        )), 'warning', FALSE);
+      }
     }
 
     if ($update) {
@@ -695,10 +709,8 @@ function wysiwyg_fields_field_update_instance($instance, $prior_instance) {
  * Implements hook_form_FORM_ID_alter().
  *
  * @param $form
- * @param $form_state
- * @param $form_id
  */
-function wysiwyg_fields_form_ckeditor_admin_profile_form_alter(&$form, &$form_state, $form_id) {
+function wysiwyg_fields_form_ckeditor_admin_profile_form_alter(&$form) {
   // Remove the Wysiwyg Fields plugin for the Plugins list as we will control
   // the state based on whether or not any Wysiwyg Fields buttons are in use.
   unset($form['appearance']['loadPlugins']['#options']['wysiwyg_fields']);
@@ -748,16 +760,16 @@ function wysiwyg_fields_ckeditor_admin_profile_form_submit($form, &$form_state) 
  * Implements hook_form_FORM_ID_alter().
  *
  * @param $form
- * @param $form_state
- * @param $form_id
  */
-function wysiwyg_fields_form_filter_admin_format_form_alter(&$form, &$form_state, $form_id) {
+function wysiwyg_fields_form_filter_admin_format_form_alter(&$form) {
   $active   = FALSE;
   $profiles = ckeditor_profile_load();
-  foreach ($profiles as $profile) {
-    if (in_array($form['#format']->format, array_keys($profile->input_formats)) && strstr($profile->settings['toolbar'], "'wysiwyg_fields-")) {
-      $active = TRUE;
-      break;
+  if (is_array($profiles)) {
+    foreach ($profiles as $profile) {
+      if (in_array($form['#format']->format, array_keys($profile->input_formats)) && strstr($profile->settings['toolbar'], "'wysiwyg_fields-")) {
+        $active = TRUE;
+        break;
+      }
     }
   }
 

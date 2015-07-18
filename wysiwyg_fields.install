@@ -7,15 +7,18 @@
 
 /**
  * Implements hook_requirements.
- *
+
  * @param $phase
+ *
+ * @return array
+ * @throws Exception
  */
 function wysiwyg_fields_requirements($phase) {
   $requirements = array();
   // Ensure translations don't break during installation.
   $t = get_t();
 
-  // Ensure that CKEditor is instaled before we continue.
+  // Ensure that CKEditor is installed before we continue.
   if (!module_exists('ckeditor')) {
     module_enable(array('ckeditor'));
   }
@@ -25,7 +28,7 @@ function wysiwyg_fields_requirements($phase) {
 
   // If we aren't dealing with a remotely hosted version of CKEditor we need to
   // ensure that the 'widget' and 'lineutils' plugins are available.
-  if (!valid_url($ckeditor->settings['ckeditor_path'])) {
+  if (isset($ckeditor->settings) && !valid_url($ckeditor->settings['ckeditor_path'])) {
     $required_plugins  = array(
       'widget'    => array(
         'title' => 'Widget',
@@ -41,7 +44,7 @@ function wysiwyg_fields_requirements($phase) {
     if (!empty($missing_plugins)) {
       $plugins = theme('links', array('links' => $required_plugins));
       if (drupal_is_cli()) {
-        $plugins = "";
+        $plugins = '';
         foreach ($required_plugins as $plugin) {
           $plugins .= "\r\n- {$plugin['title']}: {$plugin['href']}";
         }
@@ -50,7 +53,7 @@ function wysiwyg_fields_requirements($phase) {
       $requirements['wysiwyg_fields'] = array(
         'title'       => $t('Wysiwyg Fields'),
         'severity'    => REQUIREMENT_ERROR,
-        'description' => $t("Wysiwyg Fields requires the following CKEditor plugins installed in your CKEditor plugins diretory (@directory): !plugins", array(
+        'description' => $t('Wysiwyg Fields requires the following CKEditor plugins installed in your CKEditor plugins directory (@directory): !plugins', array(
           '@directory' => ckeditor_plugins_path(),
           '!plugins'   => $plugins,
         )),

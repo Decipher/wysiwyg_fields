@@ -55,19 +55,19 @@ plugins directory (e.g., sites/all/modules/ckeditor/plugins):
 For easy downloading of Wysiwyg Fields and it's required modules and/or
 libraries, you can use the following entries in your makefile:
 
-```
-projects[] = ckeditor
 
-projects[] = formatted_field_tokens
+    projects[] = ckeditor
 
-projects[] = icon
+    projects[] = formatted_field_tokens
 
-projects[] = token_filter
+    projects[] = icon
 
-projects[] = token_replace_ajax
+    projects[] = token_filter
 
-projects[] = wysiwyg_fields
-```
+    projects[] = token_replace_ajax
+
+    projects[] = wysiwyg_fields
+
 
 **Note:** It is highly recommended to specify the version of your projects, the
 above format is only for the sake of simplicity.

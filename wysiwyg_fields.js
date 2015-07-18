@@ -2,7 +2,7 @@
   Drupal.settings.wysiwygFields = Drupal.settings.wysiwygFields || {};
 
   Drupal.behaviors.wysiwygFields = {
-    attach: function (context) {
+    attach: function () {
       if (typeof Drupal.settings.wysiwygFields.activeId != 'undefined') {
         var wysiwygField = Drupal.settings.wysiwygFields[Drupal.settings.wysiwygFields.activeId];
         if (wysiwygField.activeMode == 'basic') {
@@ -48,7 +48,7 @@
 
     /**
      *
-     * @param field_name
+     * @param id
      * @private
      */
     __construct: function (id) {
@@ -142,10 +142,10 @@
      * @returns {{deltas: Array, formatter: string, formatter_settings: {}}}
      */
     getTokenData: function (token) {
-      parts = token.substring(1, token.length - 1).split(':');
+      var parts = token.substring(1, token.length - 1).split(':');
 
-      var entity_type = parts.shift();
-      var field_name = parts.shift();
+      parts.shift();
+      parts.shift();
       var deltas = parts.shift().split(',');
 
       var formatter = '';
@@ -156,7 +156,7 @@
       var formatter_settings = {};
       if (parts.length > 0) {
         $.each(parts, function (index, value) {
-          setting_parts = value.split('-');
+          var setting_parts = value.split('-');
           if (setting_parts.length == 2) {
             formatter_settings[setting_parts[0]] = setting_parts[1];
           }
