@@ -586,18 +586,19 @@ function wysiwyg_fields_field_attach_presave($entity_type, $entity) {
 function wysiwyg_fields_form_field_ui_field_edit_form_alter(&$form) {
   if (isset($form['#instance']['widget']['type']) && 'wysiwyg_fields' == $form['#instance']['widget']['type']) {
     // Field instances using Wysiwyg Fields widget must not be required.
-    $form['instance']['required'] = array(
-      '#type'  => 'value',
-      '#value' => FALSE,
-    );
+    $form['instance']['required']['#disabled']    = TRUE;
+    $form['instance']['required']['#value']       = FALSE;
+    $form['instance']['required']['#description'] = isset($form['instance']['required']['#description']) ? $form['instance']['required']['#description'] . '<br />' : '';
+    $form['instance']['required']['#description'] .= t('<strong>Note:</strong> Wysiwyg fields can not be required.');
+
   }
 
   if (wysiwyg_fields_is_wysiwyg_field($form['#field']['field_name'])) {
     // Fields that are used with Wysiwyg Fields must have unlimited cardinality.
-    $form['field']['cardinality'] = array(
-      '#type'  => 'value',
-      '#value' => FIELD_CARDINALITY_UNLIMITED,
-    );
+    $form['field']['cardinality']['#disabled']    = TRUE;
+    $form['field']['cardinality']['#value']       = FIELD_CARDINALITY_UNLIMITED;
+    $form['field']['cardinality']['#description'] = isset($form['field']['cardinality']['#description']) ? $form['field']['cardinality']['#description'] . '<br />' : '';
+    $form['field']['cardinality']['#description'] .= t('<strong>Note:</strong> As this field has one or more instances using the  Wysiwyg field widget it must be unlimited.');
   }
 }
 
@@ -612,8 +613,15 @@ function wysiwyg_fields_form_field_ui_display_overview_form_alter(&$form) {
     // Field instances using Wysiwyg Fields widget must be hidden from standard
     // display.
     if ('wysiwyg_fields' == $instance['widget']['type']) {
-      unset($form['fields'][$field_name]);
-      unset($form['#fields'][$delta]);
+      drupal_set_message(t('Wysiwyg fields are only displayed inline within a Wysiwyg field, standard display settings are disabled.'));
+
+      $form['fields'][$field_name]['human_name']['#markup'] .= ' ' . t('<em>(Wysiwyg field)</em>');
+
+      $form['fields'][$field_name]['format']['type']['#disabled'] = TRUE;
+      $form['fields'][$field_name]['format']['type']['#value']    = 'hidden';
+
+      $form['fields'][$field_name]['label']['#disabled'] = TRUE;
+      $form['fields'][$field_name]['label']['#value']    = 'hidden';
     }
   }
 }
@@ -758,7 +766,7 @@ function wysiwyg_fields_form_filter_admin_format_form_alter(&$form, &$form_state
   if ($active) {
     $form['filters']['status']['filter_tokens']['#attributes']['disabled'] = TRUE;
     $form['filters']['status']['filter_tokens']['#value']                  = TRUE;
-    $form['filters']['status']['filter_tokens']['#description'] .= '<br />' . t('<strong>Note:</strong> This filter is required as the %text_format is being used by a CKEditor profile with a Wysiwyg field.', array('%text_format' => $form['#format']->name));
+    $form['filters']['status']['filter_tokens']['#description'] .= '<br />' . t('<strong>Note:</strong> This filter is required as the %text_format text format is being used by a CKEditor profile with a Wysiwyg field.', array('%text_format' => $form['#format']->name));
   }
 }
 
