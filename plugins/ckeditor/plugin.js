@@ -121,6 +121,9 @@
               $(this.parts.dialog.$.parentElement).appendTo('body');
               $(Drupal.settings.wysiwygFields[id].idInner).appendTo(Drupal.settings.wysiwygFields[id].idWrapper);
 
+              // Reset active delta checkboxes.
+              Drupal.settings.wysiwygFields[id].selectDeltas();
+
               // Reset hidden deltas.
               Drupal.settings.wysiwygFields[id].show();
 
