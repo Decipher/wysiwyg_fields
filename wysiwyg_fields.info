@@ -8,3 +8,5 @@ dependencies[] = icon
 dependencies[] = token_filter
 dependencies[] = token_replace_ajax
 core = 7.x
+
+files[] = tests/wysiwyg_fields.test

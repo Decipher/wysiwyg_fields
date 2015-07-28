@@ -1,0 +1,134 @@
+<?php
+
+/**
+ * @file
+ * Tests for the Wysiwyg Fields module.
+ */
+
+/**
+ * Class WysiwygFieldsTestCase
+ */
+class WysiwygFieldsTestCase extends DrupalWebTestCase {
+  var $admin_user = NULL;
+
+  /**
+   * @return array
+   */
+  public static function getInfo() {
+    return array(
+      'name'        => 'General functionality',
+      'description' => 'Test Wysiwyg Fields administration and UI.',
+      'group'       => 'Wysiwyg Fields',
+    );
+  }
+
+  /**
+   * Setup a Drupal site for Wysiwyg Fields tests.
+   */
+  function setUp() {
+    parent::setUp(array('field_ui', 'wysiwyg_fields'));
+
+    $this->admin_user = $this->drupalCreateUser(array(
+      'administer ckeditor',
+      'administer content types',
+      'administer filters',
+      'create article content',
+    ));
+  }
+
+  /**
+   * Asserts that a select option in the current page exists.
+   *
+   * @param        $name
+   *   Name of select field to assert.
+   * @param        $option
+   *   Option to assert.
+   * @param string $message
+   *   (optional) Message to display.
+   *
+   * @return bool
+   *   TRUE on pass, FALSE on fail.
+   */
+  protected function assertOptionExists($name, $option, $message = '') {
+    $elements = $this->xpath('//select[@name=:name]//option[@value=:option]', array(
+      ':name'   => $name,
+      ':option' => $option
+    ));
+
+    return $this->assertTrue(isset($elements[0]), $message ? $message : t('Option @option for field @name exists.', array(
+      '@option' => $option,
+      '@name'   => $name
+    )), t('Browser'));
+  }
+
+  /**
+   * Test Wysiwyg Fields on the 'Article' content type 'Image' field.
+   */
+  function testArticleImage() {
+    // Log in as Administration user.
+    $this->drupalLogin($this->admin_user);
+
+    // Navigate to the 'Article' content type 'Image' field widget settings.
+    $this->drupalGet('admin/structure/types/manage/article/fields/field_image/widget-type');
+
+    // Check 'Wysiwyg field' widget is available.
+    $this->assertOptionExists('widget_type', 'wysiwyg_fields', t('"Wysiwyg field" widget is available.'));
+
+    // Set 'Article' content type 'Image' field widget to 'Wysiwyg field'.
+    $edit = array(
+      'widget_type' => 'wysiwyg_fields',
+    );
+    $this->drupalPost('admin/structure/types/manage/article/fields/field_image/widget-type', $edit, t('Continue'));
+
+    // Check CKEditor helper message is displayed.
+    $this->assertText('The Image Wysiwyg field isn\'t assigned to any CKEditor profiles.', t('CKEditor helper message is visible.'));
+
+    // Load field and instance info.
+    $field    = field_info_field('field_image');
+    $instance = field_info_instance('node', 'field_image', 'article');
+
+    // Check field cardinality is set to unlimited.
+    $this->assertEqual($field['cardinality'], FIELD_CARDINALITY_UNLIMITED, t('Field cardinality is set to unlimited.'));
+
+    // Check field instance is not required.
+    $this->assertFalse($instance['required'], t('Field instance is not required.'));
+
+    // Navigate to the 'Article' content type 'Image' field settings.
+    $this->drupalGet('admin/structure/types/manage/article/fields/field_image');
+
+    // Check 'Wysiwyg Fields settings' are present.
+    $this->assertText('Wysiwyg Fields settings', t('Wysiwyg Fields settings are present'));
+
+    // @TODO - More assertions to ensure this page is as expected?
+
+    // Check 'Article' content type 'Image' field Wysiwyg Fields CKEditor plugin
+    // button exists.
+    $plugins = ckeditor_load_plugins();
+    $this->assertTrue(isset($plugins['wysiwyg_fields']['buttons']['wysiwyg_fields-node-article-field_image']), t('Wysiwyg Fields CKEditor plugin Article Image field button exists.'));
+
+    // Set the 'Article' content type 'Image' field Wysiwyg Fields CKEditor
+    // button on the active toolbar of the 'Advanced' CKEditor profile.
+    $edit = array('toolbar' => '[["wysiwyg_fields-node-article-field_image"]]');
+    $this->drupalPost('admin/config/content/ckeditor/edit/Advanced', $edit, t('Save'));
+
+    // Navigate to the 'Filtered HTML' text format settings.
+    $this->drupalGet('admin/config/content/formats/filtered_html');
+
+    // Check 'Replace tokens' filter is enforced on 'Filtered HTML' text format.
+    $elements = $this->xpath('//input[@name=:name][@disabled]', array(':name' => 'filters[filter_tokens][status]'));
+    $this->assertTrue(isset($elements[0]) && !empty($elements[0]['checked']), t('"Replace tokens" filter is enforced on "Filtered HTML" text format.'));
+
+    // Navigate to the 'Article' node add page.
+    $this->drupalGet('node/add/article');
+
+    // Check 'Article' content type 'Image' field Wysiwyg Fields field element
+    // wrapper is present.
+    $elements = $this->xpath('//div[@id=:id][@class=:class]', array(
+      ':id'    => 'wysiwyg_fields-node-article-field_image-wrapper',
+      ':class' => 'element-invisible',
+    ));
+    $this->assertTrue(isset($elements[0]), t('Wysiwyg Fields field element wrapper is present.'));
+
+    // @TODO - More assertions to ensure Wysiwyg Fields assets are loaded.
+  }
+}
