@@ -699,8 +699,16 @@ function wysiwyg_fields_field_update_instance($instance) {
       }
     }
 
+    // Update field instance if required.
     if ($update) {
       field_update_instance($instance);
+    }
+
+    // If field cardinality is not unlimited, pass it through to
+    // wysiwyg_fields_field_update_field() to be adjusted.
+    $field = field_info_field($instance['field_name']);
+    if ($field['cardinality'] != FIELD_CARDINALITY_UNLIMITED) {
+      wysiwyg_fields_field_update_field($field);
     }
   }
 }
