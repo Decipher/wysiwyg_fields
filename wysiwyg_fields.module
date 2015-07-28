@@ -499,7 +499,7 @@ function wysiwyg_fields_token_replace_ajax_response_alter($value, $token, $data)
       if (function_exists($function)) {
         foreach ($deltas as $delta) {
           if (!isset($items[$delta]) || $function($items[$delta], $field)) {
-            drupal_set_message(t('!name field is empty.', array('!name' => $instance['label'])), 'error', FALSE);
+            drupal_set_message(t('@name field is empty.', array('@name' => $instance['label'])), 'error', FALSE);
 
             return;
           }
@@ -690,10 +690,10 @@ function wysiwyg_fields_field_update_instance($instance) {
         }
       }
       if (!$button) {
-        drupal_set_message(t('The %label Wysiwyg field isn\'t assigned to any CKEditor profiles.<br /><br />Before this field can be used as a Wysiwyg field you will need to edit your <a href="!profiles">CKEditor profile(s)</a> and add the %label button to the Toolbar.<br /><br />Refer to the <a href="!documentation">Wysiwyg Fields documentation</a> for more details.', array(
+        drupal_set_message(t('The %label Wysiwyg field isn\'t assigned to any CKEditor profiles.<br /><br />Before this field can be used as a Wysiwyg field you will need to edit your <a href="@profiles">CKEditor profile(s)</a> and add the %label button to the Toolbar.<br /><br />Refer to the <a href="@documentation">Wysiwyg Fields documentation</a> for more details.', array(
           '%label'         => $instance['label'],
-          '!profiles'      => url('admin/config/content/ckeditor'),
-          '!documentation' => 'https://www.drupal.org/node/2505129',
+          '@profiles'      => url('admin/config/content/ckeditor'),
+          '@documentation' => 'https://www.drupal.org/node/2505129',
         )), 'warning', FALSE);
       }
     }
@@ -730,7 +730,7 @@ function wysiwyg_fields_form_ckeditor_admin_profile_form_alter(&$form) {
  * @param $form_state
  */
 function wysiwyg_fields_ckeditor_admin_profile_form_submit($form, &$form_state) {
-  if (strstr($form_state['values']['toolbar'], "'wysiwyg_fields-")) {
+  if (strstr($form_state['values']['toolbar'], 'wysiwyg_fields')) {
     // If a Wysiwyg Fields button is in use, enable the required plugins.
     $form_state['values']['loadPlugins']['wysiwyg_fields'] = 'wysiwyg_fields';
     foreach (array('widget', 'lineutils') as $plugin) {
@@ -773,14 +773,14 @@ function wysiwyg_fields_form_filter_admin_format_form_alter(&$form) {
   $profiles = ckeditor_profile_load();
   if (is_array($profiles)) {
     foreach ($profiles as $profile) {
-      if (in_array($form['#format']->format, array_keys($profile->input_formats)) && strstr($profile->settings['toolbar'], "'wysiwyg_fields-")) {
+      if (in_array($form['#format']->format, array_keys($profile->input_formats)) && strstr($profile->settings['toolbar'], 'wysiwyg_fields')) {
         $active = TRUE;
         break;
       }
     }
   }
 
-  // If this Text format is used by a CKEditor with a Wysiwyg field, the Repalce
+  // If this Text format is used by a CKEditor with a Wysiwyg field, the Replace
   // tokens filter is required.
   if ($active) {
     $form['filters']['status']['filter_tokens']['#attributes']['disabled'] = TRUE;
