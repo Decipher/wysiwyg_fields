@@ -47,6 +47,7 @@
     regExpToken: null,
 
     /**
+     * Construct; Builds the Wysiwyg Fields javascript object.
      *
      * @param id
      * @private
@@ -57,6 +58,7 @@
       // Field info.
       this.id = id;
       this.entityType = components[1];
+      Drupal.settings.wysiwygFields.tokenTypes = Drupal.settings.wysiwygFields.tokenTypes || [];
       this.entityTokenType = Drupal.settings.wysiwygFields.tokenTypes[components[1]];
       this.bundleName = components[2];
       this.fieldName = {
@@ -111,6 +113,9 @@
     },
 
     /**
+     * Build token; Returns the correct token based on user choices in the
+     * Wysiwyg Fields UI.
+     *
      * @returns {string}
      */
     buildToken: function () {
@@ -137,6 +142,8 @@
     },
 
     /**
+     * Get token data; Splits the provided token into it's relevant components:
+     * deltas, formatter and formatter settings.
      *
      * @param token
      * @returns {{deltas: Array, formatter: string, formatter_settings: {}}}
@@ -171,6 +178,8 @@
     },
 
     /**
+     * Get deltas; Returns the active deltas based on the stored values, the
+     * checked multi-select checkboxes or the last available delta.
      *
      * @returns {*}
      */
@@ -198,6 +207,7 @@
     },
 
     /**
+     * Set deltas; Stores the provided deltas as the active deltas.
      *
      * @param deltas
      */
@@ -210,6 +220,8 @@
     },
 
     /**
+     * Select deltas; Sets the multi-select checkboxes as per the provided
+     * deltas or resets all checkboxes if no deltas provided.
      *
      * @param deltas
      */
