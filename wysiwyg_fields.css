@@ -6,11 +6,33 @@
   white-space: normal;
 }
 
+.cke_dialog_ui_html .wysiwyg_fields-table {
+  width: 100%;
+}
+
+.cke_dialog_ui_html .wysiwyg_fields-table tr.even,
+.cke_dialog_ui_html .wysiwyg_fields-table tr.odd {
+  background: transparent;
+  border-width: 0;
+}
+
+.cke_dialog_ui_html .wysiwyg_fields-table .wysiwyg_fields-select {
+  vertical-align: middle;
+}
+
+.cke_dialog_ui_html .wysiwyg_fields-table .wysiwyg_fields-select .form-item {
+  text-align: center;
+}
+
+/**
+ * Basic dialog specific styles.
+ */
+.wysiwyg_fields-dialog-basic .wysiwyg_fields-table .wysiwyg_fields-select,
 .wysiwyg_fields-dialog-basic div[class$="wysiwyg-fields-select"],
 .wysiwyg_fields-dialog-basic .field-add-more-submit {
-  position: absolute !important;
   clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
   clip: rect(1px, 1px, 1px, 1px);
-  overflow: hidden;
   height: 1px;
+  overflow: hidden;
+  position: absolute !important;
 }

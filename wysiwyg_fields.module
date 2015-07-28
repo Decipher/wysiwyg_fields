@@ -14,7 +14,6 @@ function wysiwyg_fields_theme() {
 
   $items['wysiwyg_fields'] = array(
     'render element' => 'element',
-    'template'       => 'wysiwyg_fields',
     'file'           => $file,
   );
 
@@ -292,9 +291,9 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
           '#value' => $delta,
         );
 
-        $field_elements[$delta]['wysiwyg_fields']['select'] = array(
+        $field_elements['wysiwyg_fields']['select'][$delta] = array(
           '#type'          => 'checkbox',
-          '#default_value' => !empty($item[0]['wyswiyg_fields']['select']),
+          '#default_value' => !empty($item[0]['wysiwyg_fields']['select']),
         );
       }
     }
@@ -357,13 +356,13 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
             'wrapper'  => "{$id}-inner",
             'effect'   => 'fade',
           ),
-          '#weight'                  => 105,
+          '#weight'                  => 100,
           '#parents'                 => array($field_name, 'add_more'),
         );
 
         // Wysiwyg Fields setting form.
-        $field_elements['wysiwyg_fields'] = array(
-          '#weight'  => 100,
+        $field_elements['wysiwyg_fields'] += array(
+          '#weight'  => 105,
           '#tree'    => TRUE,
           '#parents' => array($field_name, 'wysiwyg_fields'),
         );

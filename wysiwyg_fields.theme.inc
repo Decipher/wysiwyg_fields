@@ -27,28 +27,6 @@ function wysiwyg_fields_ckeditor_elements() {
  *
  * @param $variables
  */
-function template_preprocess_wysiwyg_fields(&$variables) {
-  $field   =& drupal_static('wysiwyg_field_form_element_field', NULL);
-  $element = $variables['element'];
-
-  $field = TRUE;
-  foreach (element_children($element) as $delta) {
-    if (is_numeric($delta)) {
-      $variables['deltas'][$delta] = render($element[$delta]);
-    }
-  }
-
-  $variables['add_more']       = render($element['add_more']);
-  $variables['wysiwyg_fields'] = render($element['wysiwyg_fields']);
-
-  drupal_static_reset('wysiwyg_field_form_element_field');
-}
-
-/**
- * Implements hook_preprocess().
- *
- * @param $variables
- */
 function wysiwyg_fields_preprocess_form_element(&$variables) {
   $field =& drupal_static('wysiwyg_field_form_element_field', NULL);
   if (!is_null($field)) {
@@ -66,13 +44,64 @@ function wysiwyg_fields_preprocess_form_element(&$variables) {
  * @param $variables
  */
 function wysiwyg_fields_preprocess_wysiwyg_fields_field(&$variables) {
-  $field =& drupal_static('wysiwyg_field_form_element_field', FALSE);
-  if ($field) {
+  $field =& drupal_static('wysiwyg_field_form_element_field', NULL);
+  if (!is_null($field)) {
     $element = &$variables['element'];
     $fields  = wysiwyg_fields_ckeditor_elements();
 
     $element['#attributes']['class'][] = 'cke_dialog_ui_' . $fields[$element['#type']]['class'];
   }
+}
+
+/**
+ * Returns Wysiwyg Fields wrapper.
+ *
+ * @param $variables
+ *
+ * @return string
+ * @throws Exception
+ */
+function theme_wysiwyg_fields(&$variables) {
+  $field   =& drupal_static('wysiwyg_field_form_element_field', NULL);
+  $element = $variables['element'];
+
+  $rows  = array();
+  $field = TRUE;
+  foreach (element_children($element) as $delta) {
+    if (is_numeric($delta)) {
+      $cols   = array();
+      $cols[] = array(
+        'data'  => render($element[$delta]),
+        'class' => array(
+          'cke_dialog_ui_vbox_child',
+          "wysiwyg_fields-{$element['#field_name']}-delta",
+          "wysiwyg_fields-{$element['#field_name']}-delta-{$delta}"
+        ),
+        'role'  => 'presentation',
+      );
+      $cols[] = array(
+        'data'  => render($element['wysiwyg_fields']['select'][$delta]),
+        'class' => array(
+          'cke_dialog_ui_vbox_child',
+          'wysiwyg_fields-select',
+        ),
+      );
+      $rows[] = $cols;
+    }
+  }
+  drupal_static_reset('wysiwyg_field_form_element_field');
+
+  return theme('table', array(
+    'rows'       => $rows,
+    'attributes' => array(
+      'align'       => 'left',
+      'border'      => 0,
+      'cellspacing' => 0,
+      'class'       => array('wysiwyg_fields-table'),
+      'role'        => 'presentation',
+    ),
+    'sticky'     => FALSE,
+  )) . drupal_render_children($element);
 }
 
 /**

@@ -181,12 +181,12 @@
       }
 
       // Return deltas list based on 'select' checkboxes.
-      var $selects = $(this.idInner).find(':checkbox[name$="[wysiwyg_fields][select]"]:checked');
+      var $selects = $(this.idInner).find(':checkbox[name^="' + this.fieldName.underscore + '[wysiwyg_fields][select]"]:checked');
       if ($selects.length > 0) {
         var selected = [];
         $selects.each(function (index, item) {
           var parts = $(item).attr('name').split('[');
-          var delta = parts[2].substring(0, parts[2].length - 1);
+          var delta = parts[3].substring(0, parts[3].length - 1);
           selected.push(delta);
         });
         return selected;
@@ -216,14 +216,14 @@
     selectDeltas: function (deltas) {
       // If not deltas provided, un-check all 'select' checkboxes.
       if (typeof deltas == 'undefined' || deltas.length == 0) {
-        $(this.idInner).find(':checkbox[name$="[wysiwyg_fields][select]"]').removeAttr('checked');
+        $(this.idInner).find(':checkbox[name^="' + this.fieldName.underscore + '[wysiwyg_fields][select]"]').removeAttr('checked');
       }
 
       // Check 'select' checkboxes as per provided deltas.
       else {
         var wysiwygField = this;
         $.each(deltas, function (index, delta) {
-          $(wysiwygField.idInner).find(':checkbox[name$="[' + delta + '][wysiwyg_fields][select]"]').attr('checked', 'checked');
+          $(wysiwygField.idInner).find(':checkbox[name$="[wysiwyg_fields][select][' + delta + ']"]').attr('checked', 'checked');
         });
       }
     },
