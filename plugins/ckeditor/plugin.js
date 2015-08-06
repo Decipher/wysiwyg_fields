@@ -213,8 +213,8 @@
           upcast: function (element, data) {
             // If we have a Wysiwyg Fields pseudo-field with the correct token
             // format, then we upcast.
-            if (element.name == 'wysiwyg_fields' && typeof element.attributes['data-token'] !== "undefined" && element.attributes['data-token'].match(Drupal.settings.wysiwygFields[id].regExpToken)) {
-              data.token = element.attributes['data-token'];
+            if (element.name == 'wysiwyg_fields' && typeof element.attributes['data-token'] !== "undefined" && "[" + element.attributes['data-token'] + "]".match(Drupal.settings.wysiwygFields[id].regExpToken)) {
+              data.token = "[" + element.attributes['data-token'] + "]";
               data.upcast = true;
 
               return true;
@@ -222,7 +222,7 @@
 
             // Wrap plain text tokens Wysiwyg Fields pseudo-field.
             else if (element.getHtml().match(Drupal.settings.wysiwygFields[id].regExpToken)) {
-              element.setHtml(element.getHtml().replace(Drupal.settings.wysiwygFields[id].regExpToken, "<wysiwyg_fields data-token='$1'>$1</wysiwyg_fields>"));
+              element.setHtml(element.getHtml().replace(Drupal.settings.wysiwygFields[id].regExpToken, "<wysiwyg_fields data-token='$1'></wysiwyg_fields>"));
             }
 
             return false;
