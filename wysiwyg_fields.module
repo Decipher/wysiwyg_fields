@@ -88,7 +88,7 @@ function wysiwyg_fields_field_widget_settings_form($field, $instance) {
   unset($widget_types['wysiwyg_fields']);
 
   $widget_type = isset($settings['wysiwyg_fields']['widget_type']) && !empty($settings['wysiwyg_fields']['widget_type']) ? $settings['wysiwyg_fields']['widget_type'] : $field_info['default_widget'];
-  // Get widget type from AJAX request if available..
+  // Get widget type from AJAX request if available.
   if (isset($_POST['instance']['widget']['settings']['wysiwyg_fields']['widget_type'])) {
     $widget_type = filter_xss($_POST['instance']['widget']['settings']['wysiwyg_fields']['widget_type']);
   }
@@ -639,6 +639,15 @@ function wysiwyg_fields_form_field_ui_display_overview_form_alter(&$form) {
 }
 
 /**
+ * Implements hook_field_create_field().
+ *
+ * @param $field
+ */
+function wysiwyg_fields_field_create_field($field) {
+  wysiwyg_fields_field_update_field($field);
+}
+
+/**
  * Implements hook_field_update_field().
  *
  * @param $field
@@ -652,6 +661,15 @@ function wysiwyg_fields_field_update_field($field) {
 }
 
 /**
+ * Implements hook_field_create_instance().
+ *
+ * @param $instance
+ */
+function wysiwyg_fields_field_create_instance($instance) {
+  wysiwyg_fields_field_update_instance($instance);
+}
+
+/**
  * Implements hook_field_update_instance().
  *
  * @param $instance
@@ -660,7 +678,12 @@ function wysiwyg_fields_field_update_field($field) {
  */
 function wysiwyg_fields_field_update_instance($instance) {
   $update = FALSE;
-  if ('wysiwyg_fields' == $instance['widget']['type']) {
+  if (isset($instance['widget']['type']) && 'wysiwyg_fields' == $instance['widget']['type']) {
+    // If no display settings are set then re-load the instance information.
+    if (!isset($instance['display'])) {
+      $instance = field_info_instance($instance['entity_type'], $instance['field_name'], $instance['bundle']);
+    }
+
     // Field instances using Wysiwyg Fields widget must not be required.
     if ($instance['required']) {
       $instance['required'] = FALSE;
