@@ -1,0 +1,30 @@
+<?php
+
+/**
+ * @file
+ * Core functions for the Wysiwyg Fields tests module.
+ */
+
+/**
+ * Implements hook_node_info()
+ */
+function wysiwyg_fields_test_node_info() {
+  $node_types['wysiwyg_fields_test'] = array(
+    'name'        => t('Wysiwyg Fields test'),
+    'base'        => 'wysiwyg_fields_test_content',
+    'description' => t('Content type for testing Wysiwyg Fields functionality.'),
+    'has_title'   => TRUE,
+  );
+
+  return $node_types;
+}
+
+/**
+ * @param $node
+ * @param $form_state
+ *
+ * @return array
+ */
+function wysiwyg_fields_test_content_form($node, $form_state) {
+  return node_content_form($node, $form_state);
+}

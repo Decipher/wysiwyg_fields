@@ -1,0 +1,80 @@
+<?php
+
+/**
+ * @file
+ * Install functions for the Wysiwyg Fields tests module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function wysiwyg_fields_test_install() {
+  // Create content type.
+  node_types_rebuild();
+  $types = node_type_get_types();
+  node_add_body_field($types['wysiwyg_fields_test']);
+
+  // Create fields.
+  $field = array(
+    'field_name'  => 'wysiwyg_fields_test_image',
+    'type'        => 'image',
+    'cardinality' => -1,
+    'locked'      => FALSE,
+  );
+  field_create_field($field);
+
+  $instance = array(
+    'field_name'  => 'wysiwyg_fields_test_image',
+    'entity_type' => 'node',
+    'label'       => 'Image',
+    'bundle'      => 'wysiwyg_fields_test',
+    'required'    => FALSE,
+    'widget'      => array(
+      'type' => 'wysiwyg_fields',
+    ),
+  );
+  field_create_instance($instance);
+
+  // Create text format.
+  $format = (object) array(
+    'format'  => 'wysiwyg_fields_test',
+    'name'    => 'Wyswiyg Fields test',
+    'weight'  => 1,
+    'filters' => array(
+      'filter_tokens' => array(
+        'weight' => 100,
+        'status' => 1,
+      ),
+    ),
+  );
+  filter_format_save($format);
+
+  // Create CKEditor profile.
+  module_load_include('inc', 'ckeditor', 'includes/ckeditor.admin');
+  $form_state                                                   = array();
+  $form_state['values']['name']                                 = 'wysiwyg_fields_test';
+  $form_state['values']['input_formats']['wysiwyg_fields_test'] = 'wysiwyg_fields_test';
+  $form_state['values']['toolbar']                              = "[['wysiwyg_fields-node-wysiwyg_fields_test-wysiwyg_fields_test_image']]";
+  drupal_form_submit('ckeditor_admin_profile_form', $form_state, 'add');
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function wysiwyg_fields_test_uninstall() {
+  // Remove content type.
+  $nodes = node_load_multiple(array(), array('type' => 'wysiwyg_fields_test'));
+  node_delete_multiple(array_keys($nodes));
+  node_type_delete('wysiwyg_fields_test');
+
+  // Remove fields.
+  field_delete_field('wysiwyg_fields_test_image');
+
+  // Remove text format.
+  $format = filter_format_load('wysiwyg_fields_test');
+  filter_format_disable($format);
+
+  // Delete CKEditor profile.
+  module_load_include('inc', 'ckeditor', 'includes/ckeditor.admin');
+  ckeditor_profile_delete('wysiwyg_fields_test');
+}

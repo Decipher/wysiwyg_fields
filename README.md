@@ -1,5 +1,6 @@
 # Wysiwyg Fields
-----------------
+
+[![Build Status](https://travis-ci.org/Decipher/wysiwyg_fields.svg)](https://travis-ci.org/Decipher/wysiwyg_fields)
 
 Wysiwyg Fields is an Inline field management system, a module that bridges the
 gap between Drupal fields and CKEditor, giving the power of Drupal's field
@@ -12,7 +13,6 @@ unnecessary clutter from your Drupal entity forms.
 
 
 ## Required modules
--------------------
 
 - [CKEditor - WYSIWYG HTML editor](https://drupal.org/project/ckeditor)
 - [Formatted Field tokens](https://drupal.org/project/formatted_field_tokens)
@@ -23,14 +23,12 @@ unnecessary clutter from your Drupal entity forms.
 
 
 ## Recommended modules
-----------------------
 
 - [Custom Formatters](https://drupal.org/project/custom_formatters)
 
 
 
 ## Installation
----------------
 
 1. Install the module and dependencies as per
    [standard Drupal instructions](https://www.drupal.org/documentation/install/modules-themes/modules-7).
@@ -50,7 +48,6 @@ plugins directory (e.g., sites/all/modules/ckeditor/plugins):
 
 
 ## Makefile
------------
 
 For easy downloading of Wysiwyg Fields and it's required modules and/or
 libraries, you can use the following entries in your makefile:
@@ -71,11 +68,3 @@ libraries, you can use the following entries in your makefile:
 
 **Note:** It is highly recommended to specify the version of your projects, the
 above format is only for the sake of simplicity.
-
-
-
-## Roadmap
-----------
-
-- Add javascript caching of token values.
-- Add better error/validation handling.
