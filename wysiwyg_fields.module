@@ -123,7 +123,7 @@ function wysiwyg_fields_field_widget_settings_form($field, $instance) {
   // Pass through to field default widget.
   $instance['widget']         = field_info_widget_types($widget_type);
   $instance['widget']['type'] = $widget_type;
-  $instance['widget']['settings'] += $instance['widget']['settings'];
+  $instance['widget']['settings'] = array_merge($instance['widget']['settings'], $settings);
 
   $function = "{$instance['widget']['module']}_field_widget_settings_form";
   if (function_exists($function)) {
@@ -224,14 +224,14 @@ function wysiwyg_fields_field_widget_form(&$form, &$form_state, $field, $instanc
   // widget.
   $settings = $instance['widget']['settings'];
 
-  $field_info                    = field_info_field_types($field['type']);
-  $widget_type                   = isset($settings['wysiwyg_fields']['widget_type']) && !empty($settings['wysiwyg_fields']['widget_type']) ? $settings['wysiwyg_fields']['widget_type'] : $field_info['default_widget'];
-  $subinstance                   = $instance;
-  $subinstance['widget']         = field_info_widget_types($widget_type);
-  $subinstance['widget']['type'] = $widget_type;
-  $subinstance['widget']['settings'] += $subinstance['widget']['settings'];
-  $field_state['instance'] = $subinstance;
-  $field['cardinality']    = $field_state['field']['cardinality'] = 1;
+  $field_info                        = field_info_field_types($field['type']);
+  $widget_type                       = isset($settings['wysiwyg_fields']['widget_type']) && !empty($settings['wysiwyg_fields']['widget_type']) ? $settings['wysiwyg_fields']['widget_type'] : $field_info['default_widget'];
+  $subinstance                       = $instance;
+  $subinstance['widget']             = field_info_widget_types($widget_type);
+  $subinstance['widget']['type']     = $widget_type;
+  $subinstance['widget']['settings'] = array_merge($subinstance['widget']['settings'], $settings);
+  $field_state['instance']           = $subinstance;
+  $field['cardinality']              = $field_state['field']['cardinality'] = 1;
 
   $entity_info = entity_get_info($subinstance['entity_type']);
   $token_type  = isset($entity_info['token type']) ? $entity_info['token type'] : $subinstance['entity_type'];
